@@ -1,0 +1,1037 @@
+import React, { useState, useEffect } from 'react';
+import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
+import FirebaseWizard from './components/FirebaseWizard';
+import Dashboard from './pages/Dashboard';
+import PlantRegistry from './pages/PlantRegistry';
+import K7003Docs from './pages/K7003Docs';
+import EvidenceVault from './pages/EvidenceVault';
+import Reports from './pages/Reports';
+import PublicPortal from './pages/PublicPortal';
+import TeacherLearning from './pages/TeacherLearning';
+import BannerConfig from './pages/BannerConfig';
+import PlantStudy from './pages/PlantStudy';
+import SchoolAssessmentK7009 from './pages/SchoolAssessmentK7009';
+import StudentPortfolios from './pages/StudentPortfolios';
+import OnlineWorksheets from './pages/OnlineWorksheets';
+import EvidenceMapping from './pages/EvidenceMapping';
+import SatisfactionSurveyPopup from './components/SatisfactionSurveyPopup';
+import ReadinessCheck from './pages/ReadinessCheck';
+import UserProfile from './pages/UserProfile';
+import LocalResources from './pages/LocalResources';
+import AdminManagement from './pages/AdminManagement';
+import ElementsManagement from './pages/ElementsManagement';
+import SystemAudit from './pages/SystemAudit';
+import PlantTagGenerator from './pages/PlantTagGenerator';
+import { db, isFirebaseConfigured } from './firebaseClient';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { X, MapPin, Tag, Shield, Calendar, BookOpen, AlertTriangle, Key } from 'lucide-react';
+
+// Central menuItems routing configuration to map mode and allowed roles
+const menuItems = [
+  { id: 'dashboard', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'banners-config', mode: 'internal', roles: ['admin'] },
+  { id: 'plant-registry', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'plant-tags', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'k7003-docs', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'evaluator'] },
+  { id: 'student-portfolios', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'evaluator'] },
+  { id: 'online-worksheets', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'evaluator'] },
+  { id: 'plant-study', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'executive', 'evaluator'] },
+  { id: 'teacher-learning', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'executive', 'evaluator'] },
+  { id: 'evidence-vault', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'settings', mode: 'internal', roles: ['admin'] },
+  { id: 'profile', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'local-resources', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'admin-management', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'elements-management', mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
+
+  { id: 'k7009-form', mode: 'evaluation', roles: ['admin', 'rspg_board', 'executive', 'evaluator'] },
+  { id: 'system-audit', mode: 'evaluation', roles: ['admin', 'rspg_board', 'executive', 'evaluator'] },
+  { id: 'evidence-mapping', mode: 'evaluation', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
+  { id: 'readiness-check', mode: 'evaluation', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'executive', 'evaluator'] },
+  { id: 'evaluation-report', mode: 'evaluation', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'executive', 'evaluator'] }
+];
+
+export default function App() {
+  const [viewMode, setViewMode] = useState('public'); // public | internal | evaluation
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [theme, setTheme] = useState('light');
+  const [userRole, setUserRole] = useState('admin'); // admin | rspg_teacher | teacher | student | visitor
+
+  // Authentication States
+  const [authMode, setAuthMode] = useState('login'); // login | signup
+  const [email, setEmail] = useState('sample@email.com');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [selectedRole, setSelectedRole] = useState('student');
+  const [classroom, setClassroom] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authSuccess, setAuthSuccess] = useState('');
+  const [forgotStep, setForgotStep] = useState(1);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Inspect plant detail modal state
+  const [inspectedPlant, setInspectedPlant] = useState(null);
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [inspectedPlantK7, setInspectedPlantK7] = useState(null);
+  const [inspectedLogs, setInspectedLogs] = useState([]);
+
+  // Listen to switch to internal view event from public portal button
+  useEffect(() => {
+    const handleSwitchInternal = () => {
+      setViewMode('internal');
+    };
+    window.addEventListener('switch-to-internal', handleSwitchInternal);
+    return () => {
+      window.removeEventListener('switch-to-internal', handleSwitchInternal);
+    };
+  }, []);
+
+  // Load login session from localStorage
+  useEffect(() => {
+    const savedUser = localStorage.getItem('rspg_logged_in_user');
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        setUserRole(u.role);
+        setIsLoggedIn(true);
+        setViewMode('internal');
+      } catch (err) {
+        console.error('Error loading saved session:', err);
+      }
+    }
+  }, []);
+
+  // 10 minutes Satisfaction Survey Timer
+  useEffect(() => {
+    const surveyTimeout = 10 * 60 * 1000; // 10 minutes
+    const isCompleted = localStorage.getItem('rspg_survey_submitted_or_dismissed');
+    if (isCompleted === 'true') return;
+
+    let sessionStart = sessionStorage.getItem('rspg_session_start_time');
+    if (!sessionStart) {
+      sessionStart = Date.now().toString();
+      sessionStorage.setItem('rspg_session_start_time', sessionStart);
+    }
+
+    const elapsed = Date.now() - parseInt(sessionStart, 10);
+    const remaining = surveyTimeout - elapsed;
+
+    let timer;
+    if (remaining <= 0) {
+      setShowSurvey(true);
+    } else {
+      timer = setTimeout(() => {
+        setShowSurvey(true);
+      }, remaining);
+    }
+
+    // Dev bypass test mode using ?survey_test=true
+    if (window.location.search.includes('survey_test=true')) {
+      const testTimer = setTimeout(() => {
+        setShowSurvey(true);
+      }, 3000);
+      return () => {
+        clearTimeout(testTimer);
+        if (timer) clearTimeout(timer);
+      };
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
+  // Sync / Migrate welcome text and banner_url in Firestore document
+  useEffect(() => {
+    if (!isFirebaseConfigured() || !db) return;
+    async function syncDatabaseWelcomeText() {
+      try {
+        const docRef = doc(db, 'rspg_banners', 'pai_config');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          let updates = {};
+          if (data.welcome_text && data.welcome_text.includes('ให้คงอยู่')) {
+            updates.welcome_text = data.welcome_text.replace('ให้คงอยู่', '').trim();
+          }
+          if (!data.banner_url || data.banner_url === '-' || data.banner_url.includes('unsplash.com')) {
+            updates.banner_url = '/school-banner.jpg';
+          }
+          if (Object.keys(updates).length > 0) {
+            await updateDoc(docRef, updates);
+          }
+        }
+      } catch (err) {
+        console.error('Error syncing welcome text and banner_url:', err);
+      }
+    }
+    syncDatabaseWelcomeText();
+  }, []);
+
+  // Apply theme automatically based on viewMode and userRole (Admin gets Dark/Light by choice, others get Light Mode)
+  useEffect(() => {
+    if (viewMode !== 'public' && userRole === 'admin') {
+      const savedChoice = localStorage.getItem('rspg_admin_theme_choice');
+      if (savedChoice) {
+        setTheme(savedChoice);
+      } else {
+        setTheme('dark'); // Default to dark for admin
+      }
+    } else {
+      setTheme('light');
+    }
+  }, [viewMode, userRole]);
+
+  // Apply Theme to DOM
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  // Set dynamic theme colors based on user role to make them distinct from admin
+  useEffect(() => {
+    const root = document.documentElement;
+    if (viewMode === 'public') {
+      // Public view uses custom cream and lavender theme
+      root.style.setProperty('--color-primary', '#8B5CF6');
+      root.style.setProperty('--color-primary-hover', '#7C3AED');
+      root.style.setProperty('--bg-sidebar-active', '#8B5CF6');
+      return;
+    }
+
+    // Role-specific colors for internal management panel
+    switch (userRole) {
+      case 'admin':
+        // Admin uses Purple
+        root.style.setProperty('--color-primary', '#BA55D3');
+        root.style.setProperty('--color-primary-hover', '#9932CC');
+        root.style.setProperty('--bg-sidebar-active', '#BA55D3');
+        break;
+      case 'teacher':
+      case 'project_advisor':
+        // Teachers use Green
+        root.style.setProperty('--color-primary', '#2E7D32');
+        root.style.setProperty('--color-primary-hover', '#1b5e20');
+        root.style.setProperty('--bg-sidebar-active', '#2E7D32');
+        break;
+      case 'student':
+        // Students use Blue
+        root.style.setProperty('--color-primary', '#0288D1');
+        root.style.setProperty('--color-primary-hover', '#01579b');
+        root.style.setProperty('--bg-sidebar-active', '#0288D1');
+        break;
+      case 'rspg_board':
+      case 'executive':
+      case 'evaluator':
+        // Board / Executives / Evaluators use Gold/Amber
+        root.style.setProperty('--color-primary', '#FFC107');
+        root.style.setProperty('--color-primary-hover', '#FFB300');
+        root.style.setProperty('--bg-sidebar-active', '#FFC107');
+        break;
+      case 'doc_officer':
+        // Document officers use Teal
+        root.style.setProperty('--color-primary', '#008080');
+        root.style.setProperty('--color-primary-hover', '#006666');
+        root.style.setProperty('--bg-sidebar-active', '#008080');
+        break;
+      default:
+        // Default fallback (Visitor / General)
+        root.style.setProperty('--color-primary', '#7E6C84');
+        root.style.setProperty('--color-primary-hover', '#33253a');
+        root.style.setProperty('--bg-sidebar-active', '#7E6C84');
+        break;
+    }
+  }, [userRole, viewMode]);
+
+  // Adjust active tab when switching modes or user roles
+  useEffect(() => {
+    if (viewMode === 'public') return;
+    const allowed = menuItems.filter(item => item.mode === viewMode && item.roles.includes(userRole));
+    const allowedIds = allowed.map(i => i.id);
+    if (!allowedIds.includes(activeTab)) {
+      setActiveTab(allowedIds[0] || 'dashboard');
+    }
+  }, [viewMode, userRole]);
+
+  // Handle opening deep linked plants from QR codes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const plantId = params.get('plantId');
+    if (plantId && isFirebaseConfigured()) {
+      fetchAndInspectPlant(plantId);
+    }
+  }, []);
+
+  const fetchAndInspectPlant = async (id) => {
+    try {
+      const docRef = doc(db, 'plants', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        handleInspectPlant({ id: docSnap.id, ...docSnap.data() });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleInspectPlant = async (plant) => {
+    setInspectedPlant(plant);
+    setInspectedPlantK7(null);
+    setInspectedLogs([]);
+
+    if (isFirebaseConfigured() && db) {
+      try {
+        const k7Query = query(collection(db, 'k7_worksheets'), where('plant_id', '==', plant.id));
+        const k7Snap = await getDocs(k7Query);
+        if (!k7Snap.empty) {
+          const firstK7 = k7Snap.docs[0];
+          setInspectedPlantK7({ id: firstK7.id, ...firstK7.data() });
+        }
+
+        const logsQuery = query(
+          collection(db, 'plant_logs'), 
+          where('plant_id', '==', plant.id),
+          orderBy('created_at', 'desc')
+        );
+        const logsSnap = await getDocs(logsQuery);
+        const logsList = [];
+        logsSnap.forEach(docSnap => {
+          logsList.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        setInspectedLogs(logsList);
+      } catch (err) {
+        console.error('Error fetching plant details:', err);
+      }
+    }
+  };
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthSuccess('');
+    setIsSubmitting(true);
+
+    if (!isFirebaseConfigured() || !db) {
+      setAuthError('ฐานข้อมูลยังไม่ได้ตั้งค่าการเชื่อมต่อในหน้าตั้งค่า');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const emailClean = email.trim().toLowerCase();
+
+    if (authMode === 'signup') {
+      try {
+        const docRef = doc(db, 'users', emailClean);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setAuthError('อีเมลนี้ได้รับการลงทะเบียนเป็นผู้ใช้แล้ว');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const resolvedRole = emailClean === 'jenprapa@pwtk.ac.th' ? 'admin' : selectedRole;
+        const payload = {
+          email: emailClean,
+          password: password,
+          name: fullName,
+          role: resolvedRole,
+          classroom: resolvedRole === 'student' ? classroom : '',
+          created_at: new Date().toISOString()
+        };
+
+        await setDoc(docRef, payload);
+        setAuthSuccess('สมัครสมาชิกบัญชีผู้ใช้สำเร็จ! สลับหน้าจอเข้าสู่ระบบในครู่เดียว...');
+        setTimeout(() => {
+          setAuthMode('login');
+          setAuthSuccess('');
+          setPassword('');
+        }, 1500);
+      } catch (err) {
+        setAuthError('สมัครสมาชิกขัดข้อง: ' + err.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      try {
+        const docRef = doc(db, 'users', emailClean);
+        let docSnap = await getDoc(docRef);
+
+        // Safety seeding: if jenprapa@pwtk.ac.th admin does not exist, auto-create
+        if (!docSnap.exists() && emailClean === 'jenprapa@pwtk.ac.th') {
+          const defaultAdmin = {
+            email: 'jenprapa@pwtk.ac.th',
+            password: password || 'admin1234',
+            name: 'ครูเจนประภา แก้วงาม',
+            role: 'admin',
+            created_at: new Date().toISOString()
+          };
+          await setDoc(docRef, defaultAdmin);
+          docSnap = await getDoc(docRef);
+        }
+
+        if (!docSnap.exists()) {
+          setAuthError('ไม่พบบัญชีผู้ใช้นี้ในระบบ กรุณาสมัครสมาชิกก่อนเข้าใช้งาน');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const userData = docSnap.data();
+        if (userData.password !== password) {
+          setAuthError('รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง');
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Login Success
+        setUserRole(userData.role);
+        setIsLoggedIn(true);
+        setViewMode('internal');
+
+        localStorage.setItem('rspg_logged_in_user', JSON.stringify({
+          email: userData.email,
+          name: userData.name,
+          role: userData.role
+        }));
+
+        setAuthSuccess('เข้าสู่ระบบสำเร็จ!');
+      } catch (err) {
+        setAuthError('เข้าสู่ระบบผิดพลาด: ' + err.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handleForgotVerifyEmail = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthSuccess('');
+    setIsSubmitting(true);
+
+    if (!isFirebaseConfigured() || !db) {
+      setAuthError('ฐานข้อมูลยังไม่ได้ตั้งค่าการเชื่อมต่อ');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const emailClean = email.trim().toLowerCase();
+    try {
+      const docRef = doc(db, 'users', emailClean);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        setAuthError('ไม่พบอีเมลผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
+      } else {
+        setForgotStep(2);
+        setAuthSuccess('ตรวจสอบผ่านแล้ว กรุณากำหนดรหัสผ่านใหม่');
+      }
+    } catch (err) {
+      setAuthError('เกิดข้อผิดพลาดในการตรวจสอบบัญชี: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotResetPassword = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthSuccess('');
+    
+    if (newPassword !== confirmPassword) {
+      setAuthError('รหัสผ่านใหม่และรหัสผ่านยืนยันไม่ตรงกัน');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setAuthError('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const emailClean = email.trim().toLowerCase();
+    try {
+      const docRef = doc(db, 'users', emailClean);
+      await updateDoc(docRef, { password: newPassword });
+      setAuthSuccess('รีเซ็ตรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่');
+      setTimeout(() => {
+        setAuthMode('login');
+        setForgotStep(1);
+        setEmail(emailClean);
+        setPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setAuthSuccess('');
+      }, 2000);
+    } catch (err) {
+      setAuthError('เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleQuickLogin = (emailVal, passVal) => {
+    setEmail(emailVal);
+    setPassword(passVal);
+    setAuthMode('login');
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setViewMode('public');
+    localStorage.removeItem('rspg_logged_in_user');
+    setEmail('');
+    setPassword('');
+  };
+
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const nextTheme = prev === 'light' ? 'dark' : 'light';
+      if (viewMode !== 'public' && userRole === 'admin') {
+        localStorage.setItem('rspg_admin_theme_choice', nextTheme);
+      }
+      return nextTheme;
+    });
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard userRole={userRole} onSelectPlant={handleInspectPlant} setActiveTab={setActiveTab} />;
+      case 'banners-config':
+        return <BannerConfig userRole={userRole} />;
+      case 'plant-registry':
+        return <PlantRegistry onSelectPlant={handleInspectPlant} onPrintLabel={() => setActiveTab('evaluation-report')} userRole={userRole} />;
+      case 'plant-tags':
+        return <PlantTagGenerator userRole={userRole} />;
+      case 'k7003-docs':
+        return <K7003Docs userRole={userRole} />;
+      case 'student-portfolios':
+        return <StudentPortfolios userRole={userRole} />;
+      case 'online-worksheets':
+        return <OnlineWorksheets userRole={userRole} />;
+      case 'plant-study':
+        return <PlantStudy userRole={userRole} />;
+      case 'teacher-learning':
+        return <TeacherLearning userRole={userRole} />;
+      case 'evidence-vault':
+        return <EvidenceVault userRole={userRole} />;
+      case 'k7009-form':
+        return <SchoolAssessmentK7009 userRole={userRole} />;
+      case 'evidence-mapping':
+        return <EvidenceMapping userRole={userRole} />;
+      case 'readiness-check':
+        return <ReadinessCheck userRole={userRole} />;
+      case 'evaluation-report':
+        return <Reports userRole={userRole} />;
+      case 'settings':
+        return <FirebaseWizard />;
+      case 'profile':
+        return <UserProfile />;
+      case 'local-resources':
+        return <LocalResources userRole={userRole} />;
+      case 'admin-management':
+        return <AdminManagement userRole={userRole} />;
+      case 'elements-management':
+        return <ElementsManagement userRole={userRole} />;
+      case 'system-audit':
+        return <SystemAudit />;
+      default:
+        return <Dashboard userRole={userRole} onSelectPlant={handleInspectPlant} setActiveTab={setActiveTab} />;
+    }
+  };
+
+  const defaultImage = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%232E7D32" opacity="0.1"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="40">🌿</text></svg>`;
+
+  return (
+    <div className={`app-container ${viewMode === 'public' ? 'public-portal-theme' : ''}`}>
+      
+      {/* RENDER PUBLIC PORTAL MODE */}
+      {viewMode === 'public' ? (
+        <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <Navbar activeTab="" userRole="visitor" viewMode={viewMode} setViewMode={setViewMode} />
+          <main style={{ flex: 1, backgroundColor: 'var(--bg-main)' }}>
+            <PublicPortal 
+              onSelectPlant={handleInspectPlant} 
+              isLoggedIn={isLoggedIn}
+              userRole={userRole}
+              setActiveTab={setActiveTab}
+              setViewMode={setViewMode}
+            />
+          </main>
+        </div>
+      ) : (
+        /* RENDER INTERNAL MANAGEMENT PANEL MODE */
+        <>
+          {!isLoggedIn ? (
+            /* Login Screen */
+            <div style={{
+              display: 'flex',
+              width: '100%',
+              minHeight: '100vh',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--bg-main)',
+              backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(186, 85, 211, 0.05) 0%, transparent 40%)'
+            }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              minHeight: '100vh',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--bg-main)',
+              backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(186, 85, 211, 0.05) 0%, transparent 40%)',
+              padding: '1.5rem'
+            }}>
+              <div className="card glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ 
+                    width: '105px', 
+                    height: '105px', 
+                    backgroundColor: '#fff', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    boxShadow: '0 0 12px rgba(255, 255, 255, 0.5)',
+                    padding: '0px',
+                    overflow: 'hidden'
+                  }}>
+                    <img src="/rspg-logo.png" alt="อพ.สธ. ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  </div>
+                  <img 
+                    src="/school-logo.png" 
+                    alt="โรงเรียนปายวิทยาคาร" 
+                    style={{ 
+                      width: '85px', 
+                      height: '85px', 
+                      objectFit: 'contain', 
+                      boxShadow: '0 0 12px rgba(255, 255, 255, 0.4)'
+                    }} 
+                  />
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-primary)', textAlign: 'center', margin: '0 0 4px 0' }}>ระบบงานสวนพฤกษศาสตร์ อพ.สธ.</h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem', textAlign: 'center' }}>
+                  โรงเรียนปายวิทยาคาร จังหวัดแม่ฮ่องสอน
+                </p>
+
+                {/* Tab selector */}
+                {authMode !== 'forgot' && (
+                  <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-main)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '1.25rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem',
+                        borderRadius: '6px',
+                        border: 'none',
+                        fontSize: '0.82rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        backgroundColor: authMode === 'login' ? 'var(--color-primary)' : 'transparent',
+                        color: authMode === 'login' ? '#fff' : 'var(--text-muted)',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      🔑 เข้าสู่ระบบ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('signup'); setAuthError(''); setAuthSuccess(''); }}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem',
+                        borderRadius: '6px',
+                        border: 'none',
+                        fontSize: '0.82rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        backgroundColor: authMode === 'signup' ? 'var(--color-primary)' : 'transparent',
+                        color: authMode === 'signup' ? '#fff' : 'var(--text-muted)',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      📝 สมัครสมาชิก
+                    </button>
+                  </div>
+                )}
+
+                {/* Error/Success alerts */}
+                {authError && (
+                  <div style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: 'rgba(211,47,47,0.06)', border: '1px solid rgba(211,47,47,0.15)', color: 'var(--color-danger)', fontSize: '0.78rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>⚠ {authError}</span>
+                  </div>
+                )}
+                {authSuccess && (
+                  <div style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: 'rgba(46,125,50,0.06)', border: '1px solid rgba(46,125,50,0.15)', color: 'var(--color-success)', fontSize: '0.78rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>✓ {authSuccess}</span>
+                  </div>
+                )}
+
+                {/* Form fields */}
+                {authMode === 'forgot' ? (
+                  <form onSubmit={forgotStep === 1 ? handleForgotVerifyEmail : handleForgotResetPassword}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '1rem', textAlign: 'center' }}>
+                      🔑 รีเซ็ตรหัสผ่านใหม่
+                    </h3>
+                    
+                    {forgotStep === 1 ? (
+                      <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ระบุอีเมลผู้ใช้งานที่ลงทะเบียนไว้</label>
+                        <input
+                          type="email"
+                          className="form-control"
+                          placeholder="เช่น jenprapa@pwtk.ac.th"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>อีเมลผู้ใช้งาน</label>
+                          <input
+                            type="email"
+                            className="form-control"
+                            value={email}
+                            disabled
+                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-main)', cursor: 'not-allowed' }}
+                          />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>กำหนดรหัสผ่านใหม่ (ความยาว 6 ตัวอักษรขึ้นไป)</label>
+                          <input
+                            type="password"
+                            className="form-control"
+                            placeholder="รหัสผ่านใหม่"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                          />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ยืนยันรหัสผ่านใหม่</label>
+                          <input
+                            type="password"
+                            className="form-control"
+                            placeholder="พิมพ์ยืนยันรหัสผ่านใหม่อีกครั้ง"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={isSubmitting}
+                      style={{ width: '100%', padding: '0.55rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', marginBottom: '0.75rem' }}
+                    >
+                      <Key size={14} />
+                      <span>{isSubmitting ? 'กำลังดำเนินการ...' : forgotStep === 1 ? 'ตรวจสอบบัญชีผู้ใช้' : 'รีเซ็ตรหัสผ่านใหม่'}</span>
+                    </button>
+
+                    <div style={{ textAlign: 'center' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => { setAuthMode('login'); setForgotStep(1); setAuthError(''); setAuthSuccess(''); }}
+                        style={{ border: 'none', background: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        ย้อนกลับไปหน้าเข้าสู่ระบบ
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleAuthSubmit}>
+                    {authMode === 'signup' && (
+                      <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ชื่อ-นามสกุลจริง</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="เช่น ครูวิทยาวุฒิ ดีเลิศ"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required
+                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                    )}
+
+                    <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                      <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>อีเมลผู้ใช้งาน</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        placeholder="sample@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                      />
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>รหัสผ่าน</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        placeholder="ป้อนรหัสผ่านของคุณ"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                      />
+                    </div>
+
+                    {authMode === 'login' && (
+                      <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => { setAuthMode('forgot'); setForgotStep(1); setAuthError(''); setAuthSuccess(''); }}
+                          style={{ border: 'none', background: 'none', color: 'var(--color-primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                          ลืมรหัสผ่าน?
+                        </button>
+                      </div>
+                    )}
+
+                    {authMode === 'signup' && (
+                      <>
+                        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>เลือกบทบาทในระบบ</label>
+                          <select
+                            className="form-control"
+                            value={selectedRole}
+                            onChange={(e) => setSelectedRole(e.target.value)}
+                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                          >
+                            <option value="student">5. นักเรียน (Student)</option>
+                            <option value="teacher">3. ครูผู้สอน (Teacher)</option>
+                            <option value="rspg_board">2. คณะกรรมการ อพ.สธ. (RSPG Board)</option>
+                            <option value="project_advisor">4. ครูที่ปรึกษาโครงงาน</option>
+                            <option value="doc_officer">6. เจ้าหน้าที่งานเอกสาร</option>
+                            <option value="executive">7. ผู้บริหารสถานศึกษา</option>
+                            <option value="evaluator">8. กรรมการประเมินภายนอก</option>
+                          </select>
+                          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', margin: 0 }}>
+                            *หมายเหตุ: อีเมล jenprapa@pwtk.ac.th จะได้รับบทบาทแอดมิน (Admin) โดยอัตโนมัติ
+                          </p>
+                        </div>
+
+                        {selectedRole === 'student' && (
+                          <div className="form-group" style={{ marginBottom: '1rem' }}>
+                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ห้องเรียน (สำหรับนักเรียน)</label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="เช่น ม.3/2 หรือ ม.6/1"
+                              value={classroom}
+                              onChange={(e) => setClassroom(e.target.value)}
+                              required
+                              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={isSubmitting}
+                      style={{ width: '100%', padding: '0.55rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem' }}
+                    >
+                      <Key size={14} />
+                      <span>{isSubmitting ? 'กำลังดำเนินการ...' : authMode === 'login' ? 'เข้าสู่ระบบ' : 'ลงทะเบียนสมัครสมาชิก'}</span>
+                    </button>
+                  </form>
+                )}
+
+              </div>
+            </div>
+            </div>
+          ) : (
+            /* Inside Administration Shell */
+            <>
+              <Sidebar 
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab} 
+                theme={theme} 
+                toggleTheme={toggleTheme} 
+                userRole={userRole}
+                setUserRole={setUserRole}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                onLogout={handleLogout}
+              />
+
+              <div className="main-content">
+                <Navbar activeTab={activeTab} userRole={userRole} viewMode={viewMode} setViewMode={setViewMode} />
+                
+                <main className="content-body">
+                  {renderTabContent()}
+                </main>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {/* Deep Inspection Modal */}
+      {inspectedPlant && (
+        <div className="modal-overlay" onClick={() => setInspectedPlant(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-primary)' }}>
+                🔍 ข้อมูลการจำแนกพืช: {inspectedPlant.thai_name}
+              </h3>
+              <button onClick={() => setInspectedPlant(null)} className="modal-close">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="grid-3" style={{ gridTemplateColumns: '1.2fr 1.8fr', gap: '1.5rem' }}>
+              <div>
+                <img 
+                  src={inspectedPlant.image_url || defaultImage} 
+                  alt={inspectedPlant.thai_name} 
+                  style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '1rem' }} 
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Tag size={14} /> <b>รหัสพรรณไม้:</b> {inspectedPlant.plant_code}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} /> <b>พิกัด:</b> {inspectedPlant.planting_location}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} /> <b>วันที่บันทึก:</b> {inspectedPlant.survey_date}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={14} /> <b>ผู้บันทึก:</b> {inspectedPlant.surveyor}</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ชื่อวิทยาศาสตร์ / วงศ์</h4>
+                  <p style={{ fontSize: '1.1rem', fontStyle: 'italic', fontWeight: 600, color: 'var(--color-nature)', margin: 0 }}>
+                    {inspectedPlant.scientific_name || 'ไม่ระบุ'}
+                  </p>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', margin: '4px 0 0 0' }}>
+                    วงศ์: {inspectedPlant.family_name || 'ไม่ระบุ'}
+                  </p>
+                </div>
+
+                <div className="grid-2" style={{ gap: '10px' }}>
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ลักษณะวิสัย</h4>
+                    <p style={{ fontSize: '0.95rem', fontWeight: 500 }}>{inspectedPlant.habit || inspectedPlant.plant_type || 'ไม้ต้น'}</p>
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>สถานะความปลอดภัย</h4>
+                    <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--color-primary)' }}>{inspectedPlant.status || 'สมบูรณ์'}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>รายละเอียดคำอธิบาย</h4>
+                  <p style={{ fontSize: '0.9rem', lineHeight: 1.4, backgroundColor: 'var(--bg-main)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '4px' }}>
+                    {inspectedPlant.description || 'ไม่มีรายละเอียดเพิ่มเติม'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* K.7-003 analysis inside modal */}
+            <div style={{ marginTop: '1.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-nature)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <BookOpen size={18} /> ข้อมูลวิเคราะห์สัณฐานวิทยา (ก.7-003 รายต้น)
+              </h4>
+
+              {inspectedPlantK7 ? (
+                <div>
+                  {/* Photo grid of 6 points */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', marginBottom: '1.25rem' }}>
+                    {[
+                      { l: 'วิสัย', u: inspectedPlantK7.habit_photo_url },
+                      { l: 'ลำต้น', u: inspectedPlantK7.stem_photo_url },
+                      { l: 'ใบ', u: inspectedPlantK7.leaf_photo_url },
+                      { l: 'ดอก', u: inspectedPlantK7.flower_photo_url },
+                      { l: 'ผล', u: inspectedPlantK7.fruit_photo_url },
+                      { l: 'เมล็ด', u: inspectedPlantK7.seed_photo_url }
+                    ].map((ph, idx) => (
+                      <div key={idx} style={{ textAlign: 'center' }}>
+                        <span style={{ fontSize: '0.65rem', display: 'block', color: 'var(--text-muted)', marginBottom: '2px' }}>{ph.l}</span>
+                        {ph.u ? (
+                          <img src={ph.u} alt={ph.l} style={{ width: '100%', height: '55px', objectFit: 'cover', borderRadius: '4px' }} />
+                        ) : (
+                          <div style={{ height: '55px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--border-color)', borderRadius: '4px', fontSize: '0.55rem', color: 'var(--text-muted)' }}>ไม่มี</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid-3" style={{ gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+                    <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div><b>ลำต้นและราก:</b> {inspectedPlantK7.stem_detail || '-'}</div>
+                      <div><b>ลักษณะใบ:</b> {inspectedPlantK7.leaf_detail || '-'}</div>
+                      <div><b>ลักษณะดอก:</b> {inspectedPlantK7.flower_detail || '-'}</div>
+                      <div><b>ผลและเมล็ด:</b> {inspectedPlantK7.fruit_detail || '-'} / {inspectedPlantK7.seed_detail || '-'}</div>
+                      
+                      <div style={{ padding: '8px', backgroundColor: 'var(--bg-nature-soft)', borderRadius: '6px', borderLeft: '3px solid var(--color-nature)', marginTop: '6px' }}>
+                        <div><b>ประโยชน์:</b> {inspectedPlantK7.botanical_data || '-'}</div>
+                        <div><b>ภูมิปัญญาท้องถิ่น:</b> {inspectedPlantK7.local_wisdom || '-'}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-main)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <div><b>ผู้บันทึก:</b> {inspectedPlantK7.recorder || '-'}</div>
+                      <div><b>ห้องเรียน:</b> {inspectedPlantK7.classroom || '-'}</div>
+                      <div style={{ marginTop: '5px' }}><b>ครูผู้ตรวจ:</b> {inspectedPlantK7.checker_teacher || '-'}</div>
+                      <div style={{ fontWeight: 'bold', color: inspectedPlantK7.status === 'ผ่าน' ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                        สถานะ: {inspectedPlantK7.status || 'รอตรวจ'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  ยังไม่มีการสำรวจข้อมูลวิเคราะห์สัณฐานวิทยาสำหรับต้นไม้นี้
+                </p>
+              )}
+            </div>
+
+            {/* Change logs */}
+            {inspectedLogs.length > 0 && (
+              <div style={{ marginTop: '1.5rem', borderTop: '2px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <AlertTriangle size={18} /> บันทึกประวัติบำรุงรักษาและการแจ้งเตือน
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {inspectedLogs.map(log => (
+                    <div key={log.id} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between' }}>
+                      <div>
+                        <span style={{ fontWeight: 600, marginRight: '8px', color: log.log_type === 'change_alert' ? 'var(--color-danger)' : 'var(--color-success)' }}>
+                          {log.log_type === 'change_alert' ? 'เปลี่ยนสถานะ' : 'ดูแลรักษา'}
+                        </span>
+                        <span>{log.description}</span>
+                      </div>
+                      <span style={{ color: 'var(--text-muted)' }}>{log.created_at?.split('T')[0]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {showSurvey && <SatisfactionSurveyPopup onClose={() => setShowSurvey(false)} />}
+    </div>
+  );
+}
