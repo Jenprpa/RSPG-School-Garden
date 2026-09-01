@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import {
   Home, ChevronDown, ChevronRight, Layers, FileText,
   Sprout, BookOpen, Award, Map, Archive,
@@ -49,12 +49,12 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         className="mobile-only-header"
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
-          <img src="/school-logo.png" alt="โรงเรียนปายวิทยาคาร" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <img src="./rspg-logo.png" alt="อพ.สธ." style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <img src="./school-logo.png" alt="โรงเรียนปายวิทยาคาร" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
           <span style={{ fontWeight: 700, fontSize: '14px', color: '#FFF' }}>PWTK GARDEN</span>
         </div>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
           style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
           aria-label="Toggle menu"
         >
@@ -84,7 +84,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       {/* Main Administrative Sidebar */}
       <aside className="sidebar">
         {/* Deep Royal Purple Header Card */}
-        <div
+        <div 
           style={{
             position: 'relative',
             backgroundColor: '#2E1853',
@@ -96,11 +96,11 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           }}
         >
           {/* Subtle Botanical Sketch Overlay Background */}
-          <svg
+          <svg 
             style={{ position: 'absolute', right: '-15px', bottom: '-20px', width: '130px', height: '130px', opacity: 0.12, pointerEvents: 'none' }}
-            viewBox="0 0 100 100"
-            fill="none"
-            stroke="#FFFFFF"
+            viewBox="0 0 100 100" 
+            fill="none" 
+            stroke="#FFFFFF" 
             strokeWidth="1.5"
           >
             <path d="M50 95 C50 60, 20 40, 20 20 C35 20, 50 35, 50 50 C50 35, 65 20, 80 20 C80 40, 50 60, 50 95 Z" />
@@ -112,10 +112,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           {/* Logos Row */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
             <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
-              <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="./rspg-logo.png" alt="อพ.สธ." style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
-              <img src="/school-logo.png" alt="ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="./school-logo.png" alt="ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
           </div>
 

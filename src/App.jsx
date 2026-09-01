@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import FirebaseWizard from './components/FirebaseWizard';
@@ -629,10 +629,10 @@ export default function App() {
                     padding: '0px',
                     overflow: 'hidden'
                   }}>
-                    <img src="/rspg-logo.png" alt="อพ.สธ. ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img src="./rspg-logo.png" alt="อพ.สธ. ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </div>
                   <img
-                    src="/school-logo.png"
+                    src="./school-logo.png"
                     alt="โรงเรียนปายวิทยาคาร"
                     style={{
                       width: '85px',
