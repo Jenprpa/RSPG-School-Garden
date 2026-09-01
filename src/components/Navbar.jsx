@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Calendar, ChevronDown, User, LogOut, Menu } from 'lucide-react';
 
 export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
@@ -121,7 +121,7 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
                 zIndex: 100
               }}
             >
-              {['2567', '2566', '2565'].map(yr => (
+              {['2567', '2568', '2569'].map(yr => (
                 <button
                   key={yr}
                   onClick={() => {

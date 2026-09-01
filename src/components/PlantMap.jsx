@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { MapPin, Info, X, Filter, Search } from 'lucide-react';
 
 export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
@@ -129,7 +129,7 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
 
           {/* Render satellite Google Earth image if available */}
           <image
-            href={schoolMapUrl || "/pai-satellite-map.png"}
+            href={schoolMapUrl || "./pai-satellite-map.png"}
             x="0"
             y="0"
             width={width}

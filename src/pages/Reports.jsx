@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 import { Award, Printer, Download, FileText, CheckCircle, FileSpreadsheet, File } from 'lucide-react';
@@ -281,7 +281,7 @@ export default function Reports({ userRole }) {
 
         {/* Document Header Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '80px', height: 'auto', margin: '0 auto 10px auto', display: 'block' }} />
+          <img src="./rspg-logo.png" alt="อพ.สธ." style={{ width: '80px', height: 'auto', margin: '0 auto 10px auto', display: 'block' }} />
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '5px 0', color: '#333' }}>
             {reportTitles[selectedReportType]}
           </h3>

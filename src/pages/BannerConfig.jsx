@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, getDocs, setDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
@@ -10,7 +10,7 @@ export default function BannerConfig({ userRole }) {
   const [banners, setBanners] = useState({
     title: 'สวนพฤกษศาสตร์โรงเรียนปายวิทยาคาร',
     subtitle: 'สนองพระราชดำริโครงการอนุรักษ์พันธุกรรมพืชอันเนื่องมาจากพระราชดำริฯ (อพ.สธ.)',
-    banner_url: '/school-banner.jpg',
+    banner_url: './school-banner.jpg',
     welcome_text: 'ยินดีต้อนรับสู่ระบบงานสวนพฤกษศาสตร์โรงเรียน แหล่งเรียนรู้ บ่มเพาะเยาวชน และรักษาสรรพสิ่งรอบตัว'
   });
 

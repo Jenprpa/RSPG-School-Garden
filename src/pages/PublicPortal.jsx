@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, query, where, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -17,7 +17,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
   const [banners, setBanners] = useState({
     title: 'สวนพฤกษศาสตร์โรงเรียนปายวิทยาคาร',
     subtitle: 'สนองพระราชดำริโครงการอนุรักษ์พันธุกรรมพืชอันเนื่องมาจากพระราชดำริฯ (อพ.สธ.)',
-    banner_url: '/school-banner.jpg',
+    banner_url: './school-banner.jpg',
     welcome_text: 'ยินดีต้อนรับสู่ระบบงานสวนพฤกษศาสตร์โรงเรียน แหล่งเรียนรู้ บ่มเพาะเยาวชน และรักษาสรรพสิ่งรอบตัว'
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -1087,13 +1087,13 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           }}>
             {/* Primary Identity: RSPG Logo */}
             <img
-              src="/rspg-logo.png"
+              src="./rspg-logo.png"
               alt="อพ.สธ."
               style={{ width: '32px', height: 'auto', objectFit: 'contain' }}
             />
             {/* Secondary Identity: School Logo */}
             <img
-              src="/school-logo.png"
+              src="./school-logo.png"
               alt="โรงเรียนปายวิทยาคาร"
               style={{
                 width: '18px',

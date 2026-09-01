@@ -202,7 +202,7 @@ export default function App() {
             updates.welcome_text = data.welcome_text.replace('ให้คงอยู่', '').trim();
           }
           if (!data.banner_url || data.banner_url === '-' || data.banner_url.includes('unsplash.com')) {
-            updates.banner_url = '/school-banner.jpg';
+            updates.banner_url = './school-banner.jpg';
           }
           if (Object.keys(updates).length > 0) {
             await updateDoc(docRef, updates);
