@@ -1,11 +1,11 @@
-﻿import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 
 // Hardcoded Firebase Config from user's project settings to connect automatically
 const defaultFirebaseConfig = {
-  apiKey: "AlzaSyC-IHT36beAyYZY-RFFchSMDRx6LqVRO6E",
+  apiKey: "AIzaSyC-IHT36beAyYZY-RFFchSMDRx6LqVRO6E",
   authDomain: "rspg-school-garden.firebaseapp.com",
   projectId: "rspg-school-garden",
   storageBucket: "rspg-school-garden.firebasestorage.app",
@@ -19,8 +19,13 @@ const getFirebaseConfig = () => {
   const localConfig = localStorage.getItem('rspg_firebase_config');
   if (localConfig) {
     try {
+      const parsed = JSON.parse(localConfig);
+      if (parsed.apiKey && parsed.apiKey.startsWith('AlzaSy')) {
+        parsed.apiKey = parsed.apiKey.replace('AlzaSy', 'AIzaSy');
+        localStorage.setItem('rspg_firebase_config', JSON.stringify(parsed));
+      }
       return {
-        config: JSON.parse(localConfig),
+        config: parsed,
         isConfigured: true
       };
     } catch (e) {
