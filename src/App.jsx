@@ -16,7 +16,6 @@ const SchoolAssessmentK7009 = lazy(() => import('./pages/SchoolAssessmentK7009')
 const StudentPortfolios = lazy(() => import('./pages/StudentPortfolios'));
 const OnlineWorksheets = lazy(() => import('./pages/OnlineWorksheets'));
 const EvidenceMapping = lazy(() => import('./pages/EvidenceMapping'));
-const SatisfactionSurveyPopup = lazy(() => import('./components/SatisfactionSurveyPopup'));
 const ReadinessCheck = lazy(() => import('./pages/ReadinessCheck'));
 const UserProfile = lazy(() => import('./pages/UserProfile'));
 const LocalResources = lazy(() => import('./pages/LocalResources'));
@@ -76,7 +75,6 @@ export default function App() {
 
   // Inspect plant detail modal state
   const [inspectedPlant, setInspectedPlant] = useState(null);
-  const [showSurvey, setShowSurvey] = useState(false);
   const [inspectedPlantK7, setInspectedPlantK7] = useState(null);
   const [inspectedLogs, setInspectedLogs] = useState([]);
 
@@ -154,48 +152,6 @@ export default function App() {
     return () => {
       clearTimeout(safetyTimer);
       unsubscribe();
-    };
-  }, []);
-
-  // 10 minutes Satisfaction Survey Timer
-  useEffect(() => {
-    const surveyTimeout = 10 * 60 * 1000; // 10 minutes
-    const isCompleted = localStorage.getItem('rspg_survey_submitted_or_dismissed');
-    if (isCompleted === 'true') return;
-
-    let sessionStart = sessionStorage.getItem('rspg_session_start_time');
-    if (!sessionStart) {
-      sessionStart = Date.now().toString();
-      sessionStorage.setItem('rspg_session_start_time', sessionStart);
-    }
-
-    const elapsed = Date.now() - parseInt(sessionStart, 10);
-    const remaining = surveyTimeout - elapsed;
-
-    let timer;
-    if (remaining <= 0) {
-      setTimeout(() => {
-        setShowSurvey(true);
-      }, 0);
-    } else {
-      timer = setTimeout(() => {
-        setShowSurvey(true);
-      }, remaining);
-    }
-
-    // Dev bypass test mode using ?survey_test=true
-    if (window.location.search.includes('survey_test=true')) {
-      const testTimer = setTimeout(() => {
-        setShowSurvey(true);
-      }, 3000);
-      return () => {
-        clearTimeout(testTimer);
-        if (timer) clearTimeout(timer);
-      };
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
     };
   }, []);
 
@@ -1201,7 +1157,6 @@ export default function App() {
           </div>
         </div>
       )}
-      {showSurvey && <SatisfactionSurveyPopup onClose={() => setShowSurvey(false)} userRole={userRole} />}
     </div>
   );
 }
