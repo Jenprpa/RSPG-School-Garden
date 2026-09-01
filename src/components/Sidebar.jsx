@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Home, ChevronDown, ChevronRight, Layers, FileText,
   Sprout, BookOpen, Award, Map, Archive,
@@ -15,12 +15,13 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     justifyContent: 'space-between',
     width: '100%',
     height: isNested ? '36px' : '40px',
-    padding: isNested ? '0 12px 0 32px' : '0 14px',
+    padding: isNested ? '0 12px 0 28px' : '0 12px',
     borderRadius: '6px',
     border: 'none',
-    backgroundColor: isActive ? '#F5EFFA' : 'transparent',
-    color: isActive ? '#7137A8' : '#24212A',
-    fontWeight: isActive ? 600 : 500,
+    borderLeft: isActive ? '3px solid #C5931C' : '3px solid transparent',
+    backgroundColor: isActive ? '#F6EEFB' : 'transparent',
+    color: isActive ? '#5C1D8D' : '#1F1929',
+    fontWeight: isActive ? 700 : 500,
     fontSize: isNested ? '13px' : '14px',
     lineHeight: '1.4',
     cursor: 'pointer',
@@ -37,14 +38,14 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           display: 'none',
           height: '56px',
           padding: '0 16px',
-          backgroundColor: '#2E1853',
+          background: 'linear-gradient(135deg, #2A084E 0%, #45126B 100%)',
           color: '#fff',
           justifyContent: 'space-between',
           alignItems: 'center',
           position: 'sticky',
           top: 0,
           zIndex: 110,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+          borderBottom: '1px solid #E5CA79'
         }}
         className="mobile-only-header"
       >
@@ -53,8 +54,8 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           <img src="./school-logo.png" alt="โรงเรียนปายวิทยาคาร" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
           <span style={{ fontWeight: 700, fontSize: '14px', color: '#FFF' }}>PWTK GARDEN</span>
         </div>
-        <button 
-          onClick={() => setIsOpen(!isOpen)} 
+        <button
+          onClick={() => setIsOpen(!isOpen)}
           style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
           aria-label="Toggle menu"
         >
@@ -75,7 +76,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
             transform: ${isOpen ? 'translateX(0)' : 'translateX(-100%)'} !important;
             width: 260px !important;
             min-width: 260px !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25) !important;
+            box-shadow: 0 4px 20px rgba(42, 8, 78, 0.3) !important;
             z-index: 105 !important;
           }
         }
@@ -84,23 +85,24 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       {/* Main Administrative Sidebar */}
       <aside className="sidebar">
         {/* Deep Royal Purple Header Card */}
-        <div 
+        <div
           style={{
             position: 'relative',
-            backgroundColor: '#2E1853',
+            background: 'linear-gradient(145deg, #230642 0%, #3B0D66 50%, #541682 100%)',
             color: '#FFFFFF',
             padding: '20px 16px 18px',
             textAlign: 'center',
             overflow: 'hidden',
-            flexShrink: 0
+            flexShrink: 0,
+            borderBottom: '2px solid #C5931C'
           }}
         >
           {/* Subtle Botanical Sketch Overlay Background */}
-          <svg 
-            style={{ position: 'absolute', right: '-15px', bottom: '-20px', width: '130px', height: '130px', opacity: 0.12, pointerEvents: 'none' }}
-            viewBox="0 0 100 100" 
-            fill="none" 
-            stroke="#FFFFFF" 
+          <svg
+            style={{ position: 'absolute', right: '-15px', bottom: '-20px', width: '130px', height: '130px', opacity: 0.15, pointerEvents: 'none' }}
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="#D4AF37"
             strokeWidth="1.5"
           >
             <path d="M50 95 C50 60, 20 40, 20 20 C35 20, 50 35, 50 50 C50 35, 65 20, 80 20 C80 40, 50 60, 50 95 Z" />
@@ -111,10 +113,10 @@ export default function Sidebar({ activeTab, setActiveTab }) {
 
           {/* Logos Row */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
-            <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+            <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', border: '1.5px solid #E5CA79' }}>
               <img src="./rspg-logo.png" alt="อพ.สธ." style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+            <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', border: '1.5px solid #E5CA79' }}>
               <img src="./school-logo.png" alt="ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
           </div>
@@ -122,16 +124,16 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           <div style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '0.04em', color: '#FFFFFF', lineHeight: 1.2 }}>
             PWTK GARDEN
           </div>
-          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.85)', marginTop: '4px', fontWeight: 400 }}>
+          <div style={{ fontSize: '11px', color: '#F3E8C8', marginTop: '4px', fontWeight: 500 }}>
             ศูนย์กลางงานสวนพฤกษศาสตร์
           </div>
-          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', marginTop: '1px', fontWeight: 400 }}>
+          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.75)', marginTop: '1px', fontWeight: 400 }}>
             โรงเรียนปายวิทยาคาร
           </div>
         </div>
 
         {/* Navigation List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
 
           {/* 1. ภาพรวม (Dashboard) */}
           <button
@@ -139,7 +141,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
             style={navItemStyle(activeTab === 'dashboard')}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Home size={18} color={activeTab === 'dashboard' ? '#7137A8' : '#6F6A78'} />
+              <Home size={18} color={activeTab === 'dashboard' ? '#5C1D8D' : '#584F66'} />
               <span>ภาพรวม</span>
             </div>
           </button>

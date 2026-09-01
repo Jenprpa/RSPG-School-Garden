@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Calendar, ChevronDown, User, LogOut, Menu } from 'lucide-react';
 
 export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
@@ -91,19 +91,20 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '6px 14px',
               borderRadius: '8px',
-              border: '1px solid #E7E4EA',
-              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5CA79',
+              backgroundColor: '#FDF6E2',
               fontSize: '13px',
-              color: '#24212A',
-              fontWeight: 500,
-              cursor: 'pointer'
+              color: '#94690A',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 1px 3px rgba(197, 147, 28, 0.12)'
             }}
           >
-            <Calendar size={14} color="#7137A8" />
+            <Calendar size={14} color="#C5931C" />
             <span>ปีการศึกษา {academicYear}</span>
-            <ChevronDown size={14} color="#8E8A95" />
+            <ChevronDown size={14} color="#94690A" />
           </div>
 
           {isYearDropdownOpen && (
@@ -158,8 +159,10 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
               alignItems: 'center',
               gap: '10px',
               cursor: 'pointer',
-              padding: '4px 8px',
+              padding: '4px 10px',
               borderRadius: '8px',
+              border: '1px solid #E8DEEE',
+              backgroundColor: '#FAF7FC',
               transition: 'background-color 0.15s ease'
             }}
           >
@@ -169,25 +172,25 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                backgroundColor: '#F5EFFA',
+                backgroundColor: '#F6EEFB',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#7137A8',
-                fontWeight: 600,
+                color: '#5C1D8D',
+                fontWeight: 700,
                 fontSize: '14px',
-                border: '1px solid #E7E4EA'
+                border: '1.5px solid #E5D0F5'
               }}
             >
-              <User size={18} color="#7137A8" />
+              <User size={18} color="#5C1D8D" />
             </div>
 
             {/* Name and Role */}
             <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#24212A', lineHeight: 1.2 }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#1F1929', lineHeight: 1.2 }}>
                 นางสาวเจนประภา เรียนคำ
               </span>
-              <span style={{ fontSize: '11px', color: '#8E8A95', lineHeight: 1.2, marginTop: '2px' }}>
+              <span style={{ fontSize: '11px', color: '#5C1D8D', fontWeight: 600, lineHeight: 1.2, marginTop: '2px' }}>
                 {getRoleLabel(userRole)}
               </span>
             </div>

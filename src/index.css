@@ -1,39 +1,44 @@
-﻿/* index.css - PWTK Botanical Garden Administrative Design System */
+﻿/* index.css - PWTK Botanical Garden: Royal Purple & Gold Design System (ธีมสีม่วงพระเทพ) */
 
 :root {
   /* Fonts */
-  --font-sans: 'Sarabun', 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Sarabun', 'Noto Sans Thai', 'Prompt', system-ui, -apple-system, sans-serif;
 
-  /* --- 🌸 Institutional Botanical Color Tokens --- */
-  --brand-purple-dark: #2E1853;
-  --brand-purple: #7137A8;
-  --brand-purple-action: #8E3FC3;
-  --brand-purple-soft: #F5EFFA;
-  --brand-purple-hover: #5E2A8F;
-  --brand-green: #2F8F4E;
-  --brand-green-soft: #EAF6ED;
-  --brand-gold: #D7A62A;
-  --brand-gold-soft: #FFF6DE;
-  --brand-red: #D94A4A;
-  --brand-red-soft: #FDE8E8;
-  --brand-blue: #2E88D6;
-  --brand-blue-soft: #E8F3FC;
+  /* --- 👑 Institutional Royal Purple & Gold Color Tokens (สีม่วงพระเทพ & ทอง อพ.สธ.) --- */
+  --brand-purple-dark: #2A084E;      /* ม่วงเข้มราชสำนัก */
+  --brand-purple: #5C1D8D;           /* สีม่วงพระเทพ (อพ.สธ.) */
+  --brand-purple-action: #7B1FA2;    /* ม่วงสดใส */
+  --brand-purple-soft: #F6EEFB;      /* ม่วงลาเวนเดอร์อ่อนละมุน */
+  --brand-purple-hover: #45126B;     /* ม่วงเข้มเมื่อโฮเวอร์ */
+
+  --brand-gold: #C5931C;             /* ทองราชสำนัก */
+  --brand-gold-bright: #D4AF37;      /* ทองอร่าม */
+  --brand-gold-soft: #FDF6E2;        /* ทองนวลอ่อน */
+  --brand-gold-border: #E5CA79;      /* ขอบสีทอง */
+
+  --brand-green: #2B8A4A;            /* เขียวพฤกษศาสตร์ */
+  --brand-green-soft: #EAF7ED;
+  --brand-red: #D32F2F;
+  --brand-red-soft: #FDECEC;
+  --brand-blue: #1976D2;
+  --brand-blue-soft: #E7F2FC;
 
   /* Surfaces & Text */
-  --bg-canvas: #F7F7F9;
+  --bg-canvas: #F8F6FA;              /* พื้นหลังสีควันบุหรี่อมม่วงอ่อน */
   --bg-card: #FFFFFF;
-  --text-primary: #24212A;
-  --text-secondary: #6F6A78;
-  --text-muted: #8E8A95;
+  --text-primary: #1F1929;           /* ตัวอักษรสีเข้มคมชัด */
+  --text-secondary: #584F66;         /* ตัวอักษรรอง */
+  --text-muted: #827891;
   --text-light: #FFFFFF;
-  --border-subtle: #E7E4EA;
+  --border-subtle: #E8DEEE;          /* เส้นขอบสีม่วงอ่อนหรูหรา */
+  --border-gold: #E5CA79;
 
   /* Aliases for Compatibility */
   --color-primary: var(--brand-purple);
   --color-primary-hover: var(--brand-purple-hover);
-  --color-orchid: #BA55D3;
+  --color-orchid: var(--brand-purple-action);
   --color-gold: var(--brand-gold);
-  --color-gold-hover: #C5931C;
+  --color-gold-hover: #A8780E;
   --color-success: var(--brand-green);
   --color-warning: var(--brand-gold);
   --color-danger: var(--brand-red);
@@ -42,7 +47,7 @@
   --bg-nature-soft: var(--brand-green-soft);
 
   --bg-main: var(--bg-canvas);
-  --bg-surface-soft: #FCFBFD;
+  --bg-surface-soft: #FAF7FC;
   --bg-sidebar: #FFFFFF;
   --bg-sidebar-dark: var(--brand-purple-dark);
   --bg-sidebar-active: var(--brand-purple-soft);
@@ -50,17 +55,19 @@
   --text-heading: var(--text-primary);
   --text-main: var(--text-primary);
   --border-color: var(--border-subtle);
-  --divider-color: #F0EDF3;
+  --divider-color: #EFE7F5;
 
   /* Dimensions */
   --sidebar-width: 248px;
   --topbar-height: 64px;
 
-  /* Shadows */
-  --shadow-admin: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 12px 32px rgba(46, 24, 83, 0.08);
+  /* Shadows - Elegant & Subtle */
+  --shadow-admin: 0 1px 3px rgba(42, 8, 78, 0.04), 0 4px 14px rgba(42, 8, 78, 0.03);
+  --shadow-sm: 0 1px 3px rgba(42, 8, 78, 0.05);
+  --shadow-md: 0 4px 14px rgba(42, 8, 78, 0.06);
+  --shadow-lg: 0 12px 32px rgba(42, 8, 78, 0.09);
+  --shadow-gold: 0 4px 16px rgba(197, 147, 28, 0.22);
+  --shadow-royal: 0 6px 20px rgba(92, 29, 141, 0.25);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -72,22 +79,23 @@
 /* Headings typography mapping */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 /* Dark Mode Overrides */
 [data-theme="dark"] {
-  --bg-canvas: #120D1A;
-  --bg-card: #1C1527;
-  --bg-main: #120D1A;
-  --text-primary: #F4EFFC;
-  --text-secondary: #B9B2C4;
-  --text-muted: #847C91;
-  --border-subtle: #2D233D;
-  --border-color: #2D233D;
-  --brand-purple-soft: rgba(113, 55, 168, 0.2);
-  --brand-green-soft: rgba(47, 143, 78, 0.15);
-  --brand-gold-soft: rgba(215, 166, 42, 0.15);
-  --brand-red-soft: rgba(217, 74, 74, 0.15);
+  --bg-canvas: #12091B;
+  --bg-card: #1B1026;
+  --bg-main: #12091B;
+  --text-primary: #F7F2FC;
+  --text-secondary: #BDB4C7;
+  --text-muted: #897E96;
+  --border-subtle: #2E1F3D;
+  --border-color: #2E1F3D;
+  --brand-purple-soft: rgba(92, 29, 141, 0.25);
+  --brand-green-soft: rgba(43, 138, 74, 0.18);
+  --brand-gold-soft: rgba(197, 147, 28, 0.18);
+  --brand-red-soft: rgba(211, 47, 47, 0.18);
 }
 
 /* Global Reset */
@@ -318,36 +326,46 @@ button, input, select, textarea {
 }
 
 .btn-primary {
-  background-color: var(--brand-purple);
+  background: linear-gradient(135deg, #5C1D8D 0%, #45126B 100%);
   color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(92, 29, 141, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .btn-primary:hover {
-  background-color: var(--brand-purple-hover);
+  background: linear-gradient(135deg, #6E23A8 0%, #521580 100%);
+  box-shadow: 0 4px 12px rgba(92, 29, 141, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-orchid {
-  background-color: var(--brand-purple);
+  background: linear-gradient(135deg, #7B1FA2 0%, #5C1D8D 100%);
   color: #FFFFFF;
 }
 
 .btn-orchid:hover {
-  background-color: var(--brand-purple-hover);
+  background: linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%);
 }
 
 .btn-gold {
-  background-color: var(--brand-gold);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #ECC85B 0%, #D4AF37 50%, #B38714 100%);
+  color: #2A084E;
+  font-weight: 700;
+  border: 1px solid #E5CA79;
+  box-shadow: 0 2px 8px rgba(197, 147, 28, 0.25);
 }
 
 .btn-gold:hover {
-  background-color: #C5931C;
+  background: linear-gradient(135deg, #F4D36E 0%, #DDB843 50%, #C4951B 100%);
+  box-shadow: 0 4px 14px rgba(197, 147, 28, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background-color: transparent;
+  background-color: #FFFFFF;
   border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
+  color: var(--brand-purple);
+  font-weight: 600;
 }
 
 .btn-secondary:hover {
@@ -361,7 +379,7 @@ button, input, select, textarea {
 }
 
 .btn-danger:hover {
-  background-color: #B93838;
+  background-color: #B71C1C;
 }
 
 /* Form Controls */
@@ -520,36 +538,41 @@ button, input, select, textarea {
   background-color: var(--bg-card);
 }
 
-/* Badges */
+/* Badges - Royal & Prestigious */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 50px;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 
 .badge-green {
-  background-color: var(--brand-green-soft);
-  color: var(--brand-green);
+  background-color: #EAF7ED;
+  color: #1E6B37;
+  border: 1px solid #C2E7CD;
 }
 
 .badge-gold {
-  background-color: var(--brand-gold-soft);
-  color: #9E7412;
+  background-color: #FDF6E2;
+  color: #94690A;
+  border: 1px solid #F3DEA2;
 }
 
 .badge-red {
-  background-color: var(--brand-red-soft);
-  color: var(--brand-red);
+  background-color: #FDECEC;
+  color: #B71C1C;
+  border: 1px solid #F8C8C8;
 }
 
 .badge-purple {
-  background-color: var(--brand-purple-soft);
-  color: var(--brand-purple);
+  background-color: #F6EEFB;
+  color: #5C1D8D;
+  border: 1px solid #E5D0F5;
 }
 
 /* Administrative Compact Table */
@@ -747,30 +770,34 @@ button, input, select, textarea {
   color: var(--warning-500) !important;
 }
 
-/* Design System Navigation Buttons */
+/* Design System Navigation Buttons - Royal Purple & Gold */
 .public-nav-button {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem 1.1rem;
   border-radius: 8px;
-  border: none;
+  border: 1px solid transparent;
   background-color: transparent;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
 .public-nav-button:hover {
-  background-color: var(--primary-100) !important;
-  color: var(--primary-600) !important;
+  background-color: var(--brand-purple-soft) !important;
+  color: var(--brand-purple) !important;
+  border-color: #E8DEEE;
 }
 
 .public-nav-button.active {
-  background-color: var(--primary-500) !important;
+  background: linear-gradient(135deg, #5C1D8D 0%, #45126B 100%) !important;
   color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(92, 29, 141, 0.25);
+  border: 1px solid #E5CA79;
 }
 

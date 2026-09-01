@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
-import { collection, getDocs, query, where, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
   Sprout, BookOpen, Download, Image, Search, QrCode, Grid, Award, FileText,
-  ChevronRight, Heart, Users, MapPin, ClipboardList, X, Trash2, Plus, Link, Upload, Shield
+  Heart, Users, MapPin, ClipboardList, X, Trash2, Plus, Link, Upload, Shield
 } from 'lucide-react';
 import Portfolio from './Portfolio';
 import PlantStudy from './PlantStudy';
@@ -1063,27 +1063,44 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
         </div>
       )}
 
-      {/* Website Welcome & Identity Box (Placed cleanly below to avoid clashing with the royal portrait) */}
-      <div className="card glass-panel" style={{
-        padding: '1.5rem 2rem',
+      {/* Website Welcome & Identity Box — Royal Purple & Gold */}
+      <div className="card" style={{
+        padding: '1.75rem 2rem',
         borderRadius: '16px',
         marginBottom: '2rem',
-        border: '1px solid var(--border-color)',
+        border: '1.5px solid #E5CA79',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
-        background: 'linear-gradient(180deg, var(--primary-50) 0%, #F5EBFF 50%, #FFFFFF 100%)'
+        gap: '1.25rem',
+        background: 'linear-gradient(135deg, #2A084E 0%, #45126B 45%, #6A1B9A 100%)',
+        color: '#FFFFFF',
+        boxShadow: '0 8px 24px rgba(42, 8, 78, 0.18)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
+        {/* Subtle Botanical Royal Sketch in background */}
+        <svg
+          style={{ position: 'absolute', right: '-20px', top: '-20px', width: '220px', height: '220px', opacity: 0.1, pointerEvents: 'none' }}
+          viewBox="0 0 100 100"
+          fill="none"
+          stroke="#ECC85B"
+          strokeWidth="1.5"
+        >
+          <path d="M50 95 C50 60, 20 40, 20 20 C35 20, 50 35, 50 50 C50 35, 65 20, 80 20 C80 40, 50 60, 50 95 Z" />
+          <path d="M50 50 Q30 70 15 75" />
+          <path d="M50 40 Q70 60 85 65" />
+        </svg>
+
         {/* Unified Collaborative Identity Badge */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 1 }}>
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            backgroundColor: 'var(--bg-main)',
-            padding: '6px 16px 6px 12px',
+            backgroundColor: '#FFFFFF',
+            padding: '6px 18px 6px 12px',
             borderRadius: '30px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-            border: '1px solid var(--border-color)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            border: '1.5px solid #E5CA79'
           }}>
             {/* Primary Identity: RSPG Logo */}
             <img
@@ -1096,20 +1113,19 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               src="./school-logo.png"
               alt="โรงเรียนปายวิทยาคาร"
               style={{
-                width: '18px',
-                height: '18px',
+                width: '20px',
+                height: '20px',
                 objectFit: 'contain',
-                marginLeft: '8px',
-                opacity: 0.8
+                marginLeft: '8px'
               }}
             />
             {/* Connected and Spaced Text */}
             <span style={{
-              fontSize: '0.78rem',
+              fontSize: '0.82rem',
               fontWeight: 700,
-              color: 'var(--color-primary)',
+              color: '#45126B',
               letterSpacing: '0.3px',
-              marginLeft: '14px'
+              marginLeft: '12px'
             }}>
               โครงการ อพ.สธ. — สนองพระราชดำริโดย โรงเรียนปายวิทยาคาร
             </span>
@@ -1123,25 +1139,27 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '1.5rem',
-          marginTop: '0.25rem'
+          position: 'relative',
+          zIndex: 1
         }}>
           <div style={{ flex: '1', minWidth: '300px' }}>
             <h1 style={{
-              fontSize: 'clamp(1.4rem, 4vw, 2rem)',
-              fontWeight: 900,
-              color: 'var(--color-primary)',
+              fontSize: 'clamp(1.5rem, 4vw, 2.2rem)',
+              fontWeight: 800,
+              color: '#FFFFFF',
               margin: '0 0 6px 0',
-              lineHeight: 1.2,
-              letterSpacing: '-0.3px'
+              lineHeight: 1.25,
+              letterSpacing: '-0.01em',
+              textShadow: '0 2px 8px rgba(0,0,0,0.2)'
             }}>
               {banners.title}
             </h1>
             <p style={{
-              fontSize: '0.95rem',
-              color: 'var(--text-muted)',
-              fontWeight: 600,
+              fontSize: '1rem',
+              color: '#F3E8C8',
+              fontWeight: 500,
               margin: 0,
-              lineHeight: 1.4
+              lineHeight: 1.45
             }}>
               {banners.subtitle}
             </p>
@@ -1151,8 +1169,8 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setActiveSubTab('plants')}
-              className="btn btn-primary"
-              style={{ padding: '0.6rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+              className="btn btn-gold"
+              style={{ padding: '0.65rem 1.4rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderRadius: '8px' }}
             >
               🌿 สำรวจทะเบียนพรรณไม้
             </button>
@@ -1161,29 +1179,36 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                 const event = new CustomEvent('switch-to-internal');
                 window.dispatchEvent(event);
               }}
-              className="btn btn-secondary"
               style={{
-                padding: '0.6rem 1.5rem',
-                fontSize: '0.88rem',
-                backgroundColor: '#F5F5DC',
-                border: '1px solid #D4AF37',
-                color: 'var(--color-primary)',
-                cursor: 'pointer'
+                padding: '0.65rem 1.4rem',
+                fontSize: '0.9rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                border: '1.5px solid #E5CA79',
+                color: '#FFFFFF',
+                fontWeight: 600,
+                borderRadius: '8px',
+                cursor: 'pointer',
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              🛠️ เข้าใช้งานระบบภายใน
+              🔐 เข้าใช้งานระบบภายใน
             </button>
           </div>
         </div>
 
         <div style={{
-          fontSize: '0.9rem',
-          color: 'var(--text-main)',
+          fontSize: '0.92rem',
+          color: 'rgba(255, 255, 255, 0.9)',
           lineHeight: 1.6,
           margin: '0.25rem 0 0 0',
-          opacity: 0.95,
-          borderTop: '1px solid var(--border-color)',
-          paddingTop: '0.75rem'
+          borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+          paddingTop: '0.85rem',
+          position: 'relative',
+          zIndex: 1
         }}>
           {banners.welcome_text}
         </div>

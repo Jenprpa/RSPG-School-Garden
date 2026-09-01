@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MapPin, Info, X, Filter, Search } from 'lucide-react';
 
 export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {

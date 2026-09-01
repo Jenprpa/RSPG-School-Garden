@@ -154,8 +154,8 @@ export default function Dashboard({ setActiveTab }) {
     {
       name: 'ด้านที่ 1 การบริหารและการจัดการ',
       val: elementProgress.p1 || 82,
-      color: '#7137A8',
-      bgSoft: '#F5EFFA',
+      color: '#5C1D8D',
+      bgSoft: '#F6EEFB',
       icon: <FileSpreadsheet size={16} />,
       badge: 'ดีมาก',
       badgeClass: 'badge-green'
@@ -163,8 +163,8 @@ export default function Dashboard({ setActiveTab }) {
     {
       name: 'ด้านที่ 2 การดำเนินงาน',
       val: elementProgress.p2 || 65,
-      color: '#2F8F4E',
-      bgSoft: '#EAF6ED',
+      color: '#2B8A4A',
+      bgSoft: '#EAF7ED',
       icon: <Layers size={16} />,
       badge: 'ปานกลาง',
       badgeClass: 'badge-gold'
@@ -172,8 +172,8 @@ export default function Dashboard({ setActiveTab }) {
     {
       name: 'ด้านที่ 3 ผลการดำเนินงาน',
       val: elementProgress.p3 || 71,
-      color: '#2E88D6',
-      bgSoft: '#E8F3FC',
+      color: '#1976D2',
+      bgSoft: '#E7F2FC',
       icon: <Award size={16} />,
       badge: 'ดี',
       badgeClass: 'badge-green'
@@ -181,8 +181,8 @@ export default function Dashboard({ setActiveTab }) {
     {
       name: 'ด้านที่ 4 ความถูกต้องทางวิชาการ',
       val: elementProgress.p4 || 80,
-      color: '#D7A62A',
-      bgSoft: '#FFF6DE',
+      color: '#C5931C',
+      bgSoft: '#FDF6E2',
       icon: <ShieldCheck size={16} />,
       badge: 'ดีมาก',
       badgeClass: 'badge-green'
@@ -268,19 +268,23 @@ export default function Dashboard({ setActiveTab }) {
           overflow: 'hidden',
           position: 'relative',
           flexWrap: 'wrap',
-          gap: '20px'
+          gap: '20px',
+          background: 'linear-gradient(135deg, #2A084E 0%, #45126B 45%, #6A1B9A 100%)',
+          color: '#FFFFFF',
+          border: '1.5px solid #E5CA79',
+          boxShadow: '0 8px 24px rgba(42, 8, 78, 0.18)'
         }}
       >
         {/* Left: Donut Gauge + Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', position: 'relative', zIndex: 1 }}>
           {/* Circular Donut Gauge */}
           <div style={{ width: '96px', height: '96px', position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="96" height="96" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#F5EFFA" strokeWidth="8" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="8" />
               <circle
                 cx="50" cy="50" r="38"
                 fill="none"
-                stroke="#7137A8"
+                stroke="#ECC85B"
                 strokeWidth="8"
                 strokeDasharray={238.76}
                 strokeDashoffset={238.76 - (238.76 * (overallPercentage || 72)) / 100}
@@ -289,23 +293,23 @@ export default function Dashboard({ setActiveTab }) {
               />
             </svg>
             <div style={{ position: 'absolute', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <span style={{ fontSize: '26px', fontWeight: 700, color: '#24212A', lineHeight: 1 }}>{overallPercentage || 72}%</span>
-              <span style={{ fontSize: '10px', color: '#6F6A78', marginTop: '2px', fontWeight: 500 }}>พร้อมดำเนินการ</span>
+              <span style={{ fontSize: '26px', fontWeight: 800, color: '#FFFFFF', lineHeight: 1 }}>{overallPercentage || 72}%</span>
+              <span style={{ fontSize: '10px', color: '#F3E8C8', marginTop: '2px', fontWeight: 600 }}>พร้อมดำเนินการ</span>
             </div>
           </div>
 
           {/* Middle Details */}
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#24212A', margin: 0, lineHeight: 1.35 }}>
+            <h2 style={{ fontSize: '19px', fontWeight: 800, color: '#FFFFFF', margin: 0, lineHeight: 1.35 }}>
               ความพร้อมโดยรวม
             </h2>
-            <p style={{ fontSize: '13px', color: '#6F6A78', margin: '4px 0 12px 0', lineHeight: 1.4 }}>
+            <p style={{ fontSize: '13px', color: '#F3E8C8', margin: '4px 0 12px 0', lineHeight: 1.4, fontWeight: 500 }}>
               ศูนย์กลางงานสวนพฤกษศาสตร์โรงเรียน<br />ปายวิทยาคาร
             </p>
             <button
               onClick={() => setActiveTab && setActiveTab('readiness-check')}
-              className="btn btn-primary"
-              style={{ height: '30px', fontSize: '12px', padding: '0 12px', borderRadius: '6px' }}
+              className="btn btn-gold"
+              style={{ height: '30px', fontSize: '12px', padding: '0 14px', borderRadius: '6px' }}
             >
               ดูรายละเอียด
             </button>
@@ -314,10 +318,10 @@ export default function Dashboard({ setActiveTab }) {
 
         {/* Right: Botanical Gold Emblem & Quotation */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 1, paddingRight: '20px' }}>
-          <div style={{ width: '42px', height: '42px', borderRadius: '50%', backgroundColor: '#FFF6DE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Sparkles size={20} color="#D7A62A" />
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.15)', border: '1.5px solid #E5CA79', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Sparkles size={22} color="#ECC85B" />
           </div>
-          <div style={{ maxWidth: '240px', fontSize: '13px', fontWeight: 500, color: '#7137A8', fontStyle: 'italic', lineHeight: 1.45 }}>
+          <div style={{ maxWidth: '240px', fontSize: '13px', fontWeight: 600, color: '#F3E8C8', fontStyle: 'italic', lineHeight: 1.45 }}>
             “เรียนรู้พืชพรรณ รักษ์ธรรมชาติ สร้างคุณค่าการเรียนรู้สู่ชุมชน”
           </div>
 
