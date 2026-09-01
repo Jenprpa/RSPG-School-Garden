@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import FirebaseWizard from './components/FirebaseWizard';
@@ -26,7 +26,7 @@ import PlantTagGenerator from './pages/PlantTagGenerator';
 import { db, isFirebaseConfigured, auth } from './firebaseClient';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { X, MapPin, Tag, Shield, Calendar, BookOpen, AlertTriangle, Key } from 'lucide-react';
+import { X, MapPin, Tag, Shield, Calendar, BookOpen, AlertTriangle, Key, Mail, Lock, User, ArrowLeft, Sparkles } from 'lucide-react';
 
 // Central menuItems routing configuration to map mode and allowed roles
 const menuItems = [
@@ -603,140 +603,274 @@ export default function App() {
         /* RENDER INTERNAL MANAGEMENT PANEL MODE */
         <>
           {!isLoggedIn ? (
-            /* Login Screen */
+            /* Formal & Prestigious Royal Purple & Gold Authentication Screen */
             <div style={{
               display: 'flex',
               width: '100%',
               minHeight: '100vh',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'var(--bg-main)',
-              backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(186, 85, 211, 0.05) 0%, transparent 40%)'
+              background: 'linear-gradient(135deg, #1A0330 0%, #2A084E 40%, #45126B 75%, #5C1D8D 100%)',
+              padding: '2rem 1.5rem',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '100%',
-              minHeight: '100vh',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'var(--bg-main)',
-              backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(186, 85, 211, 0.05) 0%, transparent 40%)',
-              padding: '1.5rem'
-            }}>
-              <div className="card glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
-                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
+              {/* Botanical Royal Sketch in background */}
+              <svg
+                style={{ position: 'absolute', right: '-60px', top: '-60px', width: '380px', height: '380px', opacity: 0.08, pointerEvents: 'none' }}
+                viewBox="0 0 100 100"
+                fill="none"
+                stroke="#ECC85B"
+                strokeWidth="1.2"
+              >
+                <path d="M50 95 C50 60, 20 40, 20 20 C35 20, 50 35, 50 50 C50 35, 65 20, 80 20 C80 40, 50 60, 50 95 Z" />
+                <path d="M50 50 Q30 70 15 75" />
+                <path d="M50 40 Q70 60 85 65" />
+              </svg>
+              <svg
+                style={{ position: 'absolute', left: '-50px', bottom: '-50px', width: '320px', height: '320px', opacity: 0.06, pointerEvents: 'none' }}
+                viewBox="0 0 100 100"
+                fill="none"
+                stroke="#ECC85B"
+                strokeWidth="1.2"
+              >
+                <circle cx="50" cy="50" r="40" />
+                <path d="M50 10 L50 90 M10 50 L90 50" />
+              </svg>
+
+              {/* Return to Public Portal Button (Top-Left) */}
+              <button
+                onClick={() => setViewMode('public')}
+                style={{
+                  position: 'absolute',
+                  top: '24px',
+                  left: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  borderRadius: '30px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                  border: '1.5px solid #E5CA79',
+                  color: '#FFFFFF',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                  zIndex: 10
+                }}
+              >
+                <ArrowLeft size={16} color="#ECC85B" />
+                <span>กลับสู่หน้าหลักเว็บไซต์</span>
+              </button>
+
+              {/* Main Card */}
+              <div
+                className="card"
+                style={{
+                  width: '100%',
+                  maxWidth: '460px',
+                  padding: '2.5rem 2.25rem',
+                  borderRadius: '20px',
+                  border: '1.5px solid #E5CA79',
+                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
+                  backgroundColor: '#FFFFFF',
+                  position: 'relative',
+                  zIndex: 2
+                }}
+              >
+                {/* Header: Dual Logo Capsule */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
                   <div style={{
-                    width: '105px',
-                    height: '105px',
-                    backgroundColor: '#fff',
-                    borderRadius: '50%',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 0 12px rgba(255, 255, 255, 0.5)',
-                    padding: '0px',
-                    overflow: 'hidden'
+                    gap: '14px',
+                    backgroundColor: '#FFFFFF',
+                    padding: '8px 20px',
+                    borderRadius: '40px',
+                    boxShadow: '0 4px 16px rgba(42, 8, 78, 0.12)',
+                    border: '1.5px solid #E5CA79'
                   }}>
-                    <img src="./rspg-logo.png" alt="อพ.สธ. ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img
+                      src="./rspg-logo.png"
+                      alt="อพ.สธ."
+                      style={{ width: '42px', height: 'auto', objectFit: 'contain' }}
+                    />
+                    <div style={{ width: '1px', height: '28px', backgroundColor: '#E5CA79' }}></div>
+                    <img
+                      src="./school-logo.png"
+                      alt="โรงเรียนปายวิทยาคาร"
+                      style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                    />
                   </div>
-                  <img
-                    src="./school-logo.png"
-                    alt="โรงเรียนปายวิทยาคาร"
-                    style={{
-                      width: '85px',
-                      height: '85px',
-                      objectFit: 'contain',
-                      boxShadow: '0 0 12px rgba(255, 255, 255, 0.4)'
-                    }}
-                  />
                 </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-primary)', textAlign: 'center', margin: '0 0 4px 0' }}>ระบบงานสวนพฤกษศาสตร์ อพ.สธ.</h2>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem', textAlign: 'center' }}>
-                  โรงเรียนปายวิทยาคาร จังหวัดแม่ฮ่องสอน
+
+                {/* Title & Subtitle */}
+                <h2 style={{
+                  fontSize: '1.28rem',
+                  fontWeight: 800,
+                  color: '#2A084E',
+                  textAlign: 'center',
+                  margin: '0 0 4px 0',
+                  lineHeight: 1.3
+                }}>
+                  ระบบงานสวนพฤกษศาสตร์โรงเรียน
+                </h2>
+                <p style={{
+                  fontSize: '0.82rem',
+                  color: '#94690A',
+                  fontWeight: 600,
+                  marginBottom: '1.5rem',
+                  textAlign: 'center'
+                }}>
+                  สนองพระราชดำริ อพ.สธ. — โรงเรียนปายวิทยาคาร
                 </p>
 
-                {/* Tab selector */}
+                {/* Tab Selector: เข้าสู่ระบบ / สมัครสมาชิก */}
                 {authMode !== 'forgot' && (
-                  <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-main)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '1.25rem' }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '6px',
+                    backgroundColor: '#F6EEFB',
+                    padding: '4px',
+                    borderRadius: '10px',
+                    border: '1px solid #E5D0F5',
+                    marginBottom: '1.5rem'
+                  }}>
                     <button
                       type="button"
                       onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
                       style={{
                         flex: 1,
-                        padding: '0.45rem',
-                        borderRadius: '6px',
-                        border: 'none',
-                        fontSize: '0.82rem',
-                        fontWeight: 'bold',
+                        padding: '0.55rem',
+                        borderRadius: '8px',
+                        border: authMode === 'login' ? '1px solid #E5CA79' : 'none',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
                         cursor: 'pointer',
-                        backgroundColor: authMode === 'login' ? 'var(--color-primary)' : 'transparent',
-                        color: authMode === 'login' ? '#fff' : 'var(--text-muted)',
-                        transition: 'all 0.2s'
+                        background: authMode === 'login' ? 'linear-gradient(135deg, #2A084E, #5C1D8D)' : 'transparent',
+                        color: authMode === 'login' ? '#FFFFFF' : '#6E647D',
+                        boxShadow: authMode === 'login' ? '0 2px 8px rgba(92, 29, 141, 0.25)' : 'none',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
                       }}
                     >
-                      🔑 เข้าสู่ระบบ
+                      <Key size={14} color={authMode === 'login' ? '#ECC85B' : '#6E647D'} />
+                      <span>เข้าสู่ระบบ</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => { setAuthMode('signup'); setAuthError(''); setAuthSuccess(''); }}
                       style={{
                         flex: 1,
-                        padding: '0.45rem',
-                        borderRadius: '6px',
-                        border: 'none',
-                        fontSize: '0.82rem',
-                        fontWeight: 'bold',
+                        padding: '0.55rem',
+                        borderRadius: '8px',
+                        border: authMode === 'signup' ? '1px solid #E5CA79' : 'none',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
                         cursor: 'pointer',
-                        backgroundColor: authMode === 'signup' ? 'var(--color-primary)' : 'transparent',
-                        color: authMode === 'signup' ? '#fff' : 'var(--text-muted)',
-                        transition: 'all 0.2s'
+                        background: authMode === 'signup' ? 'linear-gradient(135deg, #2A084E, #5C1D8D)' : 'transparent',
+                        color: authMode === 'signup' ? '#FFFFFF' : '#6E647D',
+                        boxShadow: authMode === 'signup' ? '0 2px 8px rgba(92, 29, 141, 0.25)' : 'none',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
                       }}
                     >
-                      📝 สมัครสมาชิก
+                      <User size={14} color={authMode === 'signup' ? '#ECC85B' : '#6E647D'} />
+                      <span>สมัครสมาชิก</span>
                     </button>
                   </div>
                 )}
 
                 {/* Error/Success alerts */}
                 {authError && (
-                  <div style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: 'rgba(211,47,47,0.06)', border: '1px solid rgba(211,47,47,0.15)', color: 'var(--color-danger)', fontSize: '0.78rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>⚠ {authError}</span>
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    backgroundColor: '#FDEAEA',
+                    border: '1px solid #F5C2C2',
+                    color: '#D32F2F',
+                    fontSize: '0.82rem',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <AlertTriangle size={16} />
+                    <span>{authError}</span>
                   </div>
                 )}
                 {authSuccess && (
-                  <div style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: 'rgba(46,125,50,0.06)', border: '1px solid rgba(46,125,50,0.15)', color: 'var(--color-success)', fontSize: '0.78rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>✓ {authSuccess}</span>
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    backgroundColor: '#EAF7ED',
+                    border: '1px solid #B8E5C4',
+                    color: '#2B8A4A',
+                    fontSize: '0.82rem',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <Sparkles size={16} />
+                    <span>{authSuccess}</span>
                   </div>
                 )}
 
-                {/* Form fields */}
+                {/* Forms */}
                 {authMode === 'forgot' ? (
                   <form onSubmit={handleForgotVerifyEmail}>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '1rem', textAlign: 'center' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#2A084E', marginBottom: '0.5rem', textAlign: 'center' }}>
                       🔑 รีเซ็ตรหัสผ่านใหม่
                     </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#6F6A78', textAlign: 'center', marginBottom: '1.25rem' }}>
+                      กรอกอีเมลที่ลงทะเบียนไว้ ระบบจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปยังอีเมลของคุณ
+                    </p>
 
                     <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                      <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ระบุอีเมลผู้ใช้งานที่ลงทะเบียนไว้</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        placeholder="เช่น jenprapa@pwtk.ac.th"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                      />
+                      <label className="form-label" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1F1929', marginBottom: '6px' }}>
+                        อีเมลผู้ใช้งาน
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="email"
+                          className="form-control"
+                          placeholder="เช่น serser12six@gmail.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          style={{ padding: '0.65rem 0.85rem 0.65rem 2.4rem', fontSize: '0.9rem', borderRadius: '8px', border: '1.5px solid #D1C4E9' }}
+                        />
+                        <Mail size={16} color="#7B1FA2" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      </div>
                     </div>
 
                     <button
                       type="submit"
-                      className="btn btn-primary"
+                      className="btn btn-gold"
                       disabled={isSubmitting}
-                      style={{ width: '100%', padding: '0.55rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', marginBottom: '0.75rem' }}
+                      style={{
+                        width: '100%',
+                        padding: '0.7rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        fontSize: '0.9rem',
+                        borderRadius: '8px',
+                        marginBottom: '1rem',
+                        cursor: 'pointer'
+                      }}
                     >
-                      <Key size={14} />
+                      <Key size={16} />
                       <span>{isSubmitting ? 'กำลังส่งข้อมูล...' : 'ส่งลิงก์ตั้งรหัสผ่านใหม่'}</span>
                     </button>
 
@@ -744,7 +878,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
-                        style={{ border: 'none', background: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                        style={{ border: 'none', background: 'none', color: '#5C1D8D', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
                       >
                         ย้อนกลับไปหน้าเข้าสู่ระบบ
                       </button>
@@ -752,79 +886,103 @@ export default function App() {
                   </form>
                 ) : (
                   <form onSubmit={handleAuthSubmit}>
+                    {/* Full Name field for signup */}
                     {authMode === 'signup' && (
-                      <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ชื่อ-นามสกุลจริง</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="เช่น ครูวิทยาวุฒิ ดีเลิศ"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          required
-                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                        />
+                      <div className="form-group" style={{ marginBottom: '1rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1F1929', marginBottom: '6px' }}>
+                          ชื่อ-นามสกุลจริง
+                        </label>
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="เช่น นายรักชาติ อนุรักษ์ไทย"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                            style={{ padding: '0.65rem 0.85rem 0.65rem 2.4rem', fontSize: '0.9rem', borderRadius: '8px', border: '1.5px solid #D1C4E9' }}
+                          />
+                          <User size={16} color="#7B1FA2" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                        </div>
                       </div>
                     )}
 
-                    <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                      <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>อีเมลผู้ใช้งาน</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        placeholder="sample@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                      />
-                    </div>
-
+                    {/* Email field */}
                     <div className="form-group" style={{ marginBottom: '1rem' }}>
-                      <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>รหัสผ่าน</label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="ป้อนรหัสผ่านของคุณ"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                      />
+                      <label className="form-label" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1F1929', marginBottom: '6px' }}>
+                        อีเมลผู้ใช้งาน
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="email"
+                          className="form-control"
+                          placeholder={authMode === 'login' ? 'serser12six@gmail.com' : 'name@email.com'}
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          style={{ padding: '0.65rem 0.85rem 0.65rem 2.4rem', fontSize: '0.9rem', borderRadius: '8px', border: '1.5px solid #D1C4E9' }}
+                        />
+                        <Mail size={16} color="#7B1FA2" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      </div>
                     </div>
 
+                    {/* Password field */}
+                    <div className="form-group" style={{ marginBottom: authMode === 'login' ? '0.75rem' : '1rem' }}>
+                      <label className="form-label" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1F1929', marginBottom: '6px' }}>
+                        รหัสผ่าน
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="password"
+                          className="form-control"
+                          placeholder="ป้อนรหัสผ่านของคุณ"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          style={{ padding: '0.65rem 0.85rem 0.65rem 2.4rem', fontSize: '0.9rem', borderRadius: '8px', border: '1.5px solid #D1C4E9' }}
+                        />
+                        <Lock size={16} color="#7B1FA2" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      </div>
+                    </div>
+
+                    {/* Forgot password button */}
                     {authMode === 'login' && (
-                      <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                      <div style={{ textAlign: 'right', marginBottom: '1.25rem' }}>
                         <button
                           type="button"
                           onClick={() => { setAuthMode('forgot'); setAuthError(''); setAuthSuccess(''); }}
-                          style={{ border: 'none', background: 'none', color: 'var(--color-primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                          style={{ border: 'none', background: 'none', color: '#5C1D8D', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}
                         >
                           ลืมรหัสผ่าน?
                         </button>
                       </div>
                     )}
 
+                    {/* Signup specific fields */}
                     {authMode === 'signup' && (
                       <>
-                        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>เลือกบทบาทในระบบ</label>
+                        <div className="form-group" style={{ marginBottom: '1rem' }}>
+                          <label className="form-label" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1F1929', marginBottom: '6px' }}>
+                            เลือกบทบาทในระบบ
+                          </label>
                           <select
                             className="form-control"
                             value="student"
                             disabled
-                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-main)', cursor: 'not-allowed' }}
+                            style={{ padding: '0.6rem 0.85rem', fontSize: '0.88rem', backgroundColor: '#F6EEFB', color: '#5C1D8D', fontWeight: 600, borderRadius: '8px', border: '1.5px solid #E5D0F5', cursor: 'not-allowed' }}
                           >
                             <option value="student">5. นักเรียน (Student)</option>
                           </select>
-                          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', margin: 0 }}>
-                            *หมายเหตุ: สิทธิ์สมัครสมาชิกตั้งต้นคือ "นักเรียน" เท่านั้น สำหรับอาจารย์และบทบาทอื่น กรุณาติดต่อผู้ดูแลระบบเพื่อเปิดสิทธิ์ใช้งานในภายหลัง
+                          <p style={{ fontSize: '0.72rem', color: '#827891', marginTop: '6px', lineHeight: 1.4, margin: 0 }}>
+                            *สิทธิ์สมัครสมาชิกเริ่มต้นคือ "นักเรียน" สำหรับครูและกรรมการ กรุณาแจ้งผู้ดูแลระบบเพื่อปรับสิทธิ์
                           </p>
                         </div>
 
                         {selectedRole === 'student' && (
-                          <div className="form-group" style={{ marginBottom: '1rem' }}>
-                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ห้องเรียน (สำหรับนักเรียน)</label>
+                          <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                            <label className="form-label" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1F1929', marginBottom: '6px' }}>
+                              ห้องเรียน (สำหรับนักเรียน)
+                            </label>
                             <input
                               type="text"
                               className="form-control"
@@ -832,27 +990,37 @@ export default function App() {
                               value={classroom}
                               onChange={(e) => setClassroom(e.target.value)}
                               required
-                              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                              style={{ padding: '0.65rem 0.85rem', fontSize: '0.9rem', borderRadius: '8px', border: '1.5px solid #D1C4E9' }}
                             />
                           </div>
                         )}
                       </>
                     )}
 
+                    {/* Submit Action Button */}
                     <button
                       type="submit"
-                      className="btn btn-primary"
+                      className="btn btn-gold"
                       disabled={isSubmitting}
-                      style={{ width: '100%', padding: '0.55rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem' }}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        fontSize: '0.92rem',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
                     >
-                      <Key size={14} />
+                      <Key size={16} />
                       <span>{isSubmitting ? 'กำลังดำเนินการ...' : authMode === 'login' ? 'เข้าสู่ระบบ' : 'ลงทะเบียนสมัครสมาชิก'}</span>
                     </button>
                   </form>
                 )}
 
               </div>
-            </div>
             </div>
           ) : (
             /* Inside Administration Shell */
