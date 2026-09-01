@@ -1,4 +1,4 @@
-/* index.css - PWTK Botanical Garden: Royal Purple & Gold Design System (ธีมสีม่วงพระเทพ) */
+﻿/* index.css - PWTK Botanical Garden: Royal Purple & Gold Design System (ธีมสีม่วงพระเทพ) */
 
 :root {
   /* Fonts */
@@ -804,5 +804,30 @@ button, input, select, textarea {
   font-weight: 700;
   box-shadow: 0 4px 14px rgba(42, 8, 78, 0.25) !important;
   border: 1.5px solid #ECC85B !important;
+}
+
+/* Mobile Performance & Responsive Optimizations */
+@media (max-width: 768px) {
+  .rspg-progress-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  .public-nav-button {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+    gap: 5px !important;
+  }
+
+  .card {
+    padding: 1.1rem !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* Smooth Touch Scrolling on Mobile */
+.public-subtabs-container, [style*="overflowX: auto"], [style*="overflow-x: auto"] {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 

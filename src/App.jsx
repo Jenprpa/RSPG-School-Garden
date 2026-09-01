@@ -1,28 +1,30 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
-import FirebaseWizard from './components/FirebaseWizard';
-import Dashboard from './pages/Dashboard';
-import PlantRegistry from './pages/PlantRegistry';
-import K7003Docs from './pages/K7003Docs';
-import EvidenceVault from './pages/EvidenceVault';
-import Reports from './pages/Reports';
 import PublicPortal from './pages/PublicPortal';
-import TeacherLearning from './pages/TeacherLearning';
-import BannerConfig from './pages/BannerConfig';
-import PlantStudy from './pages/PlantStudy';
-import SchoolAssessmentK7009 from './pages/SchoolAssessmentK7009';
-import StudentPortfolios from './pages/StudentPortfolios';
-import OnlineWorksheets from './pages/OnlineWorksheets';
-import EvidenceMapping from './pages/EvidenceMapping';
-import SatisfactionSurveyPopup from './components/SatisfactionSurveyPopup';
-import ReadinessCheck from './pages/ReadinessCheck';
-import UserProfile from './pages/UserProfile';
-import LocalResources from './pages/LocalResources';
-import AdminManagement from './pages/AdminManagement';
-import ElementsManagement from './pages/ElementsManagement';
-import SystemAudit from './pages/SystemAudit';
-import PlantTagGenerator from './pages/PlantTagGenerator';
+
+// Lazy load heavy internal & evaluation pages for lightning-fast initial load on mobile
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const PlantRegistry = lazy(() => import('./pages/PlantRegistry'));
+const K7003Docs = lazy(() => import('./pages/K7003Docs'));
+const EvidenceVault = lazy(() => import('./pages/EvidenceVault'));
+const Reports = lazy(() => import('./pages/Reports'));
+const TeacherLearning = lazy(() => import('./pages/TeacherLearning'));
+const BannerConfig = lazy(() => import('./pages/BannerConfig'));
+const PlantStudy = lazy(() => import('./pages/PlantStudy'));
+const SchoolAssessmentK7009 = lazy(() => import('./pages/SchoolAssessmentK7009'));
+const StudentPortfolios = lazy(() => import('./pages/StudentPortfolios'));
+const OnlineWorksheets = lazy(() => import('./pages/OnlineWorksheets'));
+const EvidenceMapping = lazy(() => import('./pages/EvidenceMapping'));
+const SatisfactionSurveyPopup = lazy(() => import('./components/SatisfactionSurveyPopup'));
+const ReadinessCheck = lazy(() => import('./pages/ReadinessCheck'));
+const UserProfile = lazy(() => import('./pages/UserProfile'));
+const LocalResources = lazy(() => import('./pages/LocalResources'));
+const AdminManagement = lazy(() => import('./pages/AdminManagement'));
+const ElementsManagement = lazy(() => import('./pages/ElementsManagement'));
+const SystemAudit = lazy(() => import('./pages/SystemAudit'));
+const PlantTagGenerator = lazy(() => import('./pages/PlantTagGenerator'));
+const FirebaseWizard = lazy(() => import('./components/FirebaseWizard'));
 import { db, isFirebaseConfigured, auth } from './firebaseClient';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
@@ -59,7 +61,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState('light');
   const [userRole, setUserRole] = useState('visitor'); // admin | rspg_board | teacher | student | visitor
-  const [authLoading, setAuthLoading] = useState(isFirebaseConfigured() && auth ? true : false);
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Authentication States
   const [authMode, setAuthMode] = useState('login'); // login | signup
@@ -1041,7 +1043,14 @@ export default function App() {
                 <Navbar activeTab={activeTab} userRole={userRole} viewMode={viewMode} setViewMode={setViewMode} onLogout={handleLogout} />
 
                 <main className="content-body">
-                  {renderTabContent()}
+                  <Suspense fallback={
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', border: '3px solid #F6EEFB', borderTop: '3px solid #5C1D8D', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                      <span style={{ fontSize: '13px', color: '#5C1D8D', fontWeight: 600 }}>กำลังดาวน์โหลดโมดูล...</span>
+                    </div>
+                  }>
+                    {renderTabContent()}
+                  </Suspense>
                 </main>
               </div>
             </>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, lazy, Suspense } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -6,8 +6,9 @@ import {
   Sprout, BookOpen, Download, Image, Search, QrCode, Grid, Award, FileText,
   Heart, Users, MapPin, ClipboardList, X, Trash2, Plus, Link, Upload, Shield, Sparkles
 } from 'lucide-react';
-import Portfolio from './Portfolio';
-import PlantStudy from './PlantStudy';
+
+const Portfolio = lazy(() => import('./Portfolio'));
+const PlantStudy = lazy(() => import('./PlantStudy'));
 
 export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setActiveTab, setViewMode }) {
   const [activeSubTab, setActiveSubTab] = useState('home');
@@ -1257,8 +1258,8 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
                 border: isSelected ? '1.5px solid #ECC85B' : '1px solid #E8DEEE',
-                background: isSelected 
-                  ? 'linear-gradient(135deg, #2A084E 0%, #45126B 50%, #6A1B9A 100%)' 
+                background: isSelected
+                  ? 'linear-gradient(135deg, #2A084E 0%, #45126B 50%, #6A1B9A 100%)'
                   : '#FAF8FC',
                 color: isSelected ? '#FFFFFF' : '#4A3E56',
                 boxShadow: isSelected ? '0 4px 12px rgba(42, 8, 78, 0.25)' : 'none',
@@ -1276,7 +1277,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: '#584F66' }}>กำลังดาวน์โหลดข้อมูลการเผยแพร่สาธารณะ...</div>
       ) : (
-        <div>
+        <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: '#5C1D8D' }}>กำลังดาวน์โหลดข้อมูล...</div>}>
           {/* HOME TAB */}
           {activeSubTab === 'home' && (
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }} className="rspg-progress-grid">
@@ -2005,7 +2006,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               )}
             </div>
           )}
-        </div>
+        </Suspense>
       )}
 
       {/* Render the interactive worksheet structure preview modal */}
