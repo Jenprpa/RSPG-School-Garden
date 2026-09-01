@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, addDoc, query, where, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -10,7 +10,7 @@ export default function Element3({ userRole }) {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlantId, setSelectedPlantId] = useState('');
-  
+
   // Worksheet states
   const [stemDetail, setStemDetail] = useState('');
   const [leafDetail, setLeafDetail] = useState('');
@@ -55,7 +55,7 @@ export default function Element3({ userRole }) {
     try {
       const q = query(collection(db, 'k7_worksheets'), where('plant_id', '==', plantId));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs[0].data();
         setStemDetail(data.stem_detail || '');
@@ -150,10 +150,10 @@ export default function Element3({ userRole }) {
         const dataUrl = canvasRef.current.toDataURL("image/png");
         const blob = await (await fetch(dataUrl)).blob();
         const file = new File([blob], `sketch-${selectedPlantId}.png`, { type: "image/png" });
-        
+
         const fileName = `sketches/sketch-${selectedPlantId}-${Date.now()}.png`;
         const storageRef = ref(storage, fileName);
-        
+
         const snapshot = await uploadBytes(storageRef, file);
         finalDrawingUrl = await getDownloadURL(snapshot.ref);
         setDrawingUrl(finalDrawingUrl);
@@ -173,7 +173,7 @@ export default function Element3({ userRole }) {
 
       const q = query(collection(db, 'k7_worksheets'), where('plant_id', '==', selectedPlantId));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const docId = querySnapshot.docs[0].id;
         await setDoc(doc(db, 'k7_worksheets', docId), worksheetData, { merge: true });
@@ -193,10 +193,10 @@ export default function Element3({ userRole }) {
       const fileExt = file.name.split('.').pop();
       const fileName = `drawings/${Date.now()}.${fileExt}`;
       const storageRef = ref(storage, fileName);
-      
+
       const snapshot = await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(snapshot.ref);
-      
+
       setDrawingUrl(downloadUrl);
       alert('อัปโหลดภาพวาดสำเร็จ! อย่าลืมกดบันทึกใบงาน');
     } catch (err) {
@@ -217,18 +217,18 @@ export default function Element3({ userRole }) {
 
         {/* Sub Navigation Tabs */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px' }}>
-          <button 
+          <button
             type="button"
-            onClick={() => setSubTab('records')} 
+            onClick={() => setSubTab('records')}
             className={`btn ${subTab === 'records' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <ClipboardList size={14} /> บันทึกกิจกรรมและหลักฐาน (6 ฟิลด์หลัก)
           </button>
-          
-          <button 
+
+          <button
             type="button"
-            onClick={() => setSubTab('k7')} 
+            onClick={() => setSubTab('k7')}
             className={`btn ${subTab === 'k7' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
@@ -246,7 +246,7 @@ export default function Element3({ userRole }) {
           <div className="card glass-panel" style={{ marginBottom: '1.5rem', display: 'flex', gap: '15px', alignItems: 'center' }}>
             <span style={{ fontWeight: 600 }}>เลือกพรรณไม้เพื่อเข้าศึกษาข้อมูล ก.7-003 :</span>
             <div style={{ flex: 1, maxWidth: '300px' }}>
-              <select 
+              <select
                 className="form-control"
                 value={selectedPlantId}
                 onChange={handlePlantChange}
@@ -283,8 +283,8 @@ export default function Element3({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">1. ลักษณะวิเคราะห์ลำต้น (Stem Detail)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="2"
                   placeholder="เช่น ลำต้นตรง สีน้ำตาลอมเทา เปลือกมีปุ่มหนามรอบ..."
                   value={stemDetail}
@@ -294,8 +294,8 @@ export default function Element3({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">2. ลักษณะวิเคราะห์ใบ (Leaf Detail)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="2"
                   placeholder="เช่น ใบเดี่ยว เรียงตรงข้ามสลับตั้งฉาก ใบรูปหัวใจ แผ่นใบสาก..."
                   value={leafDetail}
@@ -305,8 +305,8 @@ export default function Element3({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">3. ลักษณะวิเคราะห์ดอก (Flower Detail)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="2"
                   placeholder="เช่น ออกดอกช่อกระจุกสีขาว กลีบเลี้ยงรูปถ้วยสี orchid..."
                   value={flowerDetail}
@@ -316,8 +316,8 @@ export default function Element3({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">4. ลักษณะวิเคราะห์ผล (Fruit Detail)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="2"
                   placeholder="เช่น ผลเมล็ดเปลือกแข็งแห้งไม่แตก ทรงกลมรีเมื่อแก่สีดำส้ม..."
                   value={fruitDetail}
@@ -327,8 +327,8 @@ export default function Element3({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">5. ลักษณะวิเคราะห์เมล็ด (Seed Detail)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="2"
                   placeholder="เช่น เมล็ดกลมแบน ผิวนอกแข็งสีน้ำตาล มีเนื้อหุ้มเมล็ดบางๆ..."
                   value={seedDetail}
@@ -338,8 +338,8 @@ export default function Element3({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">สรุปผลการศึกษาวิจัยทางพฤกษศาสตร์</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="3"
                   placeholder="สรุปผลลัพธ์การเรียนรู้และการพัฒนาโครงงานทางพฤกษศาสตร์..."
                   value={studyResults}
@@ -363,7 +363,7 @@ export default function Element3({ userRole }) {
                     กระดานสเก็ตช์ภาพวาดพฤกษศาสตร์
                   </span>
                 </h3>
-                
+
                 <div style={{
                   border: '1.5px solid var(--border-color)',
                   borderRadius: '8px',
@@ -371,7 +371,7 @@ export default function Element3({ userRole }) {
                   position: 'relative',
                   overflow: 'hidden'
                 }}>
-                  <canvas 
+                  <canvas
                     ref={canvasRef}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
@@ -398,7 +398,7 @@ export default function Element3({ userRole }) {
                     รูปภาพวาดพฤกษศาสตร์
                   </span>
                 </h3>
-                
+
                 {drawingUrl ? (
                   <div style={{ marginBottom: '1rem', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden' }}>
                     <img src={drawingUrl} alt="ภาพวาดพฤกษศาสตร์" style={{ width: '100%', height: 'auto', display: 'block' }} />
@@ -411,8 +411,8 @@ export default function Element3({ userRole }) {
 
                 {userRole !== 'visitor' && (
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={(e) => handleUploadSketch(e.target.files[0])}
                       id="sketch-file-upload"

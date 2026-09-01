@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs } from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
@@ -9,7 +9,7 @@ export default function PlantTagGenerator() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedPlantIds, setSelectedPlantIds] = useState([]);
-  
+
   // Customization Options
   const [tagSize, setTagSize] = useState('medium'); // small | medium | large
   const [borderStyle, setBorderStyle] = useState('purple'); // purple | green | black
@@ -45,7 +45,7 @@ export default function PlantTagGenerator() {
   }, []);
 
   const handleSelectToggle = (id) => {
-    setSelectedPlantIds(prev => 
+    setSelectedPlantIds(prev =>
       prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
     );
   };
@@ -66,7 +66,7 @@ export default function PlantTagGenerator() {
     window.print();
   };
 
-  const filteredPlants = plants.filter(p => 
+  const filteredPlants = plants.filter(p =>
     (p.thai_name || '').toLowerCase().includes(search.toLowerCase()) ||
     (p.plant_code || '').toLowerCase().includes(search.toLowerCase()) ||
     (p.scientific_name || '').toLowerCase().includes(search.toLowerCase())
@@ -154,10 +154,10 @@ export default function PlantTagGenerator() {
         </div>
 
         <div className="grid-3" style={{ gridTemplateColumns: '1.1fr 1.9fr', gap: '2rem', marginBottom: '2rem' }}>
-          
+
           {/* Options & Plant Selection */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            
+
             {/* Design Customizations Card */}
             <div className="card">
               <h4 style={{ fontWeight: 700, fontSize: '0.95rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -167,8 +167,8 @@ export default function PlantTagGenerator() {
               {/* Tag Size Select */}
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem' }}>ขนาดของป้ายปัก/ห้อย</label>
-                <select 
-                  value={tagSize} 
+                <select
+                  value={tagSize}
                   onChange={(e) => setTagSize(e.target.value)}
                   className="form-control"
                   style={{ fontSize: '0.82rem', padding: '0.35rem 0.5rem', cursor: 'pointer' }}
@@ -182,8 +182,8 @@ export default function PlantTagGenerator() {
               {/* Border Color Style */}
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem' }}>สีและกรอบป้ายชื่อ</label>
-                <select 
-                  value={borderStyle} 
+                <select
+                  value={borderStyle}
                   onChange={(e) => setBorderStyle(e.target.value)}
                   className="form-control"
                   style={{ fontSize: '0.82rem', padding: '0.35rem 0.5rem', cursor: 'pointer' }}
@@ -196,8 +196,8 @@ export default function PlantTagGenerator() {
 
               {/* Toggle QR code */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   id="show_qr"
                   checked={showQrCode}
                   onChange={(e) => setShowQrCode(e.target.checked)}
@@ -228,8 +228,8 @@ export default function PlantTagGenerator() {
               {/* Search Bar */}
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '1rem' }}>
                 <Search size={14} color="var(--text-muted)" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="ค้นหาชื่อพืช หรือรหัส..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -249,8 +249,8 @@ export default function PlantTagGenerator() {
                 {filteredPlants.map(plant => {
                   const isChecked = selectedPlantIds.includes(plant.id);
                   return (
-                    <div 
-                      key={plant.id} 
+                    <div
+                      key={plant.id}
                       onClick={() => handleSelectToggle(plant.id)}
                       style={{
                         padding: '8px 10px',
@@ -306,7 +306,7 @@ export default function PlantTagGenerator() {
               ) : (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', overflowY: 'auto', maxHeight: '420px', padding: '1rem', backgroundColor: 'var(--bg-main)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                   {selectedPlantsList.map(plant => (
-                    <div 
+                    <div
                       key={plant.id}
                       className="plant-tag-item"
                       style={{
@@ -355,7 +355,7 @@ export default function PlantTagGenerator() {
 
                       {/* Body block */}
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '8px 0', gap: '10px', zIndex: 2 }}>
-                        
+
                         {/* Text fields */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
                           <div>
@@ -382,18 +382,18 @@ export default function PlantTagGenerator() {
 
                         {/* QR Code */}
                         {showQrCode && (
-                          <div style={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
                             justifyContent: 'center',
-                            backgroundColor: '#fff', 
-                            padding: '6px', 
-                            border: '1px solid #ddd', 
+                            backgroundColor: '#fff',
+                            padding: '6px',
+                            border: '1px solid #ddd',
                             borderRadius: '6px'
                           }}>
-                            <QRCodeSVG 
-                              value={`https://rspg-school-garden.web.app/plant-info?code=${plant.plant_code}`} 
+                            <QRCodeSVG
+                              value={`https://rspg-school-garden.web.app/plant-info?code=${plant.plant_code}`}
                               size={dimensions.width === '8.5cm' ? 42 : dimensions.width === '18cm' ? 100 : 70}
                               level={"M"}
                               includeMargin={false}
@@ -421,7 +421,7 @@ export default function PlantTagGenerator() {
       {/* Hidden print layout container rendered only for printing */}
       <div className="print-area" style={{ display: 'none' }}>
         {selectedPlantsList.map(plant => (
-          <div 
+          <div
             key={plant.id}
             className="plant-tag-item"
             style={{
@@ -488,18 +488,18 @@ export default function PlantTagGenerator() {
               </div>
 
               {showQrCode && (
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#fff', 
-                  padding: '5px', 
-                  border: '1px solid #ccc', 
+                  backgroundColor: '#fff',
+                  padding: '5px',
+                  border: '1px solid #ccc',
                   borderRadius: '4px'
                 }}>
-                  <QRCodeSVG 
-                    value={`https://rspg-school-garden.web.app/plant-info?code=${plant.plant_code}`} 
+                  <QRCodeSVG
+                    value={`https://rspg-school-garden.web.app/plant-info?code=${plant.plant_code}`}
                     size={dimensions.width === '8.5cm' ? 45 : dimensions.width === '18cm' ? 100 : 75}
                     level={"M"}
                     includeMargin={false}

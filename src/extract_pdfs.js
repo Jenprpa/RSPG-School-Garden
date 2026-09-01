@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
 
@@ -31,7 +31,7 @@ async function extract() {
       output += `${item.label}\n\n[ERROR: ${err.message}]\n\n\n`;
     }
   }
-  
+
   fs.writeFileSync(outputFilePath, output, 'utf-8');
   console.log(`Saved output to ${outputFilePath}`);
 }

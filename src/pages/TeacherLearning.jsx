@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -7,7 +7,7 @@ import { BookOpen, Upload, Plus, FileText, CheckCircle, Trash2, Calendar, User, 
 export default function TeacherLearning({ userRole }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Form state
   const [title, setTitle] = useState('');
   const [subjectType, setSubjectType] = useState('พืชศึกษา'); // 'พืชศึกษา', '3 สาระการเรียนรู้', 'ฐานทรัพยากรท้องถิ่น'
@@ -15,11 +15,11 @@ export default function TeacherLearning({ userRole }) {
   const [description, setDescription] = useState('');
   const [postTeachingLog, setPostTeachingLog] = useState('');
   const [creator, setCreator] = useState('');
-  
+
   // Files
   const [planFile, setPlanFile] = useState(null);
   const [worksheetFile, setWorksheetFile] = useState(null);
-  
+
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -98,7 +98,7 @@ export default function TeacherLearning({ userRole }) {
 
       await addDoc(collection(db, 'rspg_learning_activities'), payload);
       setStatus('✅ บันทึกกิจกรรมการจัดการเรียนรู้และอัปโหลดหลักฐานสำเร็จ!');
-      
+
       // Reset form
       setTitle('');
       setClassroom('');
@@ -106,7 +106,7 @@ export default function TeacherLearning({ userRole }) {
       setPostTeachingLog('');
       setPlanFile(null);
       setWorksheetFile(null);
-      
+
       loadActivities();
     } catch (err) {
       setStatus('เกิดข้อผิดพลาด: ' + err.message);
@@ -121,7 +121,7 @@ export default function TeacherLearning({ userRole }) {
       return;
     }
     if (!window.confirm('ยืนยันที่จะลบแผนการเรียนรู้และหลักฐานนี้หรือไม่?')) return;
-    
+
     try {
       await deleteDoc(doc(db, 'rspg_learning_activities', id));
       loadActivities();
@@ -149,7 +149,7 @@ export default function TeacherLearning({ userRole }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: ['admin', 'teacher', 'project_advisor'].includes(userRole) ? '1.2fr 1.8fr' : '1fr', gap: '2rem' }} className="rspg-progress-grid">
-        
+
         {/* Input Form Column */}
         {['admin', 'teacher', 'project_advisor'].includes(userRole) && (
           <div>

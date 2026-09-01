@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Layers, Link2, Unlink, FileText, CheckCircle, Search, HelpCircle } from 'lucide-react';
@@ -52,10 +52,10 @@ export default function EvidenceMapping({ userRole }) {
 
   const handleToggleMap = async (critId, evId) => {
     if (userRole === 'visitor') return;
-    
+
     const mappingKey = `map_${critId}_${evId}`;
     const existing = mappings.find(m => m.criteria_id === critId && m.evidence_id === evId);
-    
+
     setSavingId(mappingKey);
     try {
       if (existing) {
@@ -90,12 +90,12 @@ export default function EvidenceMapping({ userRole }) {
   const elements = [1, 2, 3, 4, 5];
 
   const filteredCriteria = criteria.filter(crit => {
-    const matchesSearch = 
+    const matchesSearch =
       crit.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       crit.criteria_id.includes(searchQuery);
-    
+
     const matchesElement = filterElement === 'ทั้งหมด' || crit.element_num === parseInt(filterElement);
-    
+
     return matchesSearch && matchesElement;
   });
 
@@ -120,18 +120,18 @@ export default function EvidenceMapping({ userRole }) {
       <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: 'rgba(2,136,209,0.02)', border: '1px solid rgba(2,136,209,0.1)', padding: '1rem', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
         <HelpCircle size={18} color="var(--color-info)" style={{ marginTop: '2px' }} />
         <div style={{ fontSize: '0.82rem', lineHeight: 1.4 }}>
-          <b>คำแนะนำการใช้งาน:</b> เลือกตัวชี้วัด/องค์ประกอบที่ต้องการผูกในรายการด้านล่าง แล้วคลิกเชื่อมโยงเอกสารคลังหลักฐานที่เกี่ยวข้อง 
+          <b>คำแนะนำการใช้งาน:</b> เลือกตัวชี้วัด/องค์ประกอบที่ต้องการผูกในรายการด้านล่าง แล้วคลิกเชื่อมโยงเอกสารคลังหลักฐานที่เกี่ยวข้อง
           ข้อมูลการเชื่อมโยงจะไปปรากฏในโมดูลตรวจประเมิน ก.7-009 อัตโนมัติ โดยผู้ประเมินสามารถคลิกดูเนื้อหาไฟล์แนบได้ทันที
         </div>
       </div>
 
       {/* Grid containing criteria selector and mapping area */}
       <div className="grid-3" style={{ gridTemplateColumns: '1.5fr 1.5fr', gap: '1.5rem' }}>
-        
+
         {/* Left Side: K.7-009 Indicators list */}
         <div className="card">
           <h4 style={{ fontWeight: 800, marginBottom: '1rem' }}>📋 เลือกตัวชี้วัดประเมิน (15 ตัวชี้วัดหลัก)</h4>
-          
+
           <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem' }}>
             <input
               type="text"
@@ -172,7 +172,7 @@ export default function EvidenceMapping({ userRole }) {
                     <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>ข้อ {crit.criteria_id}</span>
                     <h5 style={{ fontSize: '0.85rem', fontWeight: 700, margin: '2px 0 0 0' }}>{crit.title}</h5>
                   </div>
-                  
+
                   <span style={{
                     fontSize: '0.74rem',
                     fontWeight: 'bold',
@@ -199,12 +199,12 @@ export default function EvidenceMapping({ userRole }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '600px', overflowY: 'auto', paddingRight: '5px' }}>
             {evidence.map(ev => (
-              <div 
-                key={ev.id} 
-                style={{ 
-                  padding: '1rem', 
-                  borderRadius: '8px', 
-                  border: '1px solid var(--border-color)', 
+              <div
+                key={ev.id}
+                style={{
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
                   backgroundColor: 'var(--bg-main)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -222,13 +222,13 @@ export default function EvidenceMapping({ userRole }) {
                     </a>
                   )}
                 </div>
-                
+
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>{ev.description}</p>
                 <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>ผู้รับผิดชอบ: {ev.responsible_person}</div>
 
                 <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '8px', marginTop: '4px' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '6px', color: 'var(--text-main)' }}>เลือกผูกเอกสารนี้กับตัวชี้วัด:</span>
-                  
+
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {criteria.map(crit => {
                       const active = isMapped(crit.criteria_id, ev.id);

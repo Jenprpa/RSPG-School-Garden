@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { CheckSquare, AlertTriangle, AlertCircle, RefreshCw, CheckCircle2, ShieldCheck, Sprout, BookOpen, Layers } from 'lucide-react';
@@ -79,7 +79,7 @@ export default function ReadinessCheck({ userRole }) {
   });
 
   const k7MissingPhotos = k7Sheets.filter(s => {
-    return !s.habit_photo_url || !s.stem_photo_url || !s.leaf_photo_url || 
+    return !s.habit_photo_url || !s.stem_photo_url || !s.leaf_photo_url ||
            !s.flower_photo_url || !s.fruit_photo_url || !s.seed_photo_url;
   });
 
@@ -156,11 +156,11 @@ export default function ReadinessCheck({ userRole }) {
       {activeTab === 'summary' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Readiness gauge banner */}
-          <div className="card" style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            padding: '2rem', 
+          <div className="card" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '2rem',
             backgroundImage: 'radial-gradient(circle at top right, rgba(186,85,211,0.06), transparent 50%)',
             border: '2px solid var(--color-primary)'
           }}>
@@ -172,10 +172,10 @@ export default function ReadinessCheck({ userRole }) {
                 {completionRate >= 80 ? '✓ ความพร้อมอยู่ในระดับสูง พร้อมสำหรับการส่งเล่มใบเสนอขอประเมิน' : '⚠ กรุณาเติมหลักฐานหรือใบงานให้ครบถ้วนเพื่อผลคะแนนตามเกณฑ์'}
               </p>
             </div>
-            <div style={{ 
-              width: '80px', 
-              height: '80px', 
-              borderRadius: '50%', 
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
               border: `6px solid ${completionRate >= 80 ? 'var(--color-success)' : 'var(--color-warning)'}`,
               display: 'flex',
               alignItems: 'center',
@@ -221,7 +221,7 @@ export default function ReadinessCheck({ userRole }) {
       {activeTab === 'criteria' && (
         <div className="card">
           <h4 style={{ fontWeight: 800, marginBottom: '1.25rem' }}>📋 ผลการสแกนความพร้อมของเกณฑ์ประเมินด้านบริหารและการจัดการ</h4>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {/* Row 1: Missing Evidences */}
             <div>
@@ -284,7 +284,7 @@ export default function ReadinessCheck({ userRole }) {
       {activeTab === 'plants' && (
         <div className="card">
           <h4 style={{ fontWeight: 800, marginBottom: '1.25rem' }}>🌳 รายงานความบกพร่องของทะเบียนพรรณไม้</h4>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <h5 style={{ fontWeight: 700, color: 'var(--color-danger)', fontSize: '0.9rem', marginBottom: '6px' }}>⚠️ พรรณไม้ที่แจ้งสถานะว่ายังไม่มีป้ายชื่อ ({plantsMissingLabel.length} ต้น)</h5>
@@ -315,7 +315,7 @@ export default function ReadinessCheck({ userRole }) {
       {activeTab === 'worksheets' && (
         <div className="card">
           <h4 style={{ fontWeight: 800, marginBottom: '1.25rem' }}>📝 ตรวจสอบความถูกต้องและรูปภาพใบงานสัณฐานพืช ก.7-003</h4>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {/* Missing sheets */}
             <div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
 import { Sprout, Layers, Heart, Calendar, Plus, Save, Activity, ClipboardList } from 'lucide-react';
@@ -6,13 +6,13 @@ import ElementRecordsSection from '../components/ElementRecordsSection';
 
 export default function Element2({ userRole }) {
   const [subTab, setSubTab] = useState('records'); // 'records', 'areas', 'maintenance', 'relocations'
-  
+
   // States
   const [areas, setAreas] = useState([]);
   const [plants, setPlants] = useState([]);
   const [logs, setLogs] = useState([]);
   const [plantMap, setPlantMap] = useState({});
-  
+
   // Form states
   const [areaCode, setAreaCode] = useState('');
   const [areaName, setAreaName] = useState('');
@@ -47,7 +47,7 @@ export default function Element2({ userRole }) {
       });
       setPlants(plantsList);
       setPlantMap(map);
-      
+
       if (plantsList.length > 0 && !selectedPlantId) {
         setSelectedPlantId(plantsList[0].id);
       }
@@ -127,32 +127,32 @@ export default function Element2({ userRole }) {
 
         {/* Sub Navigation Tabs */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px' }}>
-          <button 
-            onClick={() => { setSubTab('records'); setStatusText(''); }} 
+          <button
+            onClick={() => { setSubTab('records'); setStatusText(''); }}
             className={`btn ${subTab === 'records' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <ClipboardList size={14} /> บันทึกกิจกรรมและหลักฐาน (6 ฟิลด์หลัก)
           </button>
 
-          <button 
-            onClick={() => { setSubTab('areas'); setStatusText(''); }} 
+          <button
+            onClick={() => { setSubTab('areas'); setStatusText(''); }}
             className={`btn ${subTab === 'areas' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <Layers size={14} /> ทะเบียนพื้นที่ศึกษา ({areas.length})
           </button>
-          
-          <button 
-            onClick={() => { setSubTab('maintenance'); setStatusText(''); }} 
+
+          <button
+            onClick={() => { setSubTab('maintenance'); setStatusText(''); }}
             className={`btn ${subTab === 'maintenance' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <Heart size={14} /> บันทึกการดูแลรักษา
           </button>
-          
-          <button 
-            onClick={() => { setSubTab('relocations'); setStatusText(''); }} 
+
+          <button
+            onClick={() => { setSubTab('relocations'); setStatusText(''); }}
             className={`btn ${subTab === 'relocations' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
@@ -222,33 +222,33 @@ export default function Element2({ userRole }) {
               <form onSubmit={handleAddArea}>
                 <div className="form-group">
                   <label className="form-label">รหัสพื้นที่ (Area Code)</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    placeholder="เช่น A-04" 
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="เช่น A-04"
                     value={areaCode}
                     onChange={(e) => setAreaCode(e.target.value)}
-                    required 
+                    required
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">ชื่อพื้นที่ศึกษา</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    placeholder="เช่น สวนสมุนไพรข้างตึกคหกรรม" 
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="เช่น สวนสมุนไพรข้างตึกคหกรรม"
                     value={areaName}
                     onChange={(e) => setAreaName(e.target.value)}
-                    required 
+                    required
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">รายละเอียด / จุดประสงค์การศึกษา</label>
-                  <textarea 
-                    className="form-control" 
-                    rows="3" 
+                  <textarea
+                    className="form-control"
+                    rows="3"
                     placeholder="ระบุจุดมุ่งหมายหรือพันธุ์พืชหลักของจุดนี้..."
                     value={areaDesc}
                     onChange={(e) => setAreaDesc(e.target.value)}
@@ -275,7 +275,7 @@ export default function Element2({ userRole }) {
               <form onSubmit={handleAddMaintenance}>
                 <div className="form-group">
                   <label className="form-label">เลือกต้นไม้ที่ได้รับการดูแล</label>
-                  <select 
+                  <select
                     className="form-control"
                     value={selectedPlantId}
                     onChange={(e) => setSelectedPlantId(e.target.value)}
@@ -290,7 +290,7 @@ export default function Element2({ userRole }) {
                 <div className="grid-2">
                   <div className="form-group">
                     <label className="form-label">ประเภทการดูแล</label>
-                    <select 
+                    <select
                       className="form-control"
                       value={maintType}
                       onChange={(e) => setMaintType(e.target.value)}
@@ -305,22 +305,22 @@ export default function Element2({ userRole }) {
 
                   <div className="form-group">
                     <label className="form-label">ชื่อผู้ดำเนินการ (คุณครู/นักเรียน)</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <input
+                      type="text"
+                      className="form-control"
                       placeholder="ระบุชื่อผู้ดูแล"
                       value={operator}
                       onChange={(e) => setOperator(e.target.value)}
-                      required 
+                      required
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">รายละเอียดผลการดำเนินงาน</label>
-                  <textarea 
-                    className="form-control" 
-                    rows="3" 
+                  <textarea
+                    className="form-control"
+                    rows="3"
                     placeholder="เช่น ใส่ปุ๋ยคอกปริมาณ 1 กิโลกรัมรอบโคนต้น รดน้ำตามทันที..."
                     value={maintDesc}
                     onChange={(e) => setMaintDesc(e.target.value)}

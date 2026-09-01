@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, deleteDoc, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -9,7 +9,7 @@ export default function AdminManagement({ userRole }) {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
-  
+
   // Form fields
   const [documentType, setDocumentType] = useState('คำสั่งแต่งตั้งคณะกรรมการ');
   const [title, setTitle] = useState('');
@@ -214,13 +214,13 @@ export default function AdminManagement({ userRole }) {
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>
                   👤 <b>ผู้รับผิดชอบ:</b> {docObj.responsible_person || 'คณะทำงาน อพ.สธ.'}
                 </span>
-                
+
                 {docObj.attachment_url && (
-                  <a 
-                    href={docObj.attachment_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-secondary" 
+                  <a
+                    href={docObj.attachment_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary"
                     style={{ fontSize: '0.78rem', padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
                     {docObj.document_type === 'ภาพกิจกรรม' ? 'ดูรูปภาพ' : 'เปิดเอกสาร'} <ExternalLink size={12} />
@@ -262,7 +262,7 @@ export default function AdminManagement({ userRole }) {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label className="form-label">ประเภทเอกสารหลักฐาน</label>
-                <select 
+                <select
                   className="form-control"
                   value={documentType}
                   onChange={(e) => setDocumentType(e.target.value)}
@@ -276,8 +276,8 @@ export default function AdminManagement({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">หัวข้อ / ชื่อเอกสาร</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -288,7 +288,7 @@ export default function AdminManagement({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">คำอธิบายรายละเอียด</label>
-                <textarea 
+                <textarea
                   className="form-control"
                   rows="3"
                   value={description}
@@ -300,8 +300,8 @@ export default function AdminManagement({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">ผู้รับผิดชอบ / คณะทำงาน</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={responsiblePerson}
                   onChange={(e) => setResponsiblePerson(e.target.value)}
@@ -313,7 +313,7 @@ export default function AdminManagement({ userRole }) {
               <div className="form-group" style={{ padding: '1rem', backgroundColor: 'var(--bg-main)', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
                 <label className="form-label">อัปโหลดไฟล์หลักฐาน ({documentType === 'ภาพกิจกรรม' ? 'รูปภาพ JPG/PNG' : 'เอกสาร PDF'})</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '0.5rem' }}>
-                  <input 
+                  <input
                     type="file"
                     accept={documentType === 'ภาพกิจกรรม' ? 'image/*' : '.pdf'}
                     id="admin-file-upload"
@@ -334,10 +334,10 @@ export default function AdminManagement({ userRole }) {
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px' }}>
                           ตัวอย่างรูปภาพที่จะอัปโหลด (ขนาดต้นฉบับ: {(uploadFile.size / (1024 * 1024)).toFixed(2)} MB):
                         </div>
-                        <img 
-                          src={URL.createObjectURL(uploadFile)} 
-                          alt="Preview" 
-                          style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-color)' }} 
+                        <img
+                          src={URL.createObjectURL(uploadFile)}
+                          alt="Preview"
+                          style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                         />
                       </div>
                     ) : (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import { ClipboardList, User, Users, Plus, Save, FileDown, Trash2 } from 'lucide-react';
@@ -85,10 +85,10 @@ export default function Element4({ userRole }) {
   const handleExportReportPDF = (report) => {
     const docObj = new jsPDF();
     docObj.setFont("Helvetica");
-    
+
     docObj.setFontSize(16);
     docObj.text("RSPG Botanical School Learning Report Summary", 15, 20);
-    
+
     docObj.setDrawColor(46, 125, 50);
     docObj.setLineWidth(0.5);
     docObj.line(15, 25, 195, 25);
@@ -123,18 +123,18 @@ export default function Element4({ userRole }) {
 
         {/* Sub Navigation Tabs */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px' }}>
-          <button 
+          <button
             type="button"
-            onClick={() => setSubTab('records')} 
+            onClick={() => setSubTab('records')}
             className={`btn ${subTab === 'records' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <ClipboardList size={14} /> บันทึกกิจกรรมและหลักฐาน (6 ฟิลด์หลัก)
           </button>
-          
-          <button 
+
+          <button
             type="button"
-            onClick={() => setSubTab('reports')} 
+            onClick={() => setSubTab('reports')}
             className={`btn ${subTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
@@ -160,31 +160,31 @@ export default function Element4({ userRole }) {
             <div className="grid-3">
               <div className="form-group">
                 <label className="form-label">ชื่อนักเรียน / กลุ่มศึกษา</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="เช่น ด.ช. วิทยู มีสุข" 
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="เช่น ด.ช. วิทยู มีสุข"
                   value={studentName}
                   onChange={(e) => setStudentName(e.target.value)}
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">ชั้นเรียน (Classroom)</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="เช่น ม.3/1" 
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="เช่น ม.3/1"
                   value={classroom}
                   onChange={(e) => setClassroom(e.target.value)}
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">รูปแบบรายงาน</label>
-                <select 
+                <select
                   className="form-control"
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
@@ -197,9 +197,9 @@ export default function Element4({ userRole }) {
 
             <div className="form-group">
               <label className="form-label">สรุปเนื้อหาผลการเรียนรู้ / องค์ความรู้ที่ได้รับ</label>
-              <textarea 
-                className="form-control" 
-                rows="4" 
+              <textarea
+                className="form-control"
+                rows="4"
                 placeholder="ระบุสิ่งที่เรียนรู้ สรรพคุณ หรือวิเคราะห์สัณฐานพืชอย่างย่อ..."
                 value={reportContent}
                 onChange={(e) => setReportContent(e.target.value)}

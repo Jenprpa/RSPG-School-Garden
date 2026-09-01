@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+﻿import { useState } from 'react';
 import { saveCredentials, getSavedCredentials, db } from '../firebaseClient';
-import { collection, doc, setDoc, addDoc, deleteDoc } from 'firebase/firestore';
-import { Database, Key, Check, AlertTriangle, Copy, Cpu, BookOpen, Trash2 } from 'lucide-react';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { Database, Key, Check, AlertTriangle, Cpu, BookOpen, Trash2 } from 'lucide-react';
 
 export default function FirebaseWizard() {
   const creds = getSavedCredentials() || {};
@@ -612,14 +612,12 @@ export default function FirebaseWizard() {
           const sampleUsers = [
             {
               email: 'jenprapa@pwtk.ac.th',
-              password: 'admin1234',
               name: 'ครูเจนประภา แก้วงาม',
               role: 'admin',
               created_at: new Date().toISOString()
             },
             {
               email: 'ganda@pwtk.ac.th',
-              password: 'student1234',
               name: 'นร.หญิง กานดา สุวรรณ',
               role: 'student',
               classroom: 'ม.3/2',
@@ -627,7 +625,6 @@ export default function FirebaseWizard() {
             },
             {
               email: 'somjet@pwtk.ac.th',
-              password: 'teacher1234',
               name: 'ครูสมเจตน์ สังข์ทอง',
               role: 'teacher',
               created_at: new Date().toISOString()
@@ -640,7 +637,7 @@ export default function FirebaseWizard() {
         timeoutPromise
       ]);
 
-      setStatus('การเชื่อมต่อสำเร็จ! นำเข้าข้อมูลทั่วไป ก.7-009, เกณฑ์ตัวชี้วัด 15 รายการ, ทะเบียนพืช, แฟ้มสะสมงานนักเรียน, ผังความสัมพันธ์ และรายชื่อบัญชีผู้ใช้ระบบ (เช่น jenprapa@pwtk.ac.th / admin1234) เรียบร้อยแล้ว!');
+      setStatus('การเชื่อมต่อสำเร็จ! นำเข้าข้อมูลทั่วไป ก.7-009, เกณฑ์ตัวชี้วัด 15 รายการ, ทะเบียนพืช, แฟ้มสะสมงานนักเรียน, ผังความสัมพันธ์ และรายชื่อบัญชีโปรไฟล์ผู้ใช้งาน เรียบร้อยแล้ว! (หมายเหตุ: ผู้ใช้งานต้องเพิ่มบัญชีและตั้งรหัสผ่านบนระบบ Firebase Authentication ก่อนการเข้าใช้งาน)');
     } catch (err) {
       console.error(err);
       if (err.message === 'TIMEOUT_EXCEEDED') {
@@ -785,19 +782,19 @@ export default function FirebaseWizard() {
         </ol>
 
         <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
-          <button 
-            onClick={handleSeedDatabase} 
-            disabled={seeding || clearing || !configText} 
-            className="btn btn-orchid" 
+          <button
+            onClick={handleSeedDatabase}
+            disabled={seeding || clearing || !configText}
+            className="btn btn-orchid"
             style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
             <Database size={16} /> {seeding ? 'กำลังนำเข้าข้อมูล...' : 'นำเข้าข้อมูลทดสอบเริ่มต้น (Seed Firestore)'}
           </button>
-          
-          <button 
-            onClick={handleClearDatabase} 
-            disabled={seeding || clearing || !configText} 
-            className="btn btn-secondary" 
+
+          <button
+            onClick={handleClearDatabase}
+            disabled={seeding || clearing || !configText}
+            className="btn btn-secondary"
             style={{ flex: 1, color: 'var(--color-danger)', border: '1px solid var(--color-danger)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
             <Trash2 size={16} /> {clearing ? 'กำลังล้าง...' : 'ล้างข้อมูลทดสอบ'}

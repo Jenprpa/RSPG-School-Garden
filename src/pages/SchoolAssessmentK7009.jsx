@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { doc, getDoc, setDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -31,7 +31,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
   const [criteria, setCriteria] = useState([]);
   const [mappings, setMappings] = useState([]);
   const [evidence, setEvidence] = useState([]);
-  
+
   // Modals / Selection States
   const [selectedCriteria, setSelectedCriteria] = useState(null);
   const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
@@ -158,7 +158,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
   const handleSaveCriteriaEdit = async (e) => {
     e.preventDefault();
     if (!editingCrit) return;
-    
+
     try {
       const docRef = doc(db, 'rspg_evaluation_criteria', editingCrit.id);
       await updateDoc(docRef, {
@@ -230,22 +230,22 @@ export default function SchoolAssessmentK7009({ userRole }) {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
-            <button 
-              onClick={() => setActiveSubTab('general')} 
+            <button
+              onClick={() => setActiveSubTab('general')}
               className={`btn ${activeSubTab === 'general' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '0.45rem 1rem', fontSize: '0.8rem' }}
             >
               📝 1. ข้อมูลทั่วไป ก.7-009
             </button>
-            <button 
-              onClick={() => setActiveSubTab('criteria')} 
+            <button
+              onClick={() => setActiveSubTab('criteria')}
               className={`btn ${activeSubTab === 'criteria' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '0.45rem 1rem', fontSize: '0.8rem' }}
             >
               📋 2. รายการ 15 ตัวชี้วัด
             </button>
-            <button 
-              onClick={() => setActiveSubTab('audit')} 
+            <button
+              onClick={() => setActiveSubTab('audit')}
               className={`btn ${activeSubTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '0.45rem 1rem', fontSize: '0.8rem' }}
             >
@@ -441,7 +441,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
       {/* CRITERIA SUB TAB */}
       {activeSubTab === 'criteria' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
+
           {/* Summary Banner */}
           <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)' }}>
             <div>
@@ -452,7 +452,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
                 ความต้องการขั้นต่ำผ่านเกณฑ์เสนอประเมิน: <b>400 / 500 คะแนน (80% ขึ้นไป)</b>
               </p>
             </div>
-            
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <div style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>คะแนนประเมินตนเองสะสม:</span>
@@ -476,7 +476,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
           {/* Criteria Checklist Card */}
           <div className="card">
             <h4 style={{ fontWeight: 800, marginBottom: '1.25rem' }}>📋 เกณฑ์ชี้วัดหลัก 15 รายการ (จัดเก็บตามแบบฟอร์มประเมิน ก.7-009)</h4>
-            
+
             <div style={{ overflowX: 'auto' }}>
               <table className="table" style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse' }}>
                 <thead>
@@ -530,7 +530,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
                           </td>
                           <td style={{ padding: '0.75rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-                              <button 
+                              <button
                                 onClick={() => openEvidenceModal(crit)}
                                 className="btn btn-secondary"
                                 style={{
@@ -548,7 +548,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
                               </button>
 
                               {canEdit && (
-                                <button 
+                                <button
                                   onClick={() => openEditModal(crit)}
                                   className="btn btn-secondary"
                                   style={{
@@ -608,7 +608,7 @@ export default function SchoolAssessmentK7009({ userRole }) {
 
             <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
               <h5 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: '0.9rem' }}>📂 บัญชีเอกสารหลักฐานอ้างอิง ({getLinkedEvidenceDocs(selectedCriteria.criteria_id).length} รายการ)</h5>
-              
+
               {getLinkedEvidenceDocs(selectedCriteria.criteria_id).length === 0 ? (
                 <div style={{
                   padding: '1.5rem',
@@ -628,12 +628,12 @@ export default function SchoolAssessmentK7009({ userRole }) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto' }}>
                   {getLinkedEvidenceDocs(selectedCriteria.criteria_id).map((docObj) => (
-                    <div 
-                      key={docObj.id} 
-                      style={{ 
-                        padding: '10px 12px', 
-                        borderRadius: '6px', 
-                        border: '1px solid var(--border-color)', 
+                    <div
+                      key={docObj.id}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color)',
                         backgroundColor: 'var(--bg-main)',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -649,12 +649,12 @@ export default function SchoolAssessmentK7009({ userRole }) {
                           ผู้ดูแล: {docObj.responsible_person || '-'}
                         </p>
                       </div>
-                      
+
                       {docObj.attachment_url ? (
-                        <a 
-                          href={docObj.attachment_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                        <a
+                          href={docObj.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="btn btn-primary"
                           style={{ padding: '3px 8px', fontSize: '0.7rem', display: 'inline-flex', gap: '4px', alignItems: 'center', whiteSpace: 'nowrap' }}
                         >
@@ -699,10 +699,10 @@ export default function SchoolAssessmentK7009({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">คะแนนตนเอง (สูงสุด {editingCrit.max_score} คะแนน)</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    value={editScore} 
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={editScore}
                     onChange={(e) => setEditScore(Math.min(editingCrit.max_score, Math.max(0, parseInt(e.target.value) || 0)))}
                     required
                   />
@@ -710,9 +710,9 @@ export default function SchoolAssessmentK7009({ userRole }) {
 
                 <div className="form-group">
                   <label className="form-label">สถานะการดำเนินงาน</label>
-                  <select 
-                    className="form-control" 
-                    value={editStatus} 
+                  <select
+                    className="form-control"
+                    value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value)}
                   >
                     <option value="ยังไม่เริ่ม">ยังไม่เริ่ม</option>
@@ -725,10 +725,10 @@ export default function SchoolAssessmentK7009({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">บันทึกผลดำเนินงานย่อย / คำอธิบายหลักฐาน</label>
-                <textarea 
-                  className="form-control" 
-                  rows="3" 
-                  value={editDesc} 
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
                   placeholder="รายละเอียดการดำเนินงานเพื่อให้กรรมการประเมินอ่าน..."
                 />

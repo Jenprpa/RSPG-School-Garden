@@ -1,26 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
-import { collection, getDocs, doc, setDoc, addDoc, getDoc, query, where, updateDoc, deleteDoc } from 'firebase/firestore';
+﻿import { useState, useEffect, useCallback } from 'react';
+import { db, storage, isFirebaseConfigured, compressImage, auth } from '../firebaseClient';
+import { collection, getDocs, doc, addDoc, getDoc, query, where, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { 
-  FileText, ClipboardList, BookOpen, Layers, CheckCircle2, AlertCircle, Clock, 
-  Trash2, Plus, Upload, Link, MessageSquare, ChevronRight, Save, Send, Eye, X, Star, FileSpreadsheet
+import {
+  FileText, CheckCircle2, AlertCircle, Clock,
+  Trash2, Plus, Upload, MessageSquare, Save, Send, Eye, X, FileSpreadsheet
 } from 'lucide-react';
 
 export default function OnlineWorksheets({ userRole }) {
   // User Profile Identification
-  let parsedUser = { name: 'ผู้ดูแลระบบ', email: 'admin@email.com', role: 'admin' };
-  const savedUser = localStorage.getItem('rspg_logged_in_user');
-  if (savedUser) {
-    try {
-      parsedUser = JSON.parse(savedUser);
-    } catch (e) {
-      console.error('Error parsing logged in user:', e);
-    }
-  }
-  const activeRole = userRole || parsedUser.role;
-  const activeName = parsedUser.name || 'ผู้ใช้ระบบ';
-  const activeEmail = parsedUser.email || 'user@email.com';
+  const [activeName, setActiveName] = useState('ผู้ใช้ระบบ');
+  const [activeEmail, setActiveEmail] = useState('user@email.com');
+  const [activeRole, setActiveRole] = useState(userRole || 'visitor');
+
+  useEffect(() => {
+    const loadIdentity = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser && currentUser.email) {
+        setActiveEmail(currentUser.email);
+        setActiveRole(userRole || 'visitor');
+        if (isFirebaseConfigured() && db) {
+          try {
+            const docSnap = await getDoc(doc(db, 'users', currentUser.email.trim().toLowerCase()));
+            if (docSnap.exists()) {
+              setActiveName(docSnap.data().name || 'ผู้ใช้ระบบ');
+            }
+          } catch (e) {
+            console.error('Error fetching worksheet user profile:', e);
+          }
+        }
+      } else {
+        // Fallback for guest/anonymous
+        setActiveEmail('guest@email.com');
+        setActiveName('ผู้ประสงค์ดี (Guest)');
+        setActiveRole('visitor');
+      }
+    };
+    loadIdentity();
+  }, [userRole]);
 
   const isStudent = activeRole === 'student';
 
@@ -86,7 +103,7 @@ export default function OnlineWorksheets({ userRole }) {
     }
   };
 
-  const loadWorksheets = async () => {
+  const loadWorksheets = useCallback(async () => {
     if (!isFirebaseConfigured() || !db) {
       setLoading(false);
       return;
@@ -114,11 +131,14 @@ export default function OnlineWorksheets({ userRole }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isStudent, activeEmail]);
 
   useEffect(() => {
-    loadWorksheets();
-  }, [activeRole, activeEmail]);
+    const timer = setTimeout(() => {
+      loadWorksheets();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [loadWorksheets]);
 
   // Helper: Status label & styling
   const getStatusInfo = (status) => {
@@ -168,7 +188,7 @@ export default function OnlineWorksheets({ userRole }) {
 
       // Deep copy activeSheet and update the specific file url path
       const updated = { ...activeSheet };
-      
+
       if (pathKey.includes('.')) {
         const [parent, child] = pathKey.split('.');
         updated.data[parent][child] = downloadUrl;
@@ -222,7 +242,7 @@ export default function OnlineWorksheets({ userRole }) {
         await updateDoc(doc(db, 'rspg_online_worksheets', payload.id), payload);
       } else {
         const docRef = await addDoc(collection(db, 'rspg_online_worksheets'), payload);
-        activeSheet.id = docRef.id;
+        setActiveSheet(prev => ({ ...prev, id: docRef.id }));
       }
 
       setStatusMsg('✅ บันทึกแบบร่างสำเร็จ!');
@@ -290,7 +310,7 @@ export default function OnlineWorksheets({ userRole }) {
   const filteredWorksheets = worksheets.filter(w => {
     const matchStatus = statusFilter === 'all' || w.status === statusFilter;
     const matchType = typeFilter === 'all' || w.worksheet_type === Number(typeFilter);
-    const matchSearch = w.student_name.toLowerCase().includes(searchStudent.toLowerCase()) || 
+    const matchSearch = w.student_name.toLowerCase().includes(searchStudent.toLowerCase()) ||
                         w.student_email.toLowerCase().includes(searchStudent.toLowerCase());
     return matchStatus && matchType && matchSearch;
   });
@@ -309,7 +329,7 @@ export default function OnlineWorksheets({ userRole }) {
                 ระบบใบงานพฤกษศาสตร์ออนไลน์ (Interactive Worksheets)
               </h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                {isStudent 
+                {isStudent
                   ? `ผู้บันทึก: ${activeName} (${activeEmail}) — บันทึกข้อมูลและส่งใบงาน 3 สาระในแบบออนไลน์`
                   : `ผู้ประเมิน: ${activeName} — ตรวจผลงานใบงานวิจัย 3 สาระและสถิติการส่งงานของนักเรียน`
                 }
@@ -331,18 +351,18 @@ export default function OnlineWorksheets({ userRole }) {
             const docItem = worksheets.find(w => w.worksheet_type === type);
             const statusInfo = getStatusInfo(docItem?.status || 'not_started');
             const Icon = statusInfo.icon;
-            
+
             return (
               <div key={type} className="card" style={{ display: 'flex', flexDirection: 'column', justifycontent: 'space-between', minHeight: '230px', position: 'relative', overflow: 'hidden' }}>
                 {/* Visual indicator bar top */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: statusInfo.color }} />
-                
+
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <span style={{ 
-                      fontSize: '0.72rem', 
-                      padding: '2px 8px', 
-                      borderRadius: '12px', 
+                    <span style={{
+                      fontSize: '0.72rem',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
                       backgroundColor: statusInfo.bg,
                       color: statusInfo.color,
                       border: `1px solid ${statusInfo.border}`,
@@ -374,7 +394,7 @@ export default function OnlineWorksheets({ userRole }) {
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {/* Actions based on status */}
                     {(!docItem || docItem.status === 'draft' || docItem.status === 'needs_revision') ? (
-                      <button 
+                      <button
                         onClick={() => handleStartWorksheet(type)}
                         className="btn btn-primary"
                         style={{ padding: '0.45rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -382,7 +402,7 @@ export default function OnlineWorksheets({ userRole }) {
                         {docItem ? '🛠️ ทำงานต่อ' : '🚀 เริ่มทำใบงาน'}
                       </button>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => {
                           setActiveSheet(docItem);
                           // Read-only viewing Mode
@@ -430,27 +450,27 @@ export default function OnlineWorksheets({ userRole }) {
                 ✏️ ใบงานชุดที่ {activeSheet.worksheet_type}: {getSheetName(activeSheet.worksheet_type)}
               </h4>
             </div>
-            
+
             <div style={{ display: 'flex', gap: '8px' }}>
               {(activeSheet.status === 'draft' || activeSheet.status === 'needs_revision' || !activeSheet.id) && (
                 <>
-                  <button 
+                  <button
                     onClick={handleSaveDraft}
-                    className="btn btn-secondary" 
+                    className="btn btn-secondary"
                     style={{ padding: '0.5rem 1rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
                     <Save size={14} /> บันทึกแบบร่าง
                   </button>
-                  <button 
+                  <button
                     onClick={handleSubmitWorksheet}
-                    className="btn btn-primary" 
+                    className="btn btn-primary"
                     style={{ padding: '0.5rem 1.25rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
                     <Send size={14} /> ส่งใบงานให้ครูตรวจ
                   </button>
                 </>
               )}
-              <button 
+              <button
                 onClick={() => setActiveSheet(null)}
                 className="btn btn-secondary"
                 style={{ padding: '0.5rem 1rem', fontSize: '0.82rem' }}
@@ -475,7 +495,7 @@ export default function OnlineWorksheets({ userRole }) {
               alignItems: 'center',
               gap: '8px'
             }}>
-              <CheckCircle2 size={16} /> 
+              <CheckCircle2 size={16} />
               ใบงานนี้ถูกส่งเรียบร้อยแล้วและอยู่ในสถานะตรวจสอบ (Read-Only) คุณไม่สามารถแก้ไขได้จนกว่าครูจะปรับสถานะให้ส่งกลับมาแก้ไข
             </div>
           )}
@@ -486,8 +506,8 @@ export default function OnlineWorksheets({ userRole }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>ชื่อพืชศึกษา</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={activeSheet.data.plant_name}
                   onChange={(e) => {
@@ -502,8 +522,8 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>ชื่อวิทยาศาสตร์</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={activeSheet.data.scientific_name}
                   onChange={(e) => {
@@ -517,8 +537,8 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>ชื่อวงศ์</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={activeSheet.data.family_name}
                   onChange={(e) => {
@@ -532,8 +552,8 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>สถานที่พบที่ศึกษา</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={activeSheet.data.location}
                   onChange={(e) => {
@@ -547,8 +567,8 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>วันที่ศึกษา</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   className="form-control"
                   value={activeSheet.data.date}
                   onChange={(e) => {
@@ -561,8 +581,8 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
               <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>เพื่อนผู้ร่วมเรียนรู้ / ผู้ร่วมกิจกรรม</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={activeSheet.data.partners}
                   onChange={(e) => {
@@ -621,8 +641,8 @@ export default function OnlineWorksheets({ userRole }) {
                     <div className="grid-2">
                       <div className="form-group">
                         <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>เรื่องที่ต้องการศึกษา / ประเด็นย่อย</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className="form-control"
                           placeholder="ระบุสิ่งย่อยที่มุ่งเรียนรู้..."
                           value={formSection.topic}
@@ -637,8 +657,8 @@ export default function OnlineWorksheets({ userRole }) {
                       </div>
                       <div className="form-group">
                         <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>วิธีการศึกษาเรียนรู้</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           className="form-control"
                           placeholder="เช่น สังเกต วัดขนาด สัมผัส ดมกลิ่น"
                           value={formSection.method}
@@ -655,8 +675,8 @@ export default function OnlineWorksheets({ userRole }) {
 
                     <div className="form-group">
                       <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>ผลการศึกษาเรียนรู้ (ละเอียด)</label>
-                      <textarea 
-                        className="form-control" 
+                      <textarea
+                        className="form-control"
                         rows="3"
                         placeholder="กรอกลักษณะเด่น โครงสร้าง สี รูปร่าง ที่ตรวจพบ..."
                         value={formSection.result}
@@ -672,8 +692,8 @@ export default function OnlineWorksheets({ userRole }) {
 
                     <div className="form-group">
                       <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>สรุปองค์ความรู้ / เปรียบเทียบสะท้อนคุณธรรมเข้าหาชีวิตตน</label>
-                      <textarea 
-                        className="form-control" 
+                      <textarea
+                        className="form-control"
                         rows="3"
                         placeholder="เช่น การปรับตัวของพฤกษศาสตร์ต้นไม้ สอนใจให้เราเติบโตได้อย่างไร..."
                         value={formSection.summary}
@@ -692,10 +712,10 @@ export default function OnlineWorksheets({ userRole }) {
                       <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Upload size={14} color="var(--color-primary)" /> อัปโหลดภาพประกอบการศึกษาด้าน {labelName} (จำกัดไม่เกิน 10MB)
                       </label>
-                      
+
                       {(activeSheet.status === 'draft' || activeSheet.status === 'needs_revision' || !activeSheet.id) ? (
-                        <input 
-                          type="file" 
+                        <input
+                          type="file"
                           accept="image/*"
                           className="form-control"
                           onChange={(e) => handleFileUpload(e, `${fieldKey}.file_url`)}
@@ -714,9 +734,9 @@ export default function OnlineWorksheets({ userRole }) {
                         <div style={{ marginTop: '10px' }}>
                           <span style={{ fontSize: '0.72rem', color: 'var(--color-nature)', fontWeight: 600, display: 'block', marginBottom: '5px' }}>ภาพประกอบปัจจุบัน:</span>
                           <a href={formSection.file_url} target="_blank" rel="noopener noreferrer">
-                            <img 
-                              src={formSection.file_url} 
-                              alt={`Illustration ${labelName}`} 
+                            <img
+                              src={formSection.file_url}
+                              alt={`Illustration ${labelName}`}
                               style={{ maxHeight: '180px', borderRadius: '8px', border: '1px solid var(--border-color)', objectFit: 'contain' }}
                             />
                           </a>
@@ -799,12 +819,12 @@ export default function OnlineWorksheets({ userRole }) {
                       <tbody>
                         {((activeSubTab === 0 ? activeSheet.data.biotic_factors : activeSheet.data.abiotic_factors) || []).map((factor, fIdx) => {
                           const targetKey = activeSubTab === 0 ? 'biotic_factors' : 'abiotic_factors';
-                          
+
                           return (
                             <tr key={fIdx} style={{ borderBottom: '1px solid var(--border-color)' }}>
                               <td style={{ padding: '8px' }}>
-                                <input 
-                                  type="text" 
+                                <input
+                                  type="text"
                                   className="form-control"
                                   placeholder={activeSubTab === 0 ? "มดดำ, ผึ้ง, นกเขา" : "ดินร่วน, แสงแดด, หิน"}
                                   value={factor.name}
@@ -818,8 +838,8 @@ export default function OnlineWorksheets({ userRole }) {
                                 />
                               </td>
                               <td style={{ padding: '8px' }}>
-                                <input 
-                                  type="text" 
+                                <input
+                                  type="text"
                                   className="form-control"
                                   placeholder="09:30น."
                                   value={factor.time}
@@ -831,8 +851,8 @@ export default function OnlineWorksheets({ userRole }) {
                                   disabled={activeSheet.id && activeSheet.status !== 'draft' && activeSheet.status !== 'needs_revision'}
                                   style={{ padding: '3px 6px', fontSize: '0.78rem', marginBottom: '4px' }}
                                 />
-                                <input 
-                                  type="text" 
+                                <input
+                                  type="text"
                                   className="form-control"
                                   placeholder="กิ่งไม้"
                                   value={factor.location}
@@ -846,8 +866,8 @@ export default function OnlineWorksheets({ userRole }) {
                                 />
                               </td>
                               <td style={{ padding: '8px' }}>
-                                <input 
-                                  type="text" 
+                                <input
+                                  type="text"
                                   className="form-control"
                                   placeholder="5 ตัว"
                                   value={factor.count}
@@ -859,8 +879,8 @@ export default function OnlineWorksheets({ userRole }) {
                                   disabled={activeSheet.id && activeSheet.status !== 'draft' && activeSheet.status !== 'needs_revision'}
                                   style={{ padding: '3px 6px', fontSize: '0.78rem', marginBottom: '4px' }}
                                 />
-                                <input 
-                                  type="text" 
+                                <input
+                                  type="text"
                                   className="form-control"
                                   placeholder="สีดำ"
                                   value={factor.description}
@@ -875,8 +895,8 @@ export default function OnlineWorksheets({ userRole }) {
                               </td>
                               <td style={{ padding: '8px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                  <input 
-                                    type="text" 
+                                  <input
+                                    type="text"
                                     className="form-control"
                                     placeholder="ความเกี่ยวพัน: เข้ามารับน้ำหวานจากเกสรดอกไม้"
                                     value={factor.interrelation}
@@ -888,8 +908,8 @@ export default function OnlineWorksheets({ userRole }) {
                                     disabled={activeSheet.id && activeSheet.status !== 'draft' && activeSheet.status !== 'needs_revision'}
                                     style={{ padding: '3px 6px', fontSize: '0.78rem' }}
                                   />
-                                  <input 
-                                    type="text" 
+                                  <input
+                                    type="text"
                                     className="form-control"
                                     placeholder="ความสัมพันธ์: เกื้อกูลช่วยผสมเกสรพรรณไม้"
                                     value={factor.relationship}
@@ -901,8 +921,8 @@ export default function OnlineWorksheets({ userRole }) {
                                     disabled={activeSheet.id && activeSheet.status !== 'draft' && activeSheet.status !== 'needs_revision'}
                                     style={{ padding: '3px 6px', fontSize: '0.78rem' }}
                                   />
-                                  <input 
-                                    type="text" 
+                                  <input
+                                    type="text"
                                     className="form-control"
                                     placeholder="ความผูกพัน: พึ่งพิงแหล่งอาหารทำให้ระบบนิเวศมีผลพวงยั่งยืน"
                                     value={factor.attachment}
@@ -952,8 +972,8 @@ export default function OnlineWorksheets({ userRole }) {
                 <div style={{ animation: 'fadeIn 0.25s' }}>
                   <div className="form-group">
                     <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>บทวิเคราะห์และสรุปดุลยภาพความเกี่ยวพันรอบพืชศึกษา</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="4"
                       placeholder="เขียนบรรยายองค์รวมความเชื่อมโยงของปัจจัยชีวภาพและกายภาพ ที่ส่งผลต่อการดำรงอยู่และความสมดุลของพืชศึกษาต้นนี้..."
                       value={activeSheet.data.balance_summary}
@@ -972,10 +992,10 @@ export default function OnlineWorksheets({ userRole }) {
                     <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Upload size={14} color="var(--color-primary)" /> อัปโหลดหลักฐานพิกัดหรือวีดิโอ/ภาพถ่ายความพันเกี่ยว (จำกัดไม่เกิน 10MB)
                     </label>
-                    
+
                     {(activeSheet.status === 'draft' || activeSheet.status === 'needs_revision' || !activeSheet.id) ? (
-                      <input 
-                        type="file" 
+                      <input
+                        type="file"
                         className="form-control"
                         onChange={(e) => handleFileUpload(e, 'evidence_url')}
                         disabled={uploadingFile !== null}
@@ -1013,8 +1033,8 @@ export default function OnlineWorksheets({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>ผลการเรียนรู้ / ผลึกความรู้หลัก</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-control"
                     placeholder="เช่น เรียนรู้เรื่องสารสกัดธรรมชาติในเปลือกไม้"
                     value={activeSheet.data.learning_result}
@@ -1029,8 +1049,8 @@ export default function OnlineWorksheets({ userRole }) {
                 </div>
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>ศักยภาพสูงสุดของพืชศึกษา</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-control"
                     placeholder="เช่น ความยืดหยุ่นของเส้นใยเปลือกไม้"
                     value={activeSheet.data.potential}
@@ -1047,8 +1067,8 @@ export default function OnlineWorksheets({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>คุณของศักยภาพ (ประโยชน์ทางอ้อม / ความลึกซึ้ง)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="2"
                   placeholder="สกัดคุณค่าแฝงที่จะพัฒนาสิ่งแวดล้อมหรือภูมิปัญญาชุมชน..."
                   value={activeSheet.data.value_of_potential}
@@ -1065,8 +1085,8 @@ export default function OnlineWorksheets({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>แนวคิดการสรรค์สร้างสิ่งใหม่ (Concept Design)</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-control"
                     placeholder="เช่น ออกแบบกระดาษสาใยกัลปพฤกษ์สำหรับงานศิลปะ"
                     value={activeSheet.data.concept}
@@ -1081,8 +1101,8 @@ export default function OnlineWorksheets({ userRole }) {
                 </div>
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>แนวทางเชิงกลยุทธ์/การขยายผล</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-control"
                     placeholder="เช่น เผยแพร่สู่วิสาหกิจชุมชนและครูสอนศิลปะ"
                     value={activeSheet.data.guidelines}
@@ -1099,8 +1119,8 @@ export default function OnlineWorksheets({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>วิธีการ/ขั้นตอนการนำไปใช้ประโยชน์ในเชิงปฏิบัติ</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="3"
                   placeholder="เขียนอธิบายลำดับขั้นกระบวนการการนำไอเดียการต่อยอดไปสู่การใช้งานได้จริงแก่มหาชน..."
                   value={activeSheet.data.application_method}
@@ -1116,8 +1136,8 @@ export default function OnlineWorksheets({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700 }}>สรุปประโยชน์แท้แก่มหาชน (สะท้อนผลลัพธ์เพื่อประโยชน์สูงสุดต่อสาธารณะ)</label>
-                <textarea 
-                  className="form-control" 
+                <textarea
+                  className="form-control"
                   rows="3"
                   placeholder="สะท้อนผลลัพธ์ว่าชิ้นงานหรือแนวทางนี้ สามารถสร้างสรรค์ความสุข ความเจริญ หรือลดภาระมลภาวะให้แก่ผู้คนส่วนรวมได้อย่งไร..."
                   value={activeSheet.data.summary_benefit}
@@ -1136,10 +1156,10 @@ export default function OnlineWorksheets({ userRole }) {
                 <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Upload size={14} color="var(--color-primary)" /> อัปโหลดภาพร่าง/ชิ้นงาน หรือไฟล์หลักฐานนวัตกรรม (จำกัดไม่เกิน 10MB)
                 </label>
-                
+
                 {(activeSheet.status === 'draft' || activeSheet.status === 'needs_revision' || !activeSheet.id) ? (
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     className="form-control"
                     onChange={(e) => handleFileUpload(e, 'evidence_url')}
                     disabled={uploadingFile !== null}
@@ -1157,9 +1177,9 @@ export default function OnlineWorksheets({ userRole }) {
                   <div style={{ marginTop: '10px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--color-nature)', fontWeight: 600, display: 'block', marginBottom: '5px' }}>ผลงาน/ภาพนวัตกรรมปัจจุบัน:</span>
                     <a href={activeSheet.data.evidence_url} target="_blank" rel="noopener noreferrer">
-                      <img 
-                        src={activeSheet.data.evidence_url} 
-                        alt="Product Sketch or Evidence" 
+                      <img
+                        src={activeSheet.data.evidence_url}
+                        alt="Product Sketch or Evidence"
                         style={{ maxHeight: '180px', borderRadius: '8px', border: '1px solid var(--border-color)', objectFit: 'contain' }}
                       />
                     </a>
@@ -1172,14 +1192,14 @@ export default function OnlineWorksheets({ userRole }) {
           {/* Form Bottom Save Actions */}
           {(activeSheet.status === 'draft' || activeSheet.status === 'needs_revision' || !activeSheet.id) && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '2rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-              <button 
+              <button
                 onClick={handleSaveDraft}
                 className="btn btn-secondary"
                 style={{ padding: '0.6rem 1.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 <Save size={16} /> บันทึกแบบร่าง
               </button>
-              <button 
+              <button
                 onClick={handleSubmitWorksheet}
                 className="btn btn-primary"
                 style={{ padding: '0.6rem 2rem', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -1198,7 +1218,7 @@ export default function OnlineWorksheets({ userRole }) {
           <div className="card" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', flex: 1 }}>
               <div style={{ minWidth: '150px' }}>
-                <select 
+                <select
                   className="form-control"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
@@ -1213,7 +1233,7 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
 
               <div style={{ minWidth: '180px' }}>
-                <select 
+                <select
                   className="form-control"
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
@@ -1227,8 +1247,8 @@ export default function OnlineWorksheets({ userRole }) {
               </div>
 
               <div style={{ minWidth: '220px', flex: 1 }}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   placeholder="ค้นหาตามชื่อนักเรียน หรืออีเมล..."
                   value={searchStudent}
@@ -1237,8 +1257,8 @@ export default function OnlineWorksheets({ userRole }) {
                 />
               </div>
             </div>
-            
-            <button 
+
+            <button
               onClick={loadWorksheets}
               className="btn btn-secondary"
               style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
@@ -1269,7 +1289,7 @@ export default function OnlineWorksheets({ userRole }) {
                   {filteredWorksheets.map(item => {
                     const statusInfo = getStatusInfo(item.status);
                     const StatusIcon = statusInfo.icon;
-                    
+
                     return (
                       <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ padding: '10px' }}>
@@ -1284,10 +1304,10 @@ export default function OnlineWorksheets({ userRole }) {
                           {item.data?.plant_name || '-'}
                         </td>
                         <td style={{ padding: '10px', textAlign: 'center' }}>
-                          <span style={{ 
-                            fontSize: '0.72rem', 
-                            padding: '2px 8px', 
-                            borderRadius: '12px', 
+                          <span style={{
+                            fontSize: '0.72rem',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
                             backgroundColor: statusInfo.bg,
                             color: statusInfo.color,
                             border: `1px solid ${statusInfo.border}`,
@@ -1348,8 +1368,8 @@ export default function OnlineWorksheets({ userRole }) {
               </h4>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>อีเมล: {selectedSubmission.student_email}</span>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => setSelectedSubmission(null)}
               className="btn btn-secondary"
               style={{ padding: '0.4rem 0.8rem', fontSize: '0.82rem' }}
@@ -1359,7 +1379,7 @@ export default function OnlineWorksheets({ userRole }) {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.3fr', gap: '2rem' }} className="rspg-progress-grid">
-            
+
             {/* Left side: Student responses representation */}
             <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
               <div style={{ backgroundColor: 'var(--bg-main)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
@@ -1440,7 +1460,7 @@ export default function OnlineWorksheets({ userRole }) {
                       </div>
                     );
                   })}
-                  
+
                   {/* Balance Summary */}
                   <div style={{ padding: '1rem', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
                     <h6 style={{ fontWeight: 800, margin: '0 0 6px 0', fontSize: '0.85rem', color: 'var(--color-primary)' }}>
@@ -1472,7 +1492,7 @@ export default function OnlineWorksheets({ userRole }) {
                   <div><b>แนวทางเชิงกลยุทธ์:</b> {selectedSubmission.data?.guidelines || '-'}</div>
                   <div><b>ขั้นตอนการนำไปใช้ประโยชน์ในทางปฏิบัติ:</b> <p style={{ margin: '3px 0 0 0', padding: '6px', backgroundColor: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)' }}>{selectedSubmission.data?.application_method || '-'}</p></div>
                   <div><b>สรุปผลลัพธ์ประโยชน์แท้แก่มหาชน:</b> <p style={{ margin: '3px 0 0 0', padding: '6px', backgroundColor: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)' }}>{selectedSubmission.data?.summary_benefit || '-'}</p></div>
-                  
+
                   {selectedSubmission.data?.evidence_url && (
                     <div style={{ marginTop: '5px' }}>
                       <b>ภาพนวัตกรรม/หลักฐานประกอบ:</b>
@@ -1514,7 +1534,7 @@ export default function OnlineWorksheets({ userRole }) {
                 <form onSubmit={handleSaveReview}>
                   <div className="form-group" style={{ marginBottom: '1rem' }}>
                     <label className="form-label" style={{ fontWeight: 'bold' }}>ประเมินสถานะการตรวจ</label>
-                    <select 
+                    <select
                       className="form-control"
                       value={reviewStatus}
                       onChange={(e) => setReviewStatus(e.target.value)}
@@ -1528,8 +1548,8 @@ export default function OnlineWorksheets({ userRole }) {
 
                   <div className="form-group" style={{ marginBottom: '1rem' }}>
                     <label className="form-label" style={{ fontWeight: 'bold' }}>ให้คะแนน (เต็ม 100 คะแนน)</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       min="0"
                       max="100"
                       className="form-control"
@@ -1541,8 +1561,8 @@ export default function OnlineWorksheets({ userRole }) {
 
                   <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                     <label className="form-label" style={{ fontWeight: 'bold' }}>ความคิดเห็นของครูผู้ตรวจ (Feedback)</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="4"
                       placeholder="เขียนประเด็นที่ชื่นชม จุดที่ต้องปรับปรุง หรือแนวทางการขยายผลการเรียนรู้ให้นักเรียนแก้ไข..."
                       value={reviewComment}
@@ -1592,14 +1612,14 @@ export default function OnlineWorksheets({ userRole }) {
               <h4 style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-primary)', margin: 0 }}>
                 💬 ความคิดเห็นประเมินจากครูผู้สอน
               </h4>
-              <button 
+              <button
                 onClick={() => setShowCommentModal(null)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.85rem', lineHeight: 1.5 }}>
               <div>
                 <b>ใบงาน: </b> {getSheetName(showCommentModal.worksheet_type)}
@@ -1624,7 +1644,7 @@ export default function OnlineWorksheets({ userRole }) {
                   {showCommentModal.teacher_comments || 'ไม่มีข้อเสนอแนะเพิ่มเติม'}
                 </p>
               </div>
-              
+
               {showCommentModal.status === 'needs_revision' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-danger)', fontSize: '0.75rem', fontWeight: 600, marginTop: '5px' }}>
                   <AlertCircle size={14} /> กรุณากดปุ่ม "ทำต่อ/แก้ไข" ที่การ์ดใบงานเพื่อเข้าปรับปรุงแก้ไขและส่งงานใหม่อีกครั้ง
@@ -1633,7 +1653,7 @@ export default function OnlineWorksheets({ userRole }) {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
-              <button 
+              <button
                 onClick={() => setShowCommentModal(null)}
                 className="btn btn-primary"
                 style={{ padding: '0.4rem 1.25rem', fontSize: '0.8rem' }}

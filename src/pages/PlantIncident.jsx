@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -16,11 +16,11 @@ export default function PlantIncident({ userRole }) {
   const [reporter, setReporter] = useState('');
   const [approver, setApprover] = useState('');
   const [reason, setReason] = useState('');
-  
+
   // Before & After files
   const [beforeFile, setBeforeFile] = useState(null);
   const [afterFile, setAfterFile] = useState(null);
-  
+
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -125,7 +125,7 @@ export default function PlantIncident({ userRole }) {
       }
 
       setStatus('✅ บันทึกอุบัติการณ์ความปลอดภัยพรรณไม้สำเร็จแล้ว!');
-      
+
       // Reset
       setSelectedPlantId('');
       setDescription('');
@@ -204,7 +204,7 @@ export default function PlantIncident({ userRole }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '2rem' }} className="rspg-progress-grid">
-        
+
         {/* Form to submit changes */}
         <div>
           <div className="card">

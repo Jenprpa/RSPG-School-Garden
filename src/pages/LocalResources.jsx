@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
 import { Map, MapPin, Award, Book, Landmark, Heart, Plus, Save } from 'lucide-react';
@@ -129,7 +129,7 @@ export default function LocalResources({ userRole }) {
             <div className="grid-2">
               <div className="form-group">
                 <label className="form-label">ประเภททรัพยากร</label>
-                <select 
+                <select
                   className="form-control"
                   value={resType}
                   onChange={(e) => setResType(e.target.value)}
@@ -144,22 +144,22 @@ export default function LocalResources({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">ชื่อทรัพยากร / ภูมิปัญญา</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="เช่น สมุนไพรนวดลูกประคบยายจันทร์" 
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="เช่น สมุนไพรนวดลูกประคบยายจันทร์"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required 
+                  required
                 />
               </div>
             </div>
 
             <div className="form-group">
               <label className="form-label">รายละเอียดคำอธิบาย</label>
-              <textarea 
-                className="form-control" 
-                rows="3" 
+              <textarea
+                className="form-control"
+                rows="3"
                 placeholder="อธิบายรายละเอียด สรรพคุณ วิธีทำ หรือผู้สืบทอด..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -169,10 +169,10 @@ export default function LocalResources({ userRole }) {
 
             <div className="form-group">
               <label className="form-label">ข้อมูลพิกัดสถานที่ หรือที่มาอ้างอิงเพิ่มเติม</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="เช่น บ้านเลขที่ 12 หมู่ 4 ต.ในเมือง" 
+              <input
+                type="text"
+                className="form-control"
+                placeholder="เช่น บ้านเลขที่ 12 หมู่ 4 ต.ในเมือง"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
               />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 import { Award, Printer, Download, FileText, CheckCircle, FileSpreadsheet, File } from 'lucide-react';
@@ -240,7 +240,7 @@ export default function Reports({ userRole }) {
               เลือกรูปแบบรายงานที่ต้องการดูตัวอย่าง จากนั้นสั่งพิมพ์เป็น PDF/กระดาษ หรือดาวน์โหลดเป็นไฟล์ Microsoft Word และ Excel
             </p>
           </div>
-          
+
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button onClick={() => handleExportWord('printable-document', currentFilename)} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <File size={14} /> ส่งออกเป็น Word
@@ -257,9 +257,9 @@ export default function Reports({ userRole }) {
         {/* Report Selection Dropdown */}
         <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
           <label className="form-label" style={{ fontWeight: 'bold' }}>เลือกรายงานเพื่อเผยแพร่หรือส่งออก:</label>
-          <select 
-            value={selectedReportType} 
-            onChange={(e) => setSelectedReportType(e.target.value)} 
+          <select
+            value={selectedReportType}
+            onChange={(e) => setSelectedReportType(e.target.value)}
             className="form-control"
             style={{ maxWidth: '400px' }}
           >
@@ -278,7 +278,7 @@ export default function Reports({ userRole }) {
 
       {/* Printable Area Wrapper */}
       <div id="printable-document" className="card printable-report" style={{ backgroundColor: '#fff', color: '#111', padding: '2.5rem', boxShadow: 'var(--shadow-md)', maxWidth: '950px', margin: '0 auto 2rem auto', border: '1px solid #ddd' }}>
-        
+
         {/* Document Header Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '80px', height: 'auto', margin: '0 auto 10px auto', display: 'block' }} />
@@ -294,7 +294,7 @@ export default function Reports({ userRole }) {
         </div>
 
         {/* RENDER SELECTED REPORT PREVIEW */}
-        
+
         {/* REPORT 1: PLANT REGISTRY */}
         {selectedReportType === 'registry' && (
           <div style={{ marginTop: '1.5rem' }}>
@@ -380,7 +380,7 @@ export default function Reports({ userRole }) {
               <li><b>จํานวนแผนการจัดการเรียนรู้บูรณาการของครู</b>: {learningActivities.length} กิจกรรม/แผนการสอน</li>
               <li><b>จํานวนอุบัติการณ์ความปลอดภัยและรายงานการดูแลรักษาต้นไม้</b>: มีบันทึกแจ้งบำรุงรักษาและตัดแต่งกิ่งไม้ {incidents.length} รายการ</li>
             </ul>
-            
+
             <table id="report-table-id" style={{ display: 'none' }}>
               <thead>
                 <tr><th>หัวข้อดำเนินงาน</th><th>สถิติจำนวน</th></tr>
@@ -722,17 +722,17 @@ export default function Reports({ userRole }) {
 
           <div style={{ textAlign: 'center', width: '45%', position: 'relative' }}>
             {schoolInfo?.report_is_signed && (
-              <div style={{ 
-                position: 'absolute', 
-                top: '-35px', 
-                left: '50%', 
-                transform: 'translateX(-50%)', 
-                border: '2px solid #2e7d32', 
-                color: '#2e7d32', 
+              <div style={{
+                position: 'absolute',
+                top: '-35px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                border: '2px solid #2e7d32',
+                color: '#2e7d32',
                 backgroundColor: '#e8f5e9',
-                padding: '4px 10px', 
-                borderRadius: '4px', 
-                fontWeight: 'bold', 
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontWeight: 'bold',
                 fontSize: '0.72rem',
                 whiteSpace: 'nowrap'
               }}>
@@ -744,7 +744,7 @@ export default function Reports({ userRole }) {
               {schoolInfo?.report_is_signed ? `( นายวรวิทย์ จิตรบริสุทธิ์ )` : `(..............................................................)`}
             </p>
             <p style={{ color: '#555', fontSize: '0.74rem', marginTop: '4px' }}>ตำแหน่ง: ผู้อำนวยการโรงเรียนปายวิทยาคาร</p>
-            
+
             {!schoolInfo?.report_is_signed && (userRole === 'executive' || userRole === 'admin') && (
               <button
                 onClick={handleSignReport}

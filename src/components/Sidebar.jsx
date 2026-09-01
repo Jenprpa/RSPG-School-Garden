@@ -1,298 +1,308 @@
-import React, { useState } from 'react';
-import { 
-  LayoutDashboard, FileSpreadsheet, Layers, BookOpen, 
-  ClipboardList, Archive, Award, Shield, Menu, X, Settings, Image, CheckSquare, Wrench, RefreshCw, User, Map, Landmark,
-  ShieldCheck, ShieldAlert, Tag
+﻿import { useState } from 'react';
+import {
+  Home, ChevronDown, ChevronRight, Layers, FileText,
+  Sprout, BookOpen, Award, Map, Archive,
+  Shield, Menu, X, ShieldCheck
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, theme, toggleTheme, userRole, setUserRole, viewMode, setViewMode, onLogout }) {
+export default function Sidebar({ activeTab, setActiveTab }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [element2Expanded, setElement2Expanded] = useState(true);
 
-  const menuItems = [
-    // Mode 2: Internal Operations
-    { id: 'dashboard', name: '1. แดชบอร์ดดำเนินงาน', icon: LayoutDashboard, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'admin-management', name: '2. การบริหารจัดการ (ด้านที่ 1)', icon: ShieldCheck, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'elements-management', name: '3. การดำเนินงาน 5 องค์ประกอบ', icon: Layers, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'banners-config', name: '4. Website Banner', icon: Image, mode: 'internal', roles: ['admin'] },
-    { id: 'plant-registry', name: '5. ทะเบียนพรรณไม้', icon: ClipboardList, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'plant-tags', name: '6. ออกแบบป้ายชื่อ อพ.สธ.', icon: Tag, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'k7003-docs', name: '7. เอกสาร ก.7-003', icon: BookOpen, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'evaluator'] },
-    { id: 'student-portfolios', name: '8. ผลงานนักเรียน ก.7-003', icon: Award, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'evaluator'] },
-    { id: 'online-worksheets', name: '9. ใบงานออนไลน์ อพ.สธ.', icon: FileSpreadsheet, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'evaluator'] },
-    { id: 'plant-study', name: '10. พืชศึกษา (องค์ประกอบที่ 3)', icon: Layers, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'executive', 'evaluator'] },
-    { id: 'teacher-learning', name: '11. การจัดการเรียนรู้', icon: Award, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'executive', 'evaluator'] },
-    { id: 'local-resources', name: '12. ฐานทรัพยากรท้องถิ่น', icon: Map, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'evidence-vault', name: '13. คลังหลักฐาน', icon: Archive, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'settings', name: '14. ตั้งค่าระบบ', icon: Settings, mode: 'internal', roles: ['admin'] },
-    { id: 'profile', name: '15. ข้อมูลส่วนตัว', icon: User, mode: 'internal', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'student', 'doc_officer', 'executive', 'evaluator'] },
-
-    // Mode 3: Evaluation
-    { id: 'k7009-form', name: '1. แบบประเมิน ก.7-009', icon: FileSpreadsheet, mode: 'evaluation', roles: ['admin', 'rspg_board', 'executive', 'evaluator'] },
-    { id: 'evidence-mapping', name: '2. แผนผังหลักฐาน (Mapping)', icon: Layers, mode: 'evaluation', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'doc_officer', 'executive', 'evaluator'] },
-    { id: 'readiness-check', name: '3. ตรวจสอบความพร้อม (Audit)', icon: CheckSquare, mode: 'evaluation', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'executive', 'evaluator'] },
-    { id: 'system-audit', name: '4. ตรวจระบบและจุดบกพร่อง', icon: ShieldAlert, mode: 'evaluation', roles: ['admin', 'rspg_board', 'executive', 'evaluator'] },
-    { id: 'evaluation-report', name: '5. รายงานและส่งออก', icon: FileSpreadsheet, mode: 'evaluation', roles: ['admin', 'rspg_board', 'teacher', 'project_advisor', 'executive', 'evaluator'] }
-  ];
-
-  // Filter items based on user role and active viewMode
-  const displayItems = menuItems.filter(item => item.roles.includes(userRole) && item.mode === (viewMode === 'public' ? 'internal' : viewMode));
-
-  const roles = [
-    { id: 'admin', name: '1. ผู้ดูแลระบบ (Admin)' },
-    { id: 'rspg_board', name: '2. คณะกรรมการ อพ.สธ.' },
-    { id: 'teacher', name: '3. ครูผู้สอน' },
-    { id: 'project_advisor', name: '4. ครูที่ปรึกษาโครงงาน' },
-    { id: 'student', name: '5. นักเรียน' },
-    { id: 'doc_officer', name: '6. เจ้าหน้าที่งานเอกสาร' },
-    { id: 'executive', name: '7. ผู้บริหาร (ผอ./รอง ผอ.)' },
-    { id: 'evaluator', name: '8. กรรมการประเมิน (Read-Only)' }
-  ];
+  const navItemStyle = (isActive, isNested = false) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    height: isNested ? '36px' : '40px',
+    padding: isNested ? '0 12px 0 32px' : '0 14px',
+    borderRadius: '6px',
+    border: 'none',
+    backgroundColor: isActive ? '#F5EFFA' : 'transparent',
+    color: isActive ? '#7137A8' : '#24212A',
+    fontWeight: isActive ? 600 : 500,
+    fontSize: isNested ? '13px' : '14px',
+    lineHeight: '1.4',
+    cursor: 'pointer',
+    textAlign: 'left',
+    transition: 'all 0.15s ease',
+    textDecoration: 'none'
+  });
 
   return (
     <>
       {/* Mobile Top Bar */}
-      <div style={{
-        display: 'none',
-        padding: '0.75rem 1rem',
-        backgroundColor: 'var(--bg-sidebar)',
-        color: '#fff',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        position: 'sticky',
-        top: 0,
-        zIndex: 110,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }} className="mobile-only-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '30px', height: '30px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0px', boxShadow: '0 0 5px rgba(255,255,255,0.3)', overflow: 'hidden' }}>
-            <img src="/rspg-logo.png" alt="อพ.สธ. ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-          <img src="/school-logo.png" alt="โรงเรียนปายวิทยาคาร" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
-          <span style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--color-gold)' }}>ปายวิทยาคาร อพ.สธ.</span>
+      <div
+        style={{
+          display: 'none',
+          height: '56px',
+          padding: '0 16px',
+          backgroundColor: '#2E1853',
+          color: '#fff',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'sticky',
+          top: 0,
+          zIndex: 110,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+        }}
+        className="mobile-only-header"
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <img src="/school-logo.png" alt="โรงเรียนปายวิทยาคาร" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <span style={{ fontWeight: 700, fontSize: '14px', color: '#FFF' }}>PWTK GARDEN</span>
         </div>
-        <button 
-          onClick={() => setIsOpen(!isOpen)} 
-          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          aria-label="Toggle menu"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
-      {/* CSS Helper for Mobile Layout */}
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .mobile-only-header {
             display: flex !important;
           }
           .sidebar {
             position: fixed !important;
-            top: 50px !important;
+            top: 56px !important;
             left: 0 !important;
-            height: calc(100vh - 50px) !important;
+            height: calc(100vh - 56px) !important;
             transform: ${isOpen ? 'translateX(0)' : 'translateX(-100%)'} !important;
-            width: 280px !important;
-            transition: transform 0.3s ease !important;
+            width: 260px !important;
+            min-width: 260px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25) !important;
             z-index: 105 !important;
           }
         }
       `}</style>
 
-      {/* Main Sidebar */}
+      {/* Main Administrative Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-header" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', textAlign: 'center', padding: '1.25rem 1rem' }}>
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'center' }}>
-            <div style={{ 
-              width: '95px', 
-              height: '95px', 
-              backgroundColor: '#fff', 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              boxShadow: '0 0 12px rgba(255, 255, 255, 0.5)',
-              padding: '0px',
-              overflow: 'hidden'
-            }}>
-              <img src="/rspg-logo.png" alt="อพ.สธ. Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        {/* Deep Royal Purple Header Card */}
+        <div
+          style={{
+            position: 'relative',
+            backgroundColor: '#2E1853',
+            color: '#FFFFFF',
+            padding: '20px 16px 18px',
+            textAlign: 'center',
+            overflow: 'hidden',
+            flexShrink: 0
+          }}
+        >
+          {/* Subtle Botanical Sketch Overlay Background */}
+          <svg
+            style={{ position: 'absolute', right: '-15px', bottom: '-20px', width: '130px', height: '130px', opacity: 0.12, pointerEvents: 'none' }}
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="#FFFFFF"
+            strokeWidth="1.5"
+          >
+            <path d="M50 95 C50 60, 20 40, 20 20 C35 20, 50 35, 50 50 C50 35, 65 20, 80 20 C80 40, 50 60, 50 95 Z" />
+            <path d="M50 50 Q30 70 15 75" />
+            <path d="M50 40 Q70 60 85 65" />
+            <circle cx="50" cy="20" r="12" strokeDasharray="3 3" />
+          </svg>
+
+          {/* Logos Row */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '14px', marginBottom: '10px' }}>
+            <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+              <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
-            <img 
-              src="/school-logo.png" 
-              alt="โรงเรียนปายวิทยาคาร" 
-              style={{ 
-                width: '75px', 
-                height: '75px', 
-                objectFit: 'contain', 
-                boxShadow: '0 0 12px rgba(255, 255, 255, 0.4)'
-              }} 
-            />
+            <div style={{ width: '44px', height: '44px', backgroundColor: '#FFFFFF', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.2)' }}>
+              <img src="/school-logo.png" alt="ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
           </div>
-          <div>
-            <h1 className="sidebar-title" style={{ fontSize: '1.2rem', color: 'var(--color-gold)', fontWeight: 'bold', margin: 0 }}>ปายวิทยาคาร</h1>
-            <p className="sidebar-subtitle" style={{ fontSize: '0.8rem', margin: '4px 0 0 0' }}>งานสวนพฤกษศาสตร์ อพ.สธ.</p>
+
+          <div style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '0.04em', color: '#FFFFFF', lineHeight: 1.2 }}>
+            PWTK GARDEN
+          </div>
+          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.85)', marginTop: '4px', fontWeight: 400 }}>
+            ศูนย์กลางงานสวนพฤกษศาสตร์
+          </div>
+          <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.7)', marginTop: '1px', fontWeight: 400 }}>
+            โรงเรียนปายวิทยาคาร
           </div>
         </div>
 
-        {/* Mode Switcher */}
-        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ display: 'flex', gap: '4px', backgroundColor: 'rgba(0,0,0,0.2)', padding: '3px', borderRadius: '8px' }}>
+        {/* Navigation List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+
+          {/* 1. ภาพรวม (Dashboard) */}
+          <button
+            onClick={() => { setActiveTab('dashboard'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'dashboard')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Home size={18} color={activeTab === 'dashboard' ? '#7137A8' : '#6F6A78'} />
+              <span>ภาพรวม</span>
+            </div>
+          </button>
+
+          {/* 2. งานสวนพฤกษศาสตร์ */}
+          <button
+            onClick={() => { setActiveTab('plant-registry'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'plant-registry' || activeTab === 'banners-config')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Sprout size={18} color={activeTab === 'plant-registry' ? '#7137A8' : '#6F6A78'} />
+              <span>งานสวนพฤกษศาสตร์</span>
+            </div>
+            <ChevronRight size={15} color="#8E8A95" />
+          </button>
+
+          {/* Group 1: ด้านการดำเนินงาน */}
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#8E8A95', letterSpacing: '0.04em', padding: '12px 12px 4px 12px' }}>
+            ด้านการดำเนินงาน
+          </div>
+
+          {/* ด้านที่ 1 */}
+          <button
+            onClick={() => { setActiveTab('admin-management'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'admin-management')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <ShieldCheck size={16} color={activeTab === 'admin-management' ? '#7137A8' : '#6F6A78'} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>ด้านที่ 1 การบริหารและการจัดการ</span>
+            </div>
+          </button>
+
+          {/* ด้านที่ 2 (Collapsible parent) */}
+          <button
+            onClick={() => {
+              setActiveTab('elements-management');
+              setElement2Expanded(!element2Expanded);
+            }}
+            style={navItemStyle(activeTab === 'elements-management' || activeTab.startsWith('element-'))}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Layers size={16} color={activeTab === 'elements-management' ? '#7137A8' : '#6F6A78'} />
+              <span>ด้านที่ 2 การดำเนินงาน</span>
+            </div>
+            {element2Expanded ? <ChevronDown size={14} color="#8E8A95" /> : <ChevronRight size={14} color="#8E8A95" />}
+          </button>
+
+          {/* Nested องค์ประกอบ 1-5 */}
+          {element2Expanded && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+              <button
+                onClick={() => { setActiveTab('plant-tags'); setIsOpen(false); }}
+                style={navItemStyle(activeTab === 'plant-tags', true)}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>องค์ประกอบที่ 1 จัดทำป้ายชื่อพรรณไม้</span>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('plant-registry'); setIsOpen(false); }}
+                style={navItemStyle(activeTab === 'plant-registry-sub', true)}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>องค์ประกอบที่ 2 รวบรวมพรรณไม้เข้าปลูก</span>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('plant-study'); setIsOpen(false); }}
+                style={navItemStyle(activeTab === 'plant-study', true)}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>องค์ประกอบที่ 3 ศึกษาข้อมูลด้านต่าง ๆ</span>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('student-portfolios'); setIsOpen(false); }}
+                style={navItemStyle(activeTab === 'student-portfolios', true)}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>องค์ประกอบที่ 4 รายงานผลการเรียนรู้</span>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('k7003-docs'); setIsOpen(false); }}
+                style={navItemStyle(activeTab === 'k7003-docs', true)}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>องค์ประกอบที่ 5 นำไปใช้ประโยชน์</span>
+              </button>
+            </div>
+          )}
+
+          {/* ด้านที่ 3 */}
+          <button
+            onClick={() => { setActiveTab('teacher-learning'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'teacher-learning')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Award size={16} color={activeTab === 'teacher-learning' ? '#7137A8' : '#6F6A78'} />
+              <span>ด้านที่ 3 ผลการดำเนินงาน</span>
+            </div>
+          </button>
+
+          {/* ด้านที่ 4 */}
+          <button
+            onClick={() => { setActiveTab('readiness-check'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'readiness-check')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FileText size={16} color={activeTab === 'readiness-check' ? '#7137A8' : '#6F6A78'} />
+              <span>ด้านที่ 4 ความถูกต้องทางวิชาการ</span>
+            </div>
+          </button>
+
+          {/* Group 2: สาระการเรียนรู้ */}
+          <div style={{ fontSize: '11px', fontWeight: 600, color: '#8E8A95', letterSpacing: '0.04em', padding: '12px 12px 4px 12px' }}>
+            สาระการเรียนรู้
+          </div>
+
+          <button
+            onClick={() => { setActiveTab('online-worksheets'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'online-worksheets')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <BookOpen size={16} color={activeTab === 'online-worksheets' ? '#7137A8' : '#6F6A78'} />
+              <span>สาระที่ 1 ธรรมชาติแห่งชีวิต</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('evidence-mapping'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'evidence-mapping')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Layers size={16} color={activeTab === 'evidence-mapping' ? '#7137A8' : '#6F6A78'} />
+              <span>สาระที่ 2 สรรพสิ่งล้วนพันเกี่ยว</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('local-resources'); setIsOpen(false); }}
+            style={navItemStyle(activeTab === 'local-resources')}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Map size={16} color={activeTab === 'local-resources' ? '#7137A8' : '#6F6A78'} />
+              <span>สาระที่ 3 ประโยชน์แท้แก่มหาชน</span>
+            </div>
+          </button>
+
+          {/* ตรวจหลักฐาน */}
+          <div style={{ marginTop: '8px' }}>
             <button
-              onClick={() => {
-                setViewMode('internal');
-                const allowedTabs = menuItems.filter(item => item.roles.includes(userRole) && item.mode === 'internal').map(i => i.id);
-                if (allowedTabs.length > 0 && !allowedTabs.includes(activeTab)) {
-                  setActiveTab(allowedTabs[0]);
-                }
-              }}
-              style={{
-                flex: 1,
-                padding: '0.4rem 0.5rem',
-                borderRadius: '6px',
-                border: 'none',
-                fontSize: '0.78rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                backgroundColor: viewMode === 'internal' ? 'var(--color-primary)' : 'transparent',
-                color: '#fff',
-                transition: 'all 0.2s'
-              }}
+              onClick={() => { setActiveTab('evidence-vault'); setIsOpen(false); }}
+              style={navItemStyle(activeTab === 'evidence-vault')}
             >
-              🛠️ ดำเนินงาน
-            </button>
-            <button
-              onClick={() => {
-                setViewMode('evaluation');
-                const allowedTabs = menuItems.filter(item => item.roles.includes(userRole) && item.mode === 'evaluation').map(i => i.id);
-                if (allowedTabs.length > 0 && !allowedTabs.includes(activeTab)) {
-                  setActiveTab(allowedTabs[0]);
-                }
-              }}
-              style={{
-                flex: 1,
-                padding: '0.4rem 0.5rem',
-                borderRadius: '6px',
-                border: 'none',
-                fontSize: '0.78rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                backgroundColor: viewMode === 'evaluation' ? 'var(--color-primary)' : 'transparent',
-                color: '#fff',
-                transition: 'all 0.2s'
-              }}
-            >
-              🎓 ประเมินผล
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Archive size={16} color={activeTab === 'evidence-vault' ? '#7137A8' : '#6F6A78'} />
+                <span>ตรวจหลักฐาน</span>
+              </div>
             </button>
           </div>
+
         </div>
 
-        {/* User Role Quick Switcher */}
-        {userRole === 'admin' && (
-          <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.1)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--color-gold)', marginBottom: '6px', fontWeight: 600 }}>
-              <Shield size={12} /> สลับบทบาทผู้ใช้ (Simulated)
-            </div>
-            <select 
-              value={userRole} 
-              onChange={(e) => {
-                setUserRole(e.target.value);
-                // Set fallback tab if selected tab is not allowed for the new role in current mode
-                const allowedTabs = menuItems.filter(item => item.roles.includes(e.target.value) && item.mode === (viewMode === 'public' ? 'internal' : viewMode)).map(i => i.id);
-                if (!allowedTabs.includes(activeTab)) {
-                  setActiveTab(allowedTabs[0] || 'dashboard');
-                }
-              }}
-              style={{
-                width: '100%',
-                padding: '0.35rem 0.5rem',
-                fontSize: '0.8rem',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                color: '#fff',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              {roles.map(r => (
-                <option key={r.id} value={r.id} style={{ color: '#000' }}>{r.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <nav className="sidebar-menu">
-          {displayItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setIsOpen(false);
-                }}
-                className={`menu-item ${activeTab === item.id ? 'active' : ''}`}
-                style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left' }}
-              >
-                <Icon className="menu-item-icon" />
-                <span>{item.name}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-            {/* Admin Light/Dark Mode Switcher */}
-            {userRole === 'admin' && (
-              <button
-                onClick={toggleTheme}
-                style={{
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  color: '#fff',
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  padding: '0.45rem',
-                  borderRadius: '6px',
-                  fontSize: '0.8rem',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  width: '100%',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {theme === 'dark' ? '☀️ โหมดสว่าง (Light Mode)' : '🌙 โหมดมืด (Dark Mode)'}
-              </button>
-            )}
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>โรงเรียนปายวิทยาคาร v2.0</span>
-            </div>
-            {onLogout && (
-              <button 
-                onClick={onLogout} 
-                style={{
-                  border: '1px solid rgba(211,47,47,0.35)',
-                  color: '#ff8a80',
-                  backgroundColor: 'rgba(211,47,47,0.15)',
-                  padding: '0.45rem',
-                  borderRadius: '6px',
-                  fontSize: '0.8rem',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  transition: 'all 0.2s'
-                }}
-                title="ออกจากระบบ"
-              >
-                ออกจากระบบ
-              </button>
-            )}
-          </div>
+        {/* Footer: Version */}
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #E7E4EA', display: 'flex', alignItems: 'center', gap: '6px', color: '#8E8A95', fontSize: '11px', flexShrink: 0 }}>
+          <Shield size={13} color="#8E8A95" />
+          <span>เวอร์ชัน 1.0.0</span>
         </div>
       </aside>
     </>

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { 
-  Plus, Trash2, Edit2, Save, Upload, FileText, Image as ImageIcon, 
+import {
+  Plus, Trash2, Edit2, Save, Upload, FileText, Image as ImageIcon,
   Calendar, User, Check, AlertCircle, X, ExternalLink, RefreshCw
 } from 'lucide-react';
 
@@ -12,10 +12,10 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
+
   // Status message
   const [statusMsg, setStatusMsg] = useState({ text: '', type: '' }); // type: 'success' | 'error' | 'info'
-  
+
   // Form fields
   const [title, setTitle] = useState('');
   const [data, setData] = useState('');
@@ -24,7 +24,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
   const [status, setStatus] = useState('รอดำเนินการ');
   const [imageUrl, setImageUrl] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
-  
+
   // Upload states
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState(false);
@@ -114,9 +114,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
       setTimeout(() => setStatusMsg({ text: '', type: '' }), 3000);
     } catch (err) {
       console.error(err);
-      setStatusMsg({ 
-        text: 'อัปโหลดล้มเหลว (คุณสามารถป้อนลิงก์ URL แทนได้): ' + err.message, 
-        type: 'error' 
+      setStatusMsg({
+        text: 'อัปโหลดล้มเหลว (คุณสามารถป้อนลิงก์ URL แทนได้): ' + err.message,
+        type: 'error'
       });
     } finally {
       setUploadingImage(false);
@@ -145,7 +145,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
       await addDoc(collection(db, 'rspg_element_records'), newRecord);
       setStatusMsg({ text: 'บันทึกข้อมูลสำเร็จ!', type: 'success' });
-      
+
       // Reset form
       setTitle('');
       setData('');
@@ -250,7 +250,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      
+
       {/* 1. Element Progress Card */}
       <div className="card glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', flexWrap: 'wrap', gap: '15px' }}>
         <div>
@@ -261,7 +261,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
             คำนวณตามจริงจากสถานะใบงานกิจกรรมและหลักฐานอ้างอิง ({records.length} รายการบันทึก)
           </p>
         </div>
-        
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-primary)' }}>
@@ -300,18 +300,18 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
         <h3 style={{ fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
           📁 ทำเนียบหลักฐานและการบันทึกข้อมูล (6 ฟิลด์หลักตาม อพ.สธ.)
         </h3>
-        
+
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            type="button" 
-            onClick={fetchRecords} 
-            className="btn btn-secondary" 
+          <button
+            type="button"
+            onClick={fetchRecords}
+            className="btn btn-secondary"
             style={{ padding: '0.5rem', width: '36px', height: '36px', borderRadius: '50%' }}
             title="รีเฟรชข้อมูล"
           >
             <RefreshCw size={14} />
           </button>
-          
+
           {userRole !== 'visitor' && !isFormOpen && (
             <button onClick={() => setIsFormOpen(true)} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
               <Plus size={14} /> เพิ่มข้อมูลหลักฐานใหม่
@@ -335,9 +335,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
           <form onSubmit={handleCreateRecord}>
             <div className="form-group">
               <label className="form-label">หัวข้อบันทึกกิจกรรม / แผนดำเนินงาน</label>
-              <input 
-                type="text" 
-                className="form-control" 
+              <input
+                type="text"
+                className="form-control"
                 placeholder="เช่น การรวบรวมพิกัดและสำรวจรหัสพรรณไม้ประจำโซน A"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -347,9 +347,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
             <div className="form-group">
               <label className="form-label">รายละเอียด / ข้อมูลหลักของการดำเนินงาน (Data)</label>
-              <textarea 
-                className="form-control" 
-                rows="4" 
+              <textarea
+                className="form-control"
+                rows="4"
                 placeholder="อธิบายกิจกรรม วิธีการดำเนินงาน และผลลัพธ์โดยสังเขป..."
                 value={data}
                 onChange={(e) => setData(e.target.value)}
@@ -360,9 +360,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
             <div className="grid-3" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
               <div className="form-group">
                 <label className="form-label">ผู้รับผิดชอบ</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
+                <input
+                  type="text"
+                  className="form-control"
                   placeholder="ชื่อครู หรือ กลุ่มนักเรียน"
                   value={responsible}
                   onChange={(e) => setResponsible(e.target.value)}
@@ -372,9 +372,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
               <div className="form-group">
                 <label className="form-label">วันที่ดำเนินการ</label>
-                <input 
-                  type="date" 
-                  className="form-control" 
+                <input
+                  type="date"
+                  className="form-control"
                   value={actionDate}
                   onChange={(e) => setActionDate(e.target.value)}
                   required
@@ -383,7 +383,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
               <div className="form-group">
                 <label className="form-label">สถานะการดำเนินงาน</label>
-                <select 
+                <select
                   className="form-control"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
@@ -402,15 +402,15 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                 <label className="form-label" style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ImageIcon size={16} color="var(--color-primary)" /> 1. รูปภาพหลักฐาน (Photo)
                 </label>
-                
-                <input 
-                  type="file" 
-                  accept="image/*" 
+
+                <input
+                  type="file"
+                  accept="image/*"
                   id={`file-image-el-${elementNum}`}
                   style={{ display: 'none' }}
                   onChange={(e) => handleFileUpload(e.target.files[0], 'image')}
                 />
-                
+
                 <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                   <label htmlFor={`file-image-el-${elementNum}`} className="btn btn-secondary" style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', cursor: 'pointer' }}>
                     {uploadingImage ? 'กำลังอัปโหลด...' : <><Upload size={12} /> เลือกและอัปโหลดรูปภาพ</>}
@@ -419,9 +419,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
                 <div style={{ marginTop: '10px' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>หรือ ป้อน URL รูปภาพโดยตรง:</span>
-                  <input 
-                    type="url" 
-                    className="form-control" 
+                  <input
+                    type="url"
+                    className="form-control"
                     placeholder="https://..."
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
@@ -442,15 +442,15 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                 <label className="form-label" style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <FileText size={16} color="var(--color-orchid)" /> 2. เอกสาร/ไฟล์แนบ (Attachment PDF)
                 </label>
-                
-                <input 
-                  type="file" 
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.zip" 
+
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.zip"
                   id={`file-doc-el-${elementNum}`}
                   style={{ display: 'none' }}
                   onChange={(e) => handleFileUpload(e.target.files[0], 'doc')}
                 />
-                
+
                 <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                   <label htmlFor={`file-doc-el-${elementNum}`} className="btn btn-secondary" style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', cursor: 'pointer' }}>
                     {uploadingDoc ? 'กำลังอัปโหลด...' : <><Upload size={12} /> อัปโหลดเอกสารแนบ</>}
@@ -459,9 +459,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
 
                 <div style={{ marginTop: '10px' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>หรือ ป้อน URL เอกสารโดยตรง:</span>
-                  <input 
-                    type="url" 
-                    className="form-control" 
+                  <input
+                    type="url"
+                    className="form-control"
                     placeholder="https://..."
                     value={attachmentUrl}
                     onChange={(e) => setAttachmentUrl(e.target.value)}
@@ -516,9 +516,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                       {/* 1. Date */}
                       <td>
                         {isEditing ? (
-                          <input 
-                            type="date" 
-                            className="form-control" 
+                          <input
+                            type="date"
+                            className="form-control"
                             style={{ padding: '0.25rem', fontSize: '0.8rem' }}
                             value={editActionDate}
                             onChange={(e) => setEditActionDate(e.target.value)}
@@ -534,16 +534,16 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                       <td>
                         {isEditing ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <input 
-                              type="text" 
-                              className="form-control" 
+                            <input
+                              type="text"
+                              className="form-control"
                               style={{ padding: '0.35rem 0.5rem', fontSize: '0.85rem', fontWeight: 600 }}
                               value={editTitle}
                               onChange={(e) => setEditTitle(e.target.value)}
                               placeholder="หัวข้อ"
                             />
-                            <textarea 
-                              className="form-control" 
+                            <textarea
+                              className="form-control"
                               style={{ padding: '0.35rem 0.5rem', fontSize: '0.82rem' }}
                               value={editData}
                               onChange={(e) => setEditData(e.target.value)}
@@ -566,9 +566,9 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                       {/* 3. Responsible */}
                       <td>
                         {isEditing ? (
-                          <input 
-                            type="text" 
-                            className="form-control" 
+                          <input
+                            type="text"
+                            className="form-control"
                             style={{ padding: '0.25rem', fontSize: '0.8rem' }}
                             value={editResponsible}
                             onChange={(e) => setEditResponsible(e.target.value)}
@@ -584,17 +584,17 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                       <td>
                         {isEditing ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <input 
-                              type="url" 
-                              className="form-control" 
+                            <input
+                              type="url"
+                              className="form-control"
                               placeholder="รูปภาพ URL"
                               style={{ padding: '0.25rem', fontSize: '0.78rem' }}
                               value={editImageUrl}
                               onChange={(e) => setEditImageUrl(e.target.value)}
                             />
-                            <input 
-                              type="file" 
-                              accept="image/*" 
+                            <input
+                              type="file"
+                              accept="image/*"
                               id={`edit-file-image-${r.id}`}
                               style={{ display: 'none' }}
                               onChange={(e) => handleFileUpload(e.target.files[0], 'image')}
@@ -605,10 +605,10 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                           </div>
                         ) : r.image_url ? (
                           <a href={r.image_url} target="_blank" rel="noreferrer" title="คลิกเพื่อดูรูปขนาดเต็ม">
-                            <img 
-                              src={r.image_url} 
-                              alt="หลักฐาน" 
-                              className="plant-thumbnail" 
+                            <img
+                              src={r.image_url}
+                              alt="หลักฐาน"
+                              className="plant-thumbnail"
                               style={{ width: '45px', height: '45px', borderRadius: '4px', objectFit: 'cover', border: '1px solid var(--border-color)', cursor: 'pointer' }}
                             />
                           </a>
@@ -621,17 +621,17 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                       <td>
                         {isEditing ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <input 
-                              type="url" 
-                              className="form-control" 
+                            <input
+                              type="url"
+                              className="form-control"
                               placeholder="เอกสาร URL"
                               style={{ padding: '0.25rem', fontSize: '0.78rem' }}
                               value={editAttachmentUrl}
                               onChange={(e) => setEditAttachmentUrl(e.target.value)}
                             />
-                            <input 
-                              type="file" 
-                              accept=".pdf,.doc,.docx,.xls,.xlsx" 
+                            <input
+                              type="file"
+                              accept=".pdf,.doc,.docx,.xls,.xlsx"
                               id={`edit-file-doc-${r.id}`}
                               style={{ display: 'none' }}
                               onChange={(e) => handleFileUpload(e.target.files[0], 'doc')}
@@ -641,11 +641,11 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                             </label>
                           </div>
                         ) : r.attachment_url ? (
-                          <a 
-                            href={r.attachment_url} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="btn btn-secondary" 
+                          <a
+                            href={r.attachment_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn btn-secondary"
                             style={{ padding: '0.3rem 0.5rem', fontSize: '0.75rem', gap: '4px' }}
                           >
                             <ExternalLink size={10} /> เอกสารแนบ
@@ -658,7 +658,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                       {/* 6. Status */}
                       <td>
                         {isEditing ? (
-                          <select 
+                          <select
                             className="form-control"
                             style={{ padding: '0.25rem', fontSize: '0.8rem' }}
                             value={editStatus}
@@ -670,7 +670,7 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                             <option value="เสร็จสิ้น">เสร็จสิ้น</option>
                           </select>
                         ) : (
-                          <span 
+                          <span
                             style={{
                               padding: '0.25rem 0.6rem',
                               borderRadius: '50px',
@@ -690,17 +690,17 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                         <td>
                           {isEditing ? (
                             <div style={{ display: 'flex', gap: '4px' }}>
-                              <button 
-                                onClick={() => handleUpdateRecord(r.id)} 
-                                className="icon-btn" 
+                              <button
+                                onClick={() => handleUpdateRecord(r.id)}
+                                className="icon-btn"
                                 style={{ width: '28px', height: '28px', backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none' }}
                                 title="บันทึก"
                               >
                                 <Save size={12} />
                               </button>
-                              <button 
-                                onClick={() => setEditingId(null)} 
-                                className="icon-btn" 
+                              <button
+                                onClick={() => setEditingId(null)}
+                                className="icon-btn"
                                 style={{ width: '28px', height: '28px', backgroundColor: '#e2e8f0', color: '#000', border: 'none' }}
                                 title="ยกเลิก"
                               >
@@ -709,17 +709,17 @@ export default function ElementRecordsSection({ elementNum, userRole }) {
                             </div>
                           ) : (
                             <div style={{ display: 'flex', gap: '4px' }}>
-                              <button 
-                                onClick={() => startEdit(r)} 
-                                className="icon-btn" 
+                              <button
+                                onClick={() => startEdit(r)}
+                                className="icon-btn"
                                 style={{ width: '28px', height: '28px' }}
                                 title="แก้ไขกิจกรรม"
                               >
                                 <Edit2 size={12} />
                               </button>
-                              <button 
-                                onClick={() => handleDeleteRecord(r.id)} 
-                                className="icon-btn" 
+                              <button
+                                onClick={() => handleDeleteRecord(r.id)}
+                                className="icon-btn"
                                 style={{ width: '28px', height: '28px', borderColor: 'var(--color-danger)' }}
                                 title="ลบ"
                               >

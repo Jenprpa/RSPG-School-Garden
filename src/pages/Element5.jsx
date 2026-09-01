@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
 import { GraduationCap, BookOpen, Plus, Save, Award, ClipboardList } from 'lucide-react';
@@ -80,18 +80,18 @@ export default function Element5({ userRole }) {
 
         {/* Sub Navigation Tabs */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px' }}>
-          <button 
+          <button
             type="button"
-            onClick={() => setSubTab('records')} 
+            onClick={() => setSubTab('records')}
             className={`btn ${subTab === 'records' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <ClipboardList size={14} /> บันทึกกิจกรรมและหลักฐาน (6 ฟิลด์หลัก)
           </button>
-          
-          <button 
+
+          <button
             type="button"
-            onClick={() => setSubTab('curriculum')} 
+            onClick={() => setSubTab('curriculum')}
             className={`btn ${subTab === 'curriculum' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
@@ -117,22 +117,22 @@ export default function Element5({ userRole }) {
             <div className="grid-2">
               <div className="form-group">
                 <label className="form-label">ชื่อรายวิชาและการบูรณาการ</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="เช่น ศิลปะสร้างสรรค์ (ชั้น ม.1)" 
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="เช่น ศิลปะสร้างสรรค์ (ชั้น ม.1)"
                   value={subjectName}
                   onChange={(e) => setSubjectName(e.target.value)}
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">ชื่อโครงงานวิทยาศาสตร์ที่เกี่ยวข้อง (ถ้ามี)</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="เช่น การพัฒนาสารบำบัดแมลงธรรมชาติจากพืช..." 
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="เช่น การพัฒนาสารบำบัดแมลงธรรมชาติจากพืช..."
                   value={projectTitle}
                   onChange={(e) => setProjectTitle(e.target.value)}
                 />
@@ -141,9 +141,9 @@ export default function Element5({ userRole }) {
 
             <div className="form-group">
               <label className="form-label">รายละเอียดแผนการจัดการเรียนรู้ (Lesson Plan)</label>
-              <textarea 
-                className="form-control" 
-                rows="3" 
+              <textarea
+                className="form-control"
+                rows="3"
                 placeholder="ระบุกิจกรรมการสอน แหล่งพรรณไม้เป้าหมายในโรงเรียน..."
                 value={lessonPlan}
                 onChange={(e) => setLessonPlan(e.target.value)}
@@ -153,9 +153,9 @@ export default function Element5({ userRole }) {
 
             <div className="form-group">
               <label className="form-label">ผลงานและชิ้นงานของนักเรียน (Outputs)</label>
-              <textarea 
-                className="form-control" 
-                rows="2" 
+              <textarea
+                className="form-control"
+                rows="2"
                 placeholder="เช่น ภาพวาดสีน้ำดอกทองกวาว, สมุดเล่มเล็กสมุนไพร..."
                 value={studentWork}
                 onChange={(e) => setStudentWork(e.target.value)}

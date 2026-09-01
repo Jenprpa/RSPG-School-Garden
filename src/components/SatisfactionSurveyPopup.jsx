@@ -1,32 +1,46 @@
-import { useState } from 'react';
-import { db, isFirebaseConfigured } from '../firebaseClient';
-import { collection, addDoc } from 'firebase/firestore';
+﻿import { useState, useEffect } from 'react';
+import { db, isFirebaseConfigured, auth } from '../firebaseClient';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
 import { Star, X, CheckCircle2, Heart } from 'lucide-react';
 
-export default function SatisfactionSurveyPopup({ onClose }) {
-  // Get active user data from localStorage
-  let loggedInUser = null;
-  const savedUser = localStorage.getItem('rspg_logged_in_user');
-  if (savedUser) {
-    try {
-      loggedInUser = JSON.parse(savedUser);
-    } catch (e) {
-      console.error('Error parsing logged in user:', e);
-    }
-  }
-
+export default function SatisfactionSurveyPopup({ onClose, userRole }) {
   // Form states
   const [satisfaction, setSatisfaction] = useState(0);
   const [interest, setInterest] = useState(0);
   const [comments, setComments] = useState('');
-  const [name, setName] = useState(loggedInUser ? loggedInUser.name : '');
-  const [email, setEmail] = useState(loggedInUser ? loggedInUser.email : '');
-  const [role, setRole] = useState(loggedInUser ? loggedInUser.role : 'visitor');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState(userRole || 'visitor');
   const [hoverSat, setHoverSat] = useState(0);
   const [hoverInt, setHoverInt] = useState(0);
 
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser && currentUser.email) {
+        setEmail(currentUser.email);
+        setRole(userRole || 'visitor');
+        if (isFirebaseConfigured() && db) {
+          try {
+            const docSnap = await getDoc(doc(db, 'users', currentUser.email.trim().toLowerCase()));
+            if (docSnap.exists()) {
+              setName(docSnap.data().name || '');
+            }
+          } catch (e) {
+            console.error('Error fetching survey user profile:', e);
+          }
+        }
+      } else {
+        setEmail('');
+        setName('');
+        setRole('visitor');
+      }
+    };
+    loadUserData();
+  }, [userRole]);
 
   const rolesMap = {
     admin: 'ผู้ดูแลระบบ (Admin)',
@@ -135,8 +149,8 @@ export default function SatisfactionSurveyPopup({ onClose }) {
         animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
       }}>
         {/* Close button */}
-        <button 
-          onClick={handleDismiss} 
+        <button
+          onClick={handleDismiss}
           style={{
             position: 'absolute',
             top: '1rem',
@@ -171,7 +185,7 @@ export default function SatisfactionSurveyPopup({ onClose }) {
                 สำรวจความสนใจและความพึงพอใจ 🌸
               </h3>
             </div>
-            
+
             <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.5, marginBottom: '1.5rem' }}>
               เนื่องจากคุณได้ใช้งานแอปสวนพฤกษศาสตร์มาระยะหนึ่งแล้ว กรุณาช่วยให้ความคิดเห็นสั้น ๆ เพื่อช่วยให้คณะกรรมการ อพ.สธ. ปรับปรุงระบบการจัดการเรียนรู้ให้ดียิ่งขึ้นครับ
             </p>
@@ -193,10 +207,10 @@ export default function SatisfactionSurveyPopup({ onClose }) {
                       onMouseEnter={() => setHoverSat(star)}
                       onMouseLeave={() => setHoverSat(0)}
                     >
-                      <Star 
-                        size={28} 
-                        color={filled ? '#eab308' : 'rgba(255,255,255,0.2)'} 
-                        fill={filled ? '#eab308' : 'transparent'} 
+                      <Star
+                        size={28}
+                        color={filled ? '#eab308' : 'rgba(255,255,255,0.2)'}
+                        fill={filled ? '#eab308' : 'transparent'}
                       />
                     </button>
                   );
@@ -226,10 +240,10 @@ export default function SatisfactionSurveyPopup({ onClose }) {
                       onMouseEnter={() => setHoverInt(star)}
                       onMouseLeave={() => setHoverInt(0)}
                     >
-                      <Star 
-                        size={28} 
-                        color={filled ? '#eab308' : 'rgba(255,255,255,0.2)'} 
-                        fill={filled ? '#eab308' : 'transparent'} 
+                      <Star
+                        size={28}
+                        color={filled ? '#eab308' : 'rgba(255,255,255,0.2)'}
+                        fill={filled ? '#eab308' : 'transparent'}
                       />
                     </button>
                   );
@@ -268,10 +282,10 @@ export default function SatisfactionSurveyPopup({ onClose }) {
             </div>
 
             {/* Demographics / Identity Info */}
-            <div style={{ 
-              padding: '10px 12px', 
-              backgroundColor: 'rgba(0,0,0,0.18)', 
-              borderRadius: '8px', 
+            <div style={{
+              padding: '10px 12px',
+              backgroundColor: 'rgba(0,0,0,0.18)',
+              borderRadius: '8px',
               border: '1px solid rgba(255,255,255,0.06)',
               marginBottom: '1.5rem',
               fontSize: '0.8rem',
@@ -280,12 +294,12 @@ export default function SatisfactionSurveyPopup({ onClose }) {
               gap: '8px'
             }}>
               <div style={{ fontWeight: 600, color: 'var(--color-gold)', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '4px' }}>
-                📋 ข้อมูลผู้ประเมิน ({loggedInUser ? 'ดึงจากบัญชีปัจจุบัน' : 'กรุณากรอกข้อมูล'})
+                📋 ข้อมูลผู้ประเมิน ({auth.currentUser ? 'ดึงจากบัญชีปัจจุบัน' : 'กรุณากรอกข้อมูล'})
               </div>
               <div className="grid-2" style={{ gap: '8px', gridTemplateColumns: '1.2fr 0.8fr' }}>
                 <div>
                   <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '2px', fontSize: '0.75rem' }}>ชื่อผู้ประเมิน:</span>
-                  <input 
+                  <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -304,7 +318,7 @@ export default function SatisfactionSurveyPopup({ onClose }) {
                 </div>
                 <div>
                   <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '2px', fontSize: '0.75rem' }}>บทบาท:</span>
-                  {loggedInUser ? (
+                  {auth.currentUser ? (
                     <span style={{ fontWeight: 'bold', color: '#fff', display: 'block', paddingTop: '4px' }}>
                       {rolesMap[role] || role}
                     </span>
@@ -330,10 +344,10 @@ export default function SatisfactionSurveyPopup({ onClose }) {
                   )}
                 </div>
               </div>
-              {!loggedInUser && (
+              {!auth.currentUser && (
                 <div style={{ marginTop: '8px' }}>
                   <span style={{ color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '2px', fontSize: '0.75rem' }}>อีเมลผู้ประเมิน (ทางเลือก):</span>
-                  <input 
+                  <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

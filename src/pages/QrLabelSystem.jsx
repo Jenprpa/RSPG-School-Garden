@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
@@ -99,7 +99,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
     if (activePlants.length === 0) return;
 
     doc.setFont("Helvetica");
-    
+
     activePlants.forEach((plant, index) => {
       if (index > 0 && index % 4 === 0) {
         doc.addPage();
@@ -118,7 +118,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
       doc.setFontSize(12);
       doc.setTextColor(46, 125, 50);
       doc.text(plant.thai_name, startX + 5, startY + 8);
-      
+
       doc.setFontSize(8);
       doc.setTextColor(100, 100, 100);
       doc.text(`Code: ${plant.plant_code}`, startX + 5, startY + 14);
@@ -128,7 +128,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
       doc.text(`Sci: ${plant.scientific_name || '-'}`, startX + 5, startY + 22, { maxWidth: 50 });
       doc.text(`Family: ${plant.family_name || '-'}`, startX + 5, startY + 30);
       doc.text(`Loc: ${plant.planting_location || '-'}`, startX + 5, startY + 36);
-      
+
       doc.setDrawColor(200, 200, 200);
       doc.rect(startX + 65, startY + 12, 20, 20);
       doc.setFontSize(6);
@@ -139,7 +139,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
     doc.save('RSPG_Plant_Labels.pdf');
   };
 
-  const filteredPlants = plants.filter(p => 
+  const filteredPlants = plants.filter(p =>
     p.thai_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.scientific_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.plant_code.includes(searchQuery)
@@ -151,13 +151,13 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
         {/* Left Side: Plant Checklist Selector */}
         <div className="card">
           <h3 className="card-title">เลือกพรรณไม้สำหรับพิมพ์ป้าย</h3>
-          
+
           <div className="search-wrapper">
             <Search className="search-icon" size={16} />
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="ค้นหาพืช..." 
+            <input
+              type="text"
+              className="search-input"
+              placeholder="ค้นหาพืช..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ fontSize: '0.85rem', paddingLeft: '2.5rem' }}
@@ -175,7 +175,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
 
           <div style={{ maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {filteredPlants.map(p => (
-              <div 
+              <div
                 key={p.id}
                 onClick={() => toggleSelectPlant(p.id)}
                 style={{
@@ -226,7 +226,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
           </div>
 
           {/* Printable Labels Canvas */}
-          <div 
+          <div
             ref={printAreaRef}
             style={{
               padding: '1.5rem',
@@ -241,8 +241,8 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
               {plants.filter(p => selectedPlants.includes(p.id)).map(plant => {
                 const qrUrl = `${window.location.origin}/?plantId=${plant.id}`;
                 return (
-                  <div 
-                    key={plant.id} 
+                  <div
+                    key={plant.id}
                     className="label-card"
                     style={{
                       border: '3px double var(--color-primary)',
@@ -264,7 +264,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
                       <p className="label-code" style={{ fontSize: '0.75rem', color: '#555', fontWeight: 600, margin: '2px 0 6px 0' }}>
                         รหัสพืช: {plant.plant_code}
                       </p>
-                      
+
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.7rem', color: '#333' }}>
                         <div><b>ชื่อวิทยาศาสตร์:</b> <span style={{ fontStyle: 'italic' }}>{plant.scientific_name || '-'}</span></div>
                         <div><b>วงศ์:</b> {plant.family_name || '-'}</div>
@@ -273,7 +273,7 @@ export default function QrLabelSystem({ selectedPlantFromProps }) {
                       </div>
                     </div>
 
-                    <div 
+                    <div
                       className="label-qr"
                       style={{
                         border: '1px solid #eaeaea',

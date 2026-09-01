@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured, getGeminiKey, compressImage } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -9,7 +9,7 @@ export default function K7003Docs({ userRole }) {
   const [worksheetsList, setWorksheetsList] = useState([]);
   const [, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Selection/editing states
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [activeWorksheet, setActiveWorksheet] = useState(null);
@@ -26,7 +26,7 @@ export default function K7003Docs({ userRole }) {
   const [botanicalData, setBotanicalData] = useState('');
   const [utility, setUtility] = useState('');
   const [studyResults, setStudyResults] = useState('');
-  
+
   // Extra requested fields
   const [recorder, setRecorder] = useState('');
   const [classroom, setClassroom] = useState('');
@@ -50,7 +50,7 @@ export default function K7003Docs({ userRole }) {
   const [seedUpload, setSeedUpload] = useState(null);
 
   const [uploadProgressState, setUploadProgressState] = useState('');
-  
+
   // Document uploads states
   const [docFileUrl, setDocFileUrl] = useState('');
   const [docFileName, setDocFileName] = useState('');
@@ -201,7 +201,7 @@ export default function K7003Docs({ userRole }) {
     setAiPartLoading(prev => ({ ...prev, [partName]: true }));
     try {
       let fileToAnalyze = null;
-      
+
       if (partName === 'habit') {
         fileToAnalyze = habitUpload;
       } else if (partName === 'stem') {
@@ -233,7 +233,7 @@ export default function K7003Docs({ userRole }) {
         const base64Data = await fileToBase64(fileToAnalyze);
         const mimeType = fileToAnalyze.type || 'image/jpeg';
         prompt += ` โดยวิเคราะห์ลักษณะอ้างอิงจากภาพถ่ายจริงของส่วนนี้ที่แนบมาด้วย เพื่อให้สอดคล้องกับพืชในภาพมากที่สุด`;
-        
+
         response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -279,7 +279,7 @@ export default function K7003Docs({ userRole }) {
         else if (partName === 'habit') {
           alert(`วิเคราะห์ลักษณะวิสัยของพืชสำเร็จ:\n\n${cleanedText}\n\n(เนื่องจากในส่วนฟอร์มไม่มีช่องวิสัยเป็นข้อความยาว จึงแนะนำการวิเคราะห์ลักษณะวิสัยให้พิจารณา)`);
         }
-        
+
         if (partName !== 'habit') {
           alert(`AI ได้ทำการวิเคราะห์และกรอกรายละเอียดสำหรับ ${thaiPartName} ให้เรียบร้อยแล้ว!`);
         }
@@ -393,7 +393,7 @@ export default function K7003Docs({ userRole }) {
       setIsEditing(false);
       setUploadProgressState('');
       await loadData();
-      
+
       // Update selected states
       setActiveWorksheet({ id: docId, ...payload });
       setHabitPhotoUrl(finalHabit);
@@ -420,7 +420,7 @@ export default function K7003Docs({ userRole }) {
   const getSheetStatus = (plantId) => {
     const sheet = worksheetsList.find(s => s.plant_id === plantId);
     if (!sheet) return { text: 'ยังไม่เขียนใบงาน', icon: <AlertCircle size={14} color="var(--color-danger)" />, class: 'role-visitor' };
-    
+
     if (sheet.status === 'ผ่าน') {
       return { text: 'ผ่าน (Approved)', icon: <CheckCircle2 size={14} color="var(--color-success)" />, class: 'role-admin' };
     } else if (sheet.status === 'ต้องแก้ไข') {
@@ -434,12 +434,12 @@ export default function K7003Docs({ userRole }) {
     return (
       <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', backgroundColor: 'var(--bg-card)', textAlign: 'center' }}>
         <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px' }}>{label}</div>
-        
+
         {fileState ? (
           <div style={{ position: 'relative' }}>
-            <img 
-              src={URL.createObjectURL(fileState)} 
-              alt={label} 
+            <img
+              src={URL.createObjectURL(fileState)}
+              alt={label}
               style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px' }}
             />
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
@@ -447,9 +447,9 @@ export default function K7003Docs({ userRole }) {
             </div>
           </div>
         ) : currentUrl ? (
-          <img 
-            src={currentUrl} 
-            alt={label} 
+          <img
+            src={currentUrl}
+            alt={label}
             style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px' }}
           />
         ) : (
@@ -460,10 +460,10 @@ export default function K7003Docs({ userRole }) {
 
         {isEditing && (
           <div style={{ marginTop: '8px', display: 'flex', gap: '4px' }}>
-            <input 
-              type="file" 
-              accept="image/*" 
-              id={uploadId} 
+            <input
+              type="file"
+              accept="image/*"
+              id={uploadId}
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (file) setFileState(file);
@@ -510,7 +510,7 @@ export default function K7003Docs({ userRole }) {
         {/* Left Side List */}
         <div className="card" style={{ height: 'fit-content' }}>
           <h4 className="card-title" style={{ marginBottom: '1rem' }}>รายชื่อพรรณไม้โรงเรียน</h4>
-          
+
           <div className="search-wrapper" style={{ marginBottom: '1rem' }}>
             <Search className="search-icon" size={16} />
             <input
@@ -546,7 +546,7 @@ export default function K7003Docs({ userRole }) {
                 >
                   <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-main)' }}>{plant.thai_name}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '4px 0' }}>{plant.plant_code}</div>
-                  
+
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem' }} className={`role-badge ${status.class}`}>
                     {status.icon}
                     <span>{status.text}</span>
@@ -600,7 +600,7 @@ export default function K7003Docs({ userRole }) {
                 <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '10px' }}>
                   📸 อัลบั้มรูปสัณฐานพืชพฤกษศาสตร์วิชาการ 6 ด้านย่อย
                 </h4>
-                
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '2rem' }}>
                   {renderPhotoSlot('1. ลักษณะวิสัย (Habit)', habitPhotoUrl, habitUpload, setHabitUpload, 'up_habit', 'habit')}
                   {renderPhotoSlot('2. เปลือก/ลำต้น (Stem)', stemPhotoUrl, stemUpload, setStemUpload, 'up_stem', 'stem')}
@@ -618,8 +618,8 @@ export default function K7003Docs({ userRole }) {
                 <div className="grid-2">
                   <div className="form-group">
                     <label className="form-label">ลักษณะลำต้นและราก (เปลือก ยาง ผิวสัมผัส)</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="2"
                       value={stemDetail}
                       onChange={(e) => setStemDetail(e.target.value)}
@@ -630,8 +630,8 @@ export default function K7003Docs({ userRole }) {
 
                   <div className="form-group">
                     <label className="form-label">ลักษณะใบ (ประเภทใบ การเรียงตัว เส้นใบ ขอบใบ)</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="2"
                       value={leafDetail}
                       onChange={(e) => setLeafDetail(e.target.value)}
@@ -644,8 +644,8 @@ export default function K7003Docs({ userRole }) {
                 <div className="grid-3">
                   <div className="form-group">
                     <label className="form-label">ลักษณะช่อดอก/กลีบดอก</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="2"
                       value={flowerDetail}
                       onChange={(e) => setFlowerDetail(e.target.value)}
@@ -656,8 +656,8 @@ export default function K7003Docs({ userRole }) {
 
                   <div className="form-group">
                     <label className="form-label">ลักษณะผลพืช</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="2"
                       value={fruitDetail}
                       onChange={(e) => setFruitDetail(e.target.value)}
@@ -668,8 +668,8 @@ export default function K7003Docs({ userRole }) {
 
                   <div className="form-group">
                     <label className="form-label">ลักษณะเมล็ดพืช</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="2"
                       value={seedDetail}
                       onChange={(e) => setSeedDetail(e.target.value)}
@@ -686,9 +686,9 @@ export default function K7003Docs({ userRole }) {
                 <div className="grid-3">
                   <div className="form-group">
                     <label className="form-label">แหล่งที่พบ (ในโรงเรียน/พิกัด)</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <input
+                      type="text"
+                      className="form-control"
                       value={utility} // mapped to local utility or habitat
                       onChange={(e) => setUtility(e.target.value)}
                       disabled={!isEditing}
@@ -698,9 +698,9 @@ export default function K7003Docs({ userRole }) {
 
                   <div className="form-group">
                     <label className="form-label">ประโยชน์ / สรรพคุณพฤกษศาสตร์</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <input
+                      type="text"
+                      className="form-control"
                       value={botanicalData} // Mapped to benefits
                       onChange={(e) => setBotanicalData(e.target.value)}
                       disabled={!isEditing}
@@ -710,10 +710,10 @@ export default function K7003Docs({ userRole }) {
 
                   <div className="form-group">
                     <label className="form-label">ผลการศึกษาวิจัยเพิ่มเติม</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={studyResults} 
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={studyResults}
                       onChange={(e) => setStudyResults(e.target.value)}
                       disabled={!isEditing}
                       placeholder="เช่น การสลายตัวของแป้งใบไม้ในร่ม"
@@ -731,7 +731,7 @@ export default function K7003Docs({ userRole }) {
                       <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>อัปโหลดเล่มเอกสารหลักฐาน ก.7-003 รายต้น</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>รองรับไฟล์ PDF หรือรูปภาพ (JPG, PNG) ขนาดไม่เกิน 10MB</div>
                     </div>
-                    
+
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {docFileUrl ? (
                         <a href={docFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ backgroundColor: 'rgba(46,125,50,0.1)', color: 'var(--color-success)', border: '1px solid rgba(46,125,50,0.2)', fontSize: '0.8rem', padding: '0.4rem 0.8rem', textDecoration: 'none' }}>
@@ -740,13 +740,13 @@ export default function K7003Docs({ userRole }) {
                       ) : (
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>ยังไม่มีการอัปโหลดเล่มเอกสาร</span>
                       )}
-                      
+
                       {isEditing && (
                         <>
-                          <input 
-                            type="file" 
-                            accept=".pdf,image/*" 
-                            id="up_document_file" 
+                          <input
+                            type="file"
+                            accept=".pdf,image/*"
+                            id="up_document_file"
                             onChange={handleDocFileChange}
                             style={{ display: 'none' }}
                           />
@@ -764,9 +764,9 @@ export default function K7003Docs({ userRole }) {
                       </div>
                       {docUpload.type.startsWith('image/') && (
                         <div>
-                          <img 
-                            src={URL.createObjectURL(docUpload)} 
-                            alt="Document Preview" 
+                          <img
+                            src={URL.createObjectURL(docUpload)}
+                            alt="Document Preview"
                             style={{ maxHeight: '150px', maxWidth: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--border-color)' }}
                           />
                         </div>
@@ -781,13 +781,13 @@ export default function K7003Docs({ userRole }) {
                 </h4>
 
                 <div className="grid-2" style={{ backgroundColor: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                  
+
                   {/* Student Entry Group */}
                   <div>
                     <h5 style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--color-primary)' }}>ผู้บันทึกทะเบียน (นักเรียน)</h5>
                     <div className="form-group">
                       <label className="form-label" style={{ fontSize: '0.74rem' }}>ชื่อ-สกุล นักเรียนผู้รายงาน</label>
-                      <input 
+                      <input
                         type="text"
                         className="form-control"
                         placeholder="เช่น นร.หญิง กานดา สุวรรณ"
@@ -798,7 +798,7 @@ export default function K7003Docs({ userRole }) {
                     </div>
                     <div className="form-group">
                       <label className="form-label" style={{ fontSize: '0.74rem' }}>ระดับชั้น / ห้องเรียน</label>
-                      <input 
+                      <input
                         type="text"
                         className="form-control"
                         placeholder="เช่น ม.3/2"
@@ -812,10 +812,10 @@ export default function K7003Docs({ userRole }) {
                   {/* Teacher Grading Group */}
                   <div>
                     <h5 style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--color-gold)' }}>ประเมินการตรวจสอบหลักฐาน (ครูผู้ตรวจ)</h5>
-                    
+
                     <div className="form-group">
                       <label className="form-label" style={{ fontSize: '0.74rem' }}>ชื่อครูผู้ทำการตรวจสอบ</label>
-                      <input 
+                      <input
                         type="text"
                         className="form-control"
                         placeholder="เช่น ครูสมเจตน์ สังข์ทอง"
@@ -845,7 +845,7 @@ export default function K7003Docs({ userRole }) {
                 {isEditing && ['admin', 'rspg_board', 'teacher', 'project_advisor'].includes(userRole) && (
                   <div className="form-group" style={{ marginTop: '1rem' }}>
                     <label className="form-label">ความคิดเห็นจากครูผู้ตรวจ (หากระบุให้แก้ไข)</label>
-                    <textarea 
+                    <textarea
                       className="form-control"
                       rows="2"
                       value={comment}

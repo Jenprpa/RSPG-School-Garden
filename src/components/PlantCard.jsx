@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Tag, MapPin, Calendar, User, Eye, QrCode } from 'lucide-react';
 
 export default function PlantCard({ plant, onView, onPrintLabel }) {
@@ -8,8 +8,8 @@ export default function PlantCard({ plant, onView, onPrintLabel }) {
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ position: 'relative', width: '100%', paddingTop: '65%', overflow: 'hidden', borderRadius: '8px', marginBottom: '1rem', backgroundColor: '#e2ebe2' }}>
-        <img 
-          src={plant.image_url || defaultImage} 
+        <img
+          src={plant.image_url || defaultImage}
           alt={plant.thai_name}
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
@@ -79,16 +79,16 @@ export default function PlantCard({ plant, onView, onPrintLabel }) {
         </div>
 
         <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-          <button 
-            onClick={() => onView(plant)} 
-            className="btn btn-secondary" 
+          <button
+            onClick={() => onView(plant)}
+            className="btn btn-secondary"
             style={{ flex: 1, fontSize: '0.8rem', padding: '0.5rem' }}
           >
             <Eye size={14} /> รายละเอียด
           </button>
-          <button 
-            onClick={() => onPrintLabel(plant)} 
-            className="btn btn-primary" 
+          <button
+            onClick={() => onPrintLabel(plant)}
+            className="btn btn-primary"
             style={{ flex: 1, fontSize: '0.8rem', padding: '0.5rem' }}
           >
             <QrCode size={14} /> พิมพ์ป้าย QR

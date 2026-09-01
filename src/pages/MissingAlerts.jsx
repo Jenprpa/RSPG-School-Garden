@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs } from 'firebase/firestore';
 import { AlertTriangle, CheckCircle, ShieldAlert, Sparkles, MapPin, FileText, Image, UserCheck } from 'lucide-react';
@@ -119,11 +119,11 @@ export default function MissingAlerts() {
     runQualityAudit();
   }, []);
 
-  const totalAlerts = 
-    alerts.untaggedPlants.length + 
-    alerts.missingGpsPlants.length + 
-    alerts.incompleteWorksheets.length + 
-    alerts.missingAdminDocs.length + 
+  const totalAlerts =
+    alerts.untaggedPlants.length +
+    alerts.missingGpsPlants.length +
+    alerts.incompleteWorksheets.length +
+    alerts.missingAdminDocs.length +
     alerts.missingEvidenceCriteria.length;
 
   if (loading) {
@@ -171,7 +171,7 @@ export default function MissingAlerts() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
+
           {/* 1. Untagged Plants Alerts */}
           {alerts.untaggedPlants.length > 0 && (
             <div className="card" style={{ borderLeft: '4px solid var(--color-danger)' }}>

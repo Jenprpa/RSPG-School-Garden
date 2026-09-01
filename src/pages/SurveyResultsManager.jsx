@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { Star, Trash2, Search, Heart, RefreshCw, Users, Clock } from 'lucide-react';
@@ -72,7 +72,7 @@ export default function SurveyResultsManager({ userRole }) {
 
   // Compute stats
   const totalCount = surveys.length;
-  const avgSatisfaction = totalCount > 0 
+  const avgSatisfaction = totalCount > 0
     ? (surveys.reduce((sum, s) => sum + Number(s.satisfaction_score || 0), 0) / totalCount).toFixed(1)
     : '0.0';
   const avgInterest = totalCount > 0
@@ -92,11 +92,11 @@ export default function SurveyResultsManager({ userRole }) {
     return (
       <div style={{ display: 'flex', gap: '2px', color: '#eab308' }}>
         {[1, 2, 3, 4, 5].map(star => (
-          <Star 
-            key={star} 
-            size={13} 
-            fill={star <= score ? '#eab308' : 'transparent'} 
-            color={star <= score ? '#eab308' : 'rgba(0,0,0,0.15)'} 
+          <Star
+            key={star}
+            size={13}
+            fill={star <= score ? '#eab308' : 'transparent'}
+            color={star <= score ? '#eab308' : 'rgba(0,0,0,0.15)'}
           />
         ))}
       </div>
@@ -120,9 +120,9 @@ export default function SurveyResultsManager({ userRole }) {
               </p>
             </div>
           </div>
-          <button 
-            onClick={fetchSurveys} 
-            className="btn btn-secondary" 
+          <button
+            onClick={fetchSurveys}
+            className="btn btn-secondary"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
           >
             <RefreshCw size={14} /> รีเฟรชข้อมูล

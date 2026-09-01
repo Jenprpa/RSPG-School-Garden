@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, doc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -15,7 +15,7 @@ export default function PlantChanges({ userRole }) {
   const [changeType, setChangeType] = useState('damaged');
   const [description, setDescription] = useState('');
   const [operatorName, setOperatorName] = useState('');
-  
+
   const [imageBeforeFile, setImageBeforeFile] = useState(null);
   const [imageAfterFile, setImageAfterFile] = useState(null);
   const [statusText, setStatusText] = useState('');
@@ -36,14 +36,14 @@ export default function PlantChanges({ userRole }) {
       });
       setPlants(plantsList);
       setPlantMap(map);
-      
+
       if (plantsList.length > 0 && !selectedPlantId) {
         setSelectedPlantId(plantsList[0].id);
       }
 
       // Query alerts ordered by created_at desc
       const q = query(
-        collection(db, 'plant_logs'), 
+        collection(db, 'plant_logs'),
         where('log_type', '==', 'change_alert'),
         orderBy('created_at', 'desc')
       );
@@ -69,7 +69,7 @@ export default function PlantChanges({ userRole }) {
       const fileExt = file.name.split('.').pop();
       const fileName = `logs/${Date.now()}-${label}.${fileExt}`;
       const storageRef = ref(storage, fileName);
-      
+
       const snapshot = await uploadBytes(storageRef, file);
       const downloadUrl = await getDownloadURL(snapshot.ref);
       return downloadUrl;
@@ -147,7 +147,7 @@ export default function PlantChanges({ userRole }) {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label className="form-label">เลือกพรรณไม้ที่ได้รับความเปลี่ยนแปลง</label>
-                <select 
+                <select
                   className="form-control"
                   value={selectedPlantId}
                   onChange={(e) => setSelectedPlantId(e.target.value)}
@@ -162,7 +162,7 @@ export default function PlantChanges({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">ประเภทเหตุการณ์</label>
-                  <select 
+                  <select
                     className="form-control"
                     value={changeType}
                     onChange={(e) => setChangeType(e.target.value)}
@@ -175,22 +175,22 @@ export default function PlantChanges({ userRole }) {
 
                 <div className="form-group">
                   <label className="form-label">ชื่อผู้รายงานเหตุการณ์</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    placeholder="ระบุชื่อผู้บันทึก" 
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="ระบุชื่อผู้บันทึก"
                     value={operatorName}
                     onChange={(e) => setOperatorName(e.target.value)}
-                    required 
+                    required
                   />
                 </div>
               </div>
 
               <div className="form-group">
                 <label className="form-label">รายละเอียดการเปลี่ยนแปลง/การแก้ไขดำเนินการ</label>
-                <textarea 
-                  className="form-control" 
-                  rows="3" 
+                <textarea
+                  className="form-control"
+                  rows="3"
                   placeholder="เช่น ย้ายต้นไม้จากบริเวณ A-01 ไปยังพื้นที่ A-02 เนื่องจากโดนบดบังแสง..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -201,9 +201,9 @@ export default function PlantChanges({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">รูปภาพหลักฐาน (ก่อนดำเนินการ)</label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     onChange={(e) => setImageBeforeFile(e.target.files[0])}
                     className="form-control"
                     style={{ fontSize: '0.8rem', padding: '0.4rem' }}
@@ -212,9 +212,9 @@ export default function PlantChanges({ userRole }) {
 
                 <div className="form-group">
                   <label className="form-label">รูปภาพหลักฐาน (หลังดำเนินการ)</label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     onChange={(e) => setImageAfterFile(e.target.files[0])}
                     className="form-control"
                     style={{ fontSize: '0.8rem', padding: '0.4rem' }}
@@ -269,7 +269,7 @@ export default function PlantChanges({ userRole }) {
                       {log.action_type === 'cut' ? 'ตัดโค่น' : log.action_type === 'damaged' ? 'ชำรุดเสียหาย' : 'เคลื่อนย้าย'}
                     </span>
                   </div>
-                  
+
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', margin: '6px 0' }}>
                     {log.description}
                   </p>

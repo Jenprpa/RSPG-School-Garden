@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, getGeminiKey, compressImage } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -12,12 +12,12 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('ทั้งหมด');
   const [selectedArea, setSelectedArea] = useState('ทั้งหมด');
-  
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlant, setEditingPlant] = useState(null);
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
-  
+
   // Form fields
   const [plantCode, setPlantCode] = useState('');
   const [thaiName, setThaiName] = useState('');
@@ -42,7 +42,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
       alert('เบราว์เซอร์นี้ไม่รองรับการดึงพิกัดตำแหน่ง (Geolocation)');
       return;
     }
-    
+
     const btn = document.getElementById('btn-get-gps');
     if (btn) {
       btn.innerHTML = '⏳ กำลังระบุตำแหน่ง...';
@@ -65,7 +65,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
           btn.innerHTML = '📍 ดึงพิกัด GPS ปัจจุบัน';
           btn.disabled = false;
         }
-        
+
         let errMsg = 'ไม่สามารถดึงพิกัดได้';
         if (error.code === error.PERMISSION_DENIED) {
           errMsg = 'กรุณาอนุญาตให้เว็บเข้าถึงพิกัดตำแหน่งในเบราว์เซอร์หรือสิทธิ์ GPS ก่อน';
@@ -120,7 +120,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
       const fileExt = processedFile.name.split('.').pop();
       const fileName = `plants/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const storageRef = ref(storage, fileName);
-      
+
       const snapshot = await uploadBytes(storageRef, processedFile);
       const downloadUrl = await getDownloadURL(snapshot.ref);
       return downloadUrl;
@@ -146,7 +146,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
     setAiLoading(true);
     try {
       const prompt = `จงเขียนคำอธิบายลักษณะทางพฤกษศาสตร์ของพืชชื่อไทยว่า "${thaiName}" (ชื่อวิทยาศาสตร์: ${scientificName || 'ค้นหาตามความเหมาะสม'}, วงศ์: ${familyName || 'ค้นหาตามความเหมาะสม'}) ในรูปแบบบทสรุปภาษาไทยสั้นๆ ความยาวประมาณ 80-120 คำ โดยระบุลักษณะเด่น สรรพคุณทางยาหรือการใช้ประโยชน์ และคำแนะนำในการดูแลรักษาเบื้องต้นในสถานศึกษา`;
-      
+
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -200,7 +200,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
     try {
       const base64Data = await fileToBase64(imageFile);
       const mimeType = imageFile.type || 'image/jpeg';
-      
+
       const prompt = `จงระบุชนิดและสัณฐานวิทยาของพืชในภาพนี้ ให้ตอบกลับเฉพาะ JSON object ที่มีโครงสร้างดังนี้เท่านั้น โดยไม่มี markdown code blocks (ไม่มี \`\`\`json หรือ \`\`\`) หรือข้อความภายนอกใดๆ ทั้งสิ้น:
 {
   "thai_name": "ชื่อสามัญภาษาไทย/ชื่อไทยของพืชที่ถูกต้อง",
@@ -253,7 +253,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
           setPlantType(parsed.habit);
         }
         if (parsed.description) setDescription(parsed.description);
-        
+
         alert('AI วิเคราะห์ข้อมูลพืชและกรอกลงแบบฟอร์มสำเร็จเรียบร้อยแล้ว!');
       } else {
         alert('ไม่สามารถรับข้อมูลวิเคราะห์จาก AI ได้ กรุณาลองอัปโหลดภาพที่ชัดเจนขึ้น');
@@ -367,9 +367,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
   // Export to Excel / CSV
   const handleExportCSV = () => {
     if (plants.length === 0) return;
-    
+
     const headers = ['รหัสพรรณไม้', 'ชื่อไทย', 'ชื่อวิทยาศาสตร์', 'วงศ์', 'ประเภทพืช', 'สถานที่ปลูก', 'ผู้สำรวจ', 'วันที่สำรวจ', 'พิกัด Lat', 'พิกัด Lng', 'คำอธิบาย'];
-    
+
     const rows = plants.map(p => [
       p.plant_code,
       p.thai_name,
@@ -397,12 +397,12 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
 
   // Filtered Plants
   const filteredPlants = plants.filter(plant => {
-    const matchesSearch = 
+    const matchesSearch =
       plant.thai_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (plant.scientific_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (plant.plant_code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (plant.family_name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesType = selectedType === 'ทั้งหมด' || plant.plant_type === selectedType;
     const matchesArea = selectedArea === 'ทั้งหมด' || plant.planting_location === selectedArea;
 
@@ -417,9 +417,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
           {/* Search Inputs */}
           <div className="search-wrapper" style={{ flex: 1, minWidth: '250px', marginBottom: 0 }}>
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              className="search-input" 
+            <input
+              type="text"
+              className="search-input"
               placeholder="ค้นหาชื่อไทย, ชื่อวิทยาศาสตร์, วงศ์ หรือรหัสพรรณไม้..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -428,8 +428,8 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
 
           {/* Plant Type Dropdown */}
           <div style={{ minWidth: '150px' }}>
-            <select 
-              className="form-control" 
+            <select
+              className="form-control"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
             >
@@ -447,8 +447,8 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
 
           {/* Location Area Dropdown */}
           <div style={{ minWidth: '180px' }}>
-            <select 
-              className="form-control" 
+            <select
+              className="form-control"
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
             >
@@ -489,17 +489,17 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {filteredPlants.map(plant => (
             <div key={plant.id} style={{ position: 'relative' }}>
-              <PlantCard 
-                plant={plant} 
+              <PlantCard
+                plant={plant}
                 onView={onSelectPlant}
                 onPrintLabel={onPrintLabel}
               />
-              
+
               <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '6px', zIndex: 10 }}>
                 {(userRole === 'admin' || userRole === 'student') && (
-                  <button 
+                  <button
                     onClick={() => openModal(plant)}
-                    className="icon-btn" 
+                    className="icon-btn"
                     style={{ width: '32px', height: '32px', backgroundColor: 'var(--bg-card)' }}
                     title="แก้ไขข้อมูล"
                   >
@@ -507,9 +507,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                   </button>
                 )}
                 {userRole === 'admin' && (
-                  <button 
+                  <button
                     onClick={() => handleDelete(plant.id)}
-                    className="icon-btn" 
+                    className="icon-btn"
                     style={{ width: '32px', height: '32px', backgroundColor: 'var(--bg-card)' }}
                     title="ลบข้อมูล"
                   >
@@ -539,23 +539,23 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">รหัสพรรณไม้ อพ.สธ.</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={plantCode} 
-                    onChange={(e) => setPlantCode(e.target.value)} 
-                    required 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={plantCode}
+                    onChange={(e) => setPlantCode(e.target.value)}
+                    required
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">ชื่อไทยของพืช</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={thaiName} 
-                    onChange={(e) => setThaiName(e.target.value)} 
-                    required 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={thaiName}
+                    onChange={(e) => setThaiName(e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -563,21 +563,21 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">ชื่อวิทยาศาสตร์</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={scientificName} 
-                    onChange={(e) => setScientificName(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={scientificName}
+                    onChange={(e) => setScientificName(e.target.value)}
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">วงศ์พืช (Family)</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={familyName} 
-                    onChange={(e) => setFamilyName(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={familyName}
+                    onChange={(e) => setFamilyName(e.target.value)}
                   />
                 </div>
               </div>
@@ -585,9 +585,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">ประเภทพืช</label>
-                  <select 
-                    className="form-control" 
-                    value={plantType} 
+                  <select
+                    className="form-control"
+                    value={plantType}
                     onChange={(e) => setPlantType(e.target.value)}
                   >
                     <option value="ไม้ต้น">ไม้ต้น (Tree)</option>
@@ -603,9 +603,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
 
                 <div className="form-group">
                   <label className="form-label">ลักษณะวิสัย (Habit)</label>
-                  <select 
-                    className="form-control" 
-                    value={habit} 
+                  <select
+                    className="form-control"
+                    value={habit}
                     onChange={(e) => setHabit(e.target.value)}
                   >
                     <option value="ไม้ต้น">ไม้ต้น</option>
@@ -623,9 +623,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">สถานะติดตั้งป้ายรหัสประจำต้นถาวร</label>
-                  <select 
-                    className="form-control" 
-                    value={isTagged} 
+                  <select
+                    className="form-control"
+                    value={isTagged}
                     onChange={(e) => setIsTagged(e.target.value)}
                   >
                     <option value="มี">มี (ติดตั้งสมบูรณ์)</option>
@@ -635,11 +635,11 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
 
                 <div className="form-group">
                   <label className="form-label">สถานที่ปลูก / บริเวณศึกษา</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={plantingLocation} 
-                    onChange={(e) => setPlantingLocation(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={plantingLocation}
+                    onChange={(e) => setPlantingLocation(e.target.value)}
                     placeholder="เช่น สวนสมุนไพร, ด้านหน้าตึก 1"
                     required
                   />
@@ -649,9 +649,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">สถานะการตรวจสอบข้อมูล</label>
-                  <select 
-                    className="form-control" 
-                    value={status} 
+                  <select
+                    className="form-control"
+                    value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     disabled={userRole !== 'admin'}
                   >
@@ -669,11 +669,11 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="grid-3">
                 <div className="form-group">
                   <label className="form-label">ผู้สำรวจ</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={surveyor} 
-                    onChange={(e) => setSurveyor(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={surveyor}
+                    onChange={(e) => setSurveyor(e.target.value)}
                     required
                   />
                 </div>
@@ -702,24 +702,24 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                       📍 ดึงพิกัด GPS ปัจจุบัน
                     </button>
                   </label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     step="any"
-                    className="form-control" 
-                    value={gpsLat} 
-                    onChange={(e) => setGpsLat(e.target.value)} 
+                    className="form-control"
+                    value={gpsLat}
+                    onChange={(e) => setGpsLat(e.target.value)}
                     placeholder="19.3554"
                   />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">พิกัด GPS (Longitude)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     step="any"
-                    className="form-control" 
-                    value={gpsLng} 
-                    onChange={(e) => setGpsLng(e.target.value)} 
+                    className="form-control"
+                    value={gpsLng}
+                    onChange={(e) => setGpsLng(e.target.value)}
                     placeholder="98.4420"
                   />
                 </div>
@@ -729,8 +729,8 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="form-group">
                 <label className="form-label">อัปโหลดภาพพรรณไม้</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files[0];
@@ -767,9 +767,9 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                 {imageFile && (
                   <div style={{ marginTop: '10px' }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '5px' }}>ตัวอย่างรูปภาพที่จะอัปโหลด:</div>
-                    <img 
-                      src={URL.createObjectURL(imageFile)} 
-                      alt="Plant Preview" 
+                    <img
+                      src={URL.createObjectURL(imageFile)}
+                      alt="Plant Preview"
                       style={{ maxHeight: '150px', maxWidth: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--border-color)' }}
                     />
                   </div>
@@ -780,19 +780,19 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               <div className="form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <label className="form-label" style={{ marginBottom: 0 }}>คำอธิบายพรรณไม้</label>
-                  <button 
-                    type="button" 
-                    onClick={handleGenerateAiDescription} 
+                  <button
+                    type="button"
+                    onClick={handleGenerateAiDescription}
                     disabled={aiLoading}
-                    className="btn btn-gold" 
+                    className="btn btn-gold"
                     style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600 }}
                   >
                     <Sparkles size={12} /> {aiLoading ? 'AI กำลังเขียน...' : 'AI ช่วยเขียนคำอธิบาย'}
                   </button>
                 </div>
-                <textarea 
-                  className="form-control" 
-                  rows="4" 
+                <textarea
+                  className="form-control"
+                  rows="4"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="เขียนลักษณะเด่น ประโยชน์ สรรพคุณ หรือวิเคราะห์ทางพฤกษศาสตร์..."

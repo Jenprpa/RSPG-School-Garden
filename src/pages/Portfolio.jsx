@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, deleteDoc, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -34,7 +34,7 @@ export default function Portfolio({ userRole }) {
   const [media3Aspects, setMedia3Aspects] = useState('');
   const [media3Subjects, setMedia3Subjects] = useState('');
   const [media9Worksheets, setMedia9Worksheets] = useState('');
-  
+
   const [saving, setSaving] = useState(false);
   const [uploadField, setUploadField] = useState(''); // helper to track which file field is uploading
 
@@ -114,7 +114,7 @@ export default function Portfolio({ userRole }) {
       const fileRef = ref(storage, path);
       const snapshot = await uploadBytes(fileRef, file);
       const downloadUrl = await getDownloadURL(snapshot.ref);
-      
+
       // Determine which state to set
       if (fieldSetter === 'correctness') setCorrectness(downloadUrl);
       else if (fieldSetter === 'annual') setAnnualResult(downloadUrl);
@@ -163,7 +163,7 @@ export default function Portfolio({ userRole }) {
 
       const docId = editingRow?.id || `row_${rowNum}`;
       await setDoc(doc(db, 'rspg_portfolio', docId), payload);
-      
+
       setIsModalOpen(false);
       loadData();
     } catch (err) {
@@ -227,7 +227,7 @@ export default function Portfolio({ userRole }) {
 
       {/* Official RSPG Table Container */}
       <div className="card" style={{ padding: '1.5rem', backgroundColor: '#fff', color: '#000', border: '1px solid #ccc', overflowX: 'auto' }}>
-        
+
         {/* Table Title Banner */}
         <div style={{ backgroundColor: '#1b5e20', color: '#fff', textAlign: 'center', padding: '10px', fontWeight: 800, fontSize: '1.15rem', borderRadius: '4px', marginBottom: '1rem' }}>
           ตัวอย่างตารางสะสมงาน ของสมาชิกสวนพฤกษศาสตร์โรงเรียน
@@ -341,8 +341,8 @@ export default function Portfolio({ userRole }) {
               <div className="grid-3" style={{ gridTemplateColumns: '1fr 2fr 3fr', gap: '15px' }}>
                 <div className="form-group">
                   <label className="form-label">ลำดับที่</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     className="form-control"
                     value={rowNum}
                     onChange={(e) => setRowNum(e.target.value)}
@@ -351,8 +351,8 @@ export default function Portfolio({ userRole }) {
                 </div>
                 <div className="form-group">
                   <label className="form-label">วัน เดือน ปี</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-control"
                     value={dateStr}
                     onChange={(e) => setDateStr(e.target.value)}
@@ -362,8 +362,8 @@ export default function Portfolio({ userRole }) {
                 </div>
                 <div className="form-group">
                   <label className="form-label">ฝึกอบรม/ประชุมกลุ่ม</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     className="form-control"
                     value={training}
                     onChange={(e) => setTraining(e.target.value)}

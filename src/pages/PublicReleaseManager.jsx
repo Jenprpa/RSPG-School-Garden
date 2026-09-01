@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { Eye, EyeOff, Check, X, ShieldCheck, Search, Sprout, FileText } from 'lucide-react';
@@ -43,17 +43,17 @@ export default function PublicReleaseManager({ userRole }) {
       const plantRef = doc(db, 'plants', plantId);
       const newVal = !currentVal;
       await updateDoc(plantRef, { is_public: newVal });
-      
+
       setStatusMsg(`อัปเดตสิทธิ์การเผยแพร่ของพืชเรียบร้อยแล้ว! (สถานะ: ${newVal ? 'เผยแพร่สาธารณะ' : 'ส่วนตัวในระบบ'})`);
       setTimeout(() => setStatusMsg(''), 3000);
-      
+
       loadPlants();
     } catch (err) {
       alert('ล้มเหลวในการตั้งค่า: ' + err.message);
     }
   };
 
-  const filteredPlants = plants.filter(p => 
+  const filteredPlants = plants.filter(p =>
     p.thai_name.toLowerCase().includes(search.toLowerCase()) ||
     p.plant_code.toLowerCase().includes(search.toLowerCase())
   );
@@ -88,7 +88,7 @@ export default function PublicReleaseManager({ userRole }) {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           {statusMsg && (
             <span style={{ fontSize: '0.82rem', color: 'var(--color-success)', fontWeight: 'bold' }}>
               {statusMsg}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, query, orderBy } from 'firebase/firestore';
 import { CheckCircle2, XCircle, MapPin, Tag, Edit2, Check, ClipboardList } from 'lucide-react';
@@ -26,7 +26,7 @@ export default function Element1({ userRole, onSelectPlant }) {
         list.push({ id: docSnap.id, ...docSnap.data() });
       });
       setPlants(list);
-      
+
       if (list.length > 0) {
         setSelectedPlantId(list[0].id);
         setLat(list[0].gps_lat || '');
@@ -87,16 +87,16 @@ export default function Element1({ userRole, onSelectPlant }) {
 
         {/* Sub Navigation Tabs */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1px' }}>
-          <button 
-            onClick={() => setActiveSubTab('records')} 
+          <button
+            onClick={() => setActiveSubTab('records')}
             className={`btn ${activeSubTab === 'records' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
             <ClipboardList size={14} /> บันทึกกิจกรรมและหลักฐาน (6 ฟิลด์หลัก)
           </button>
-          
-          <button 
-            onClick={() => setActiveSubTab('coords')} 
+
+          <button
+            onClick={() => setActiveSubTab('coords')}
             className={`btn ${activeSubTab === 'coords' ? 'btn-primary' : 'btn-secondary'}`}
             style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
           >
@@ -135,7 +135,7 @@ export default function Element1({ userRole, onSelectPlant }) {
             {/* Left Card: Tree coordinates list */}
             <div className="card">
               <h3 className="card-title">สถานะความพร้อมข้อมูลตำแหน่งพรรณไม้</h3>
-              
+
               {loading ? (
                 <div style={{ textAlign: 'center', padding: '2rem' }}>กำลังโหลดข้อมูล...</div>
               ) : (
@@ -187,7 +187,7 @@ export default function Element1({ userRole, onSelectPlant }) {
             {/* Right Card: GPS coordinates form */}
             <div className="card">
               <h3 className="card-title">บันทึกและปรับปรุงพิกัดตำแหน่ง (GPS & Layout)</h3>
-              
+
               {userRole === 'visitor' ? (
                 <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                   เฉพาะผู้ดูแลระบบ ครู และนักเรียนที่ลงทะเบียน เท่านั้นที่มีสิทธิ์แก้ไขข้อมูลพิกัด
@@ -196,7 +196,7 @@ export default function Element1({ userRole, onSelectPlant }) {
                 <form onSubmit={handleUpdateCoordinates}>
                   <div className="form-group">
                     <label className="form-label">เลือกพรรณไม้สำหรับระบุพิกัด</label>
-                    <select 
+                    <select
                       className="form-control"
                       value={selectedPlantId}
                       onChange={(e) => handlePlantChange(e.target.value)}
@@ -211,8 +211,8 @@ export default function Element1({ userRole, onSelectPlant }) {
                   <div className="grid-2">
                     <div className="form-group">
                       <label className="form-label">พิกัดละติจูด (Latitude)</label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         step="any"
                         className="form-control"
                         placeholder="เช่น 19.3621"
@@ -224,8 +224,8 @@ export default function Element1({ userRole, onSelectPlant }) {
 
                     <div className="form-group">
                       <label className="form-label">พิกัดลองจิจูด (Longitude)</label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         step="any"
                         className="form-control"
                         placeholder="เช่น 98.4372"

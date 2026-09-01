@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, query, where, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { 
-  Sprout, BookOpen, Download, Image, Search, QrCode, Grid, Award, FileText, 
+import {
+  Sprout, BookOpen, Download, Image, Search, QrCode, Grid, Award, FileText,
   ChevronRight, Heart, Users, MapPin, ClipboardList, X, Trash2, Plus, Link, Upload, Shield
 } from 'lucide-react';
 import Portfolio from './Portfolio';
@@ -332,7 +332,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '1rem', backgroundColor: 'var(--bg-main)' }}>
                 <h6 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-nature)', margin: '0 0 8px 0' }}>แผนภาพเชื่อมโยงธรรมชาติแห่งชีวิต</h6>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>วิเคราะห์ความสัมพันธ์แบบพึ่งพาซึ่งกันและกันภายในตัวพืชเอง</p>
-                
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', textAlign: 'center', fontSize: '0.75rem' }}>
                   <div style={{ border: '1px solid var(--border-color)', padding: '10px', borderRadius: '6px', backgroundColor: 'rgba(129, 199, 132, 0.04)' }}>
                     <strong style={{ color: 'var(--color-nature)' }}>รูปลักษณ์ภายนอก</strong>
@@ -347,9 +347,9 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                     <div style={{ marginTop: '6px', color: 'var(--text-muted)' }}>สลัดใบทิ้งช่วงหน้าแล้ง ดอกบานหลังฝน</div>
                   </div>
                 </div>
-                
+
                 <div style={{ textAlign: 'center', margin: '15px 0', fontSize: '1.2rem', color: 'var(--color-nature)' }}>⬇️</div>
-                
+
                 <div style={{ padding: '12px', border: '1px dashed var(--color-nature)', borderRadius: '8px', backgroundColor: 'var(--bg-main)', textAlign: 'center' }}>
                   <strong style={{ fontSize: '0.8rem', display: 'block', marginBottom: '4px' }}>บทสรุปคติสอนใจแบบบูรณาการ</strong>
                   <span style={{ fontSize: '0.78rem', fontStyle: 'italic', color: 'var(--text-main)' }}>
@@ -537,7 +537,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '1rem', backgroundColor: 'var(--bg-main)' }}>
                 <h6 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-primary)', margin: '0 0 8px 0' }}>คำถามวิเคราะห์ดุลยภาพและสมดุลนิเวศ</h6>
-                
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.75rem' }}>
                   <div>
                     <strong style={{ color: 'var(--color-danger)' }}>ประเด็นสมมติ:</strong> "หากดินรอบต้นไม้เกิดความแข็งกระด้างหรือขาดสารอาหารเนื่องจากการราดปูนทับล้อมโคน จะส่งผลกระทบต่อสิ่งมีชีวิตอื่นอย่างไร?"
@@ -718,7 +718,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>โครงสร้างและหัวข้อบันทึกใบงานทางการของ อพ.สธ.</span>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setViewSheetStructure(null)}
               style={{
                 background: 'none',
@@ -739,10 +739,10 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           {/* Scrollable Container */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
             {/* Principle, Objectives & Expected Outcomes Header */}
-            <div style={{ 
-              backgroundColor: 'var(--bg-main)', 
-              borderRadius: '10px', 
-              padding: '1rem', 
+            <div style={{
+              backgroundColor: 'var(--bg-main)',
+              borderRadius: '10px',
+              padding: '1rem',
               borderLeft: `4px solid ${themeColor}`,
               marginBottom: '1.5rem'
             }}>
@@ -767,11 +767,11 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
             </div>
 
             {/* Inner Sub-navigation (worksheets) */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '6px', 
-              overflowX: 'auto', 
-              borderBottom: '1px solid var(--border-color)', 
+            <div style={{
+              display: 'flex',
+              gap: '6px',
+              overflowX: 'auto',
+              borderBottom: '1px solid var(--border-color)',
               paddingBottom: '8px',
               marginBottom: '1.25rem',
               whiteSpace: 'nowrap'
@@ -798,10 +798,10 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
             </div>
 
             {/* Active Worksheet Preview */}
-            <div style={{ 
-              border: '1px solid var(--border-color)', 
-              borderRadius: '12px', 
-              padding: '1.25rem', 
+            <div style={{
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+              padding: '1.25rem',
               backgroundColor: 'var(--bg-card)',
               position: 'relative'
             }}>
@@ -836,7 +836,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               * ข้อมูลข้างต้นเป็นเพียงโครงสร้างย่อของกิจกรรมเพื่อการศึกษาของโรงเรียนปายวิทยาคาร
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button 
+              <button
                 onClick={() => setViewSheetStructure(null)}
                 className="btn btn-secondary"
                 style={{ padding: '0.5rem 1rem', fontSize: '0.82rem' }}
@@ -851,13 +851,13 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                 }
                 download
                 className="btn btn-primary"
-                style={{ 
-                  padding: '0.5rem 1rem', 
-                  fontSize: '0.82rem', 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  gap: '6px', 
-                  textDecoration: 'none', 
+                style={{
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.82rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  textDecoration: 'none',
                   color: 'white',
                   backgroundColor: themeColor,
                   border: 'none'
@@ -872,8 +872,8 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
     );
   };
 
-  const filteredPlants = plantsList.filter(p => 
-    p.thai_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredPlants = plantsList.filter(p =>
+    p.thai_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.scientific_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.plant_code.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -965,7 +965,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
       setDocFile(null);
       setDocUrl('');
       setDocSize('');
-      
+
       // Reset form
       const formEl = document.getElementById('public-doc-add-form');
       if (formEl) formEl.reset();
@@ -999,7 +999,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
       await deleteDoc(doc(db, 'rspg_public_docs', id));
       setStatusMsg('✅ ลบเอกสารสำเร็จ!');
       setTimeout(() => setStatusMsg(''), 4000);
-      
+
       // Reload list
       const docsSnap = await getDocs(collection(db, 'rspg_public_docs'));
       const docsData = [];
@@ -1036,7 +1036,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
             โหมดผู้ดูแลระบบ: คุณสามารถปรับแต่งและจัดการเอกสารดาวน์โหลดได้โดยตรง
           </span>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
+            <button
               onClick={() => {
                 setViewMode('internal');
                 setActiveTab('banners-config');
@@ -1046,7 +1046,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
             >
               🖼️ ไปหน้าตั้งค่าแบนเนอร์
             </button>
-            <button 
+            <button
               onClick={() => {
                 setActiveSubTab('downloads');
                 setTimeout(() => {
@@ -1062,7 +1062,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           </div>
         </div>
       )}
-      
+
       {/* Website Welcome & Identity Box (Placed cleanly below to avoid clashing with the royal portrait) */}
       <div className="card glass-panel" style={{
         padding: '1.5rem 2rem',
@@ -1076,37 +1076,37 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
       }}>
         {/* Unified Collaborative Identity Badge */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            backgroundColor: 'var(--bg-main)', 
-            padding: '6px 16px 6px 12px', 
-            borderRadius: '30px', 
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            backgroundColor: 'var(--bg-main)',
+            padding: '6px 16px 6px 12px',
+            borderRadius: '30px',
             boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
             border: '1px solid var(--border-color)'
           }}>
             {/* Primary Identity: RSPG Logo */}
-            <img 
-              src="/rspg-logo.png" 
-              alt="อพ.สธ." 
-              style={{ width: '32px', height: 'auto', objectFit: 'contain' }} 
+            <img
+              src="/rspg-logo.png"
+              alt="อพ.สธ."
+              style={{ width: '32px', height: 'auto', objectFit: 'contain' }}
             />
             {/* Secondary Identity: School Logo */}
-            <img 
-              src="/school-logo.png" 
-              alt="โรงเรียนปายวิทยาคาร" 
-              style={{ 
-                width: '18px', 
-                height: '18px', 
-                objectFit: 'contain', 
-                marginLeft: '8px', 
-                opacity: 0.8 
-              }} 
+            <img
+              src="/school-logo.png"
+              alt="โรงเรียนปายวิทยาคาร"
+              style={{
+                width: '18px',
+                height: '18px',
+                objectFit: 'contain',
+                marginLeft: '8px',
+                opacity: 0.8
+              }}
             />
             {/* Connected and Spaced Text */}
-            <span style={{ 
-              fontSize: '0.78rem', 
-              fontWeight: 700, 
+            <span style={{
+              fontSize: '0.78rem',
+              fontWeight: 700,
               color: 'var(--color-primary)',
               letterSpacing: '0.3px',
               marginLeft: '14px'
@@ -1117,29 +1117,29 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
         </div>
 
         {/* Title, Subtitle, and CTA Buttons in a flex row */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          flexWrap: 'wrap', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
           gap: '1.5rem',
           marginTop: '0.25rem'
         }}>
           <div style={{ flex: '1', minWidth: '300px' }}>
-            <h1 style={{ 
-              fontSize: 'clamp(1.4rem, 4vw, 2rem)', 
-              fontWeight: 900, 
-              color: 'var(--color-primary)', 
-              margin: '0 0 6px 0', 
+            <h1 style={{
+              fontSize: 'clamp(1.4rem, 4vw, 2rem)',
+              fontWeight: 900,
+              color: 'var(--color-primary)',
+              margin: '0 0 6px 0',
               lineHeight: 1.2,
               letterSpacing: '-0.3px'
             }}>
               {banners.title}
             </h1>
-            <p style={{ 
-              fontSize: '0.95rem', 
-              color: 'var(--text-muted)', 
-              fontWeight: 600, 
+            <p style={{
+              fontSize: '0.95rem',
+              color: 'var(--text-muted)',
+              fontWeight: 600,
               margin: 0,
               lineHeight: 1.4
             }}>
@@ -1149,24 +1149,24 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
 
           {/* Quick CTA Actions */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button 
-              onClick={() => setActiveSubTab('plants')} 
-              className="btn btn-primary" 
+            <button
+              onClick={() => setActiveSubTab('plants')}
+              className="btn btn-primary"
               style={{ padding: '0.6rem 1.5rem', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
             >
               🌿 สำรวจทะเบียนพรรณไม้
             </button>
-            <button 
+            <button
               onClick={() => {
                 const event = new CustomEvent('switch-to-internal');
                 window.dispatchEvent(event);
               }}
-              className="btn btn-secondary" 
-              style={{ 
-                padding: '0.6rem 1.5rem', 
-                fontSize: '0.88rem', 
-                backgroundColor: '#F5F5DC', 
-                border: '1px solid #D4AF37', 
+              className="btn btn-secondary"
+              style={{
+                padding: '0.6rem 1.5rem',
+                fontSize: '0.88rem',
+                backgroundColor: '#F5F5DC',
+                border: '1px solid #D4AF37',
                 color: 'var(--color-primary)',
                 cursor: 'pointer'
               }}
@@ -1176,11 +1176,11 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           </div>
         </div>
 
-        <div style={{ 
-          fontSize: '0.9rem', 
-          color: 'var(--text-main)', 
-          lineHeight: 1.6, 
-          margin: '0.25rem 0 0 0', 
+        <div style={{
+          fontSize: '0.9rem',
+          color: 'var(--text-main)',
+          lineHeight: 1.6,
+          margin: '0.25rem 0 0 0',
           opacity: 0.95,
           borderTop: '1px solid var(--border-color)',
           paddingTop: '0.75rem'
@@ -1234,7 +1234,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
           {/* HOME TAB */}
           {activeSubTab === 'home' && (
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }} className="rspg-progress-grid">
-              
+
               {/* Left Column: General info and Sharing Goodness */}
               <div>
                 {/* Welcome section */}
@@ -1242,9 +1242,9 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '0.75rem' }}>
                     สารพฤกษศาสตร์ปายวิทยาคาร
                   </h3>
-                  <p style={{ 
-                    fontSize: 'clamp(0.8rem, 2.5vw, 0.95rem)', 
-                    lineHeight: 1.6, 
+                  <p style={{
+                    fontSize: 'clamp(0.8rem, 2.5vw, 0.95rem)',
+                    lineHeight: 1.6,
                     color: 'var(--text-main)',
                     margin: 0,
                     whiteSpace: 'nowrap',
@@ -1355,14 +1355,14 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               {/* Plant Grid Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
                 {filteredPlants.map(plant => (
-                  <div 
-                    key={plant.id} 
-                    className="card plant-card" 
+                  <div
+                    key={plant.id}
+                    className="card plant-card"
                     onClick={() => onSelectPlant(plant)}
                     style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'transform 0.2s', border: '1px solid var(--border-color)' }}
                   >
-                    <img 
-                      src={plant.image_url || 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=400&q=80'} 
+                    <img
+                      src={plant.image_url || 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=400&q=80'}
                       alt={plant.thai_name}
                       style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px' }}
                     />
@@ -1438,10 +1438,10 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                     pdfUrl: '/08_benefit_humanity.pdf'
                   }
                 ].map((strand, index) => {
-                  const strandActivities = activitiesList.filter(act => 
+                  const strandActivities = activitiesList.filter(act =>
                     strand.matchTypes.includes(act.subject_type)
                   );
-                  
+
                   return (
                     <div key={index} className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%', borderTop: `4px solid ${strand.color}` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -1451,7 +1451,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.25rem', flexGrow: 0 }}>
                         {strand.desc}
                       </p>
-                      
+
                       <div style={{ flexGrow: 1, borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
                         <h5 style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '8px', color: strand.color }}>
                           แผนงาน/หลักฐานการจัดกิจกรรม ({strandActivities.length})
@@ -1479,17 +1479,17 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                       </div>
 
                       <div style={{ display: 'flex', gap: '8px', marginTop: '1.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
-                        <button 
+                        <button
                           onClick={() => { setViewSheetStructure(strand.id); setActiveWorksheetSubTab(0); }}
-                          className="btn btn-secondary" 
+                          className="btn btn-secondary"
                           style={{ flex: 1, padding: '8px 10px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', whiteSpace: 'nowrap' }}
                         >
                           <ClipboardList size={14} /> โครงสร้างใบงาน
                         </button>
-                        <a 
-                          href={strand.pdfUrl} 
+                        <a
+                          href={strand.pdfUrl}
                           download
-                          className="btn btn-primary" 
+                          className="btn btn-primary"
                           style={{ flex: 1, padding: '8px 10px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', textDecoration: 'none', color: 'white', whiteSpace: 'nowrap' }}
                         >
                           <Download size={14} /> ดาวน์โหลด PDF
@@ -1574,13 +1574,13 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                   </span>
                 )}
               </div>
-              
+
               <div style={{
                 display: isLoggedIn && userRole === 'admin' ? 'grid' : 'block',
                 gridTemplateColumns: isLoggedIn && userRole === 'admin' ? '1.5fr 1fr' : 'none',
                 gap: '2rem'
               }} className="rspg-progress-grid">
-                
+
                 {/* Left Column: Documents List */}
                 <div>
                   {/* Official worksheets from RSPG */}
@@ -1629,21 +1629,21 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                             <span style={{ fontSize: '0.88rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={docItem.title}>{docItem.title}</span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                            <a 
-                              href={docItem.file_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="btn btn-secondary" 
+                            <a
+                              href={docItem.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-secondary"
                               style={{ padding: '0.35rem 0.6rem', fontSize: '0.78rem', display: 'inline-flex', gap: '4px', alignItems: 'center' }}
                             >
                               <Download size={12} /> ดาวน์โหลด ({docItem.file_size || 'ดูเอกสาร'})
                             </a>
                             {isLoggedIn && userRole === 'admin' && (
-                              <button 
+                              <button
                                 onClick={() => handleDeleteDocument(docItem.id)}
                                 className="btn btn-secondary"
-                                style={{ 
-                                  padding: '0.35rem 0.5rem', 
+                                style={{
+                                  padding: '0.35rem 0.5rem',
                                   backgroundColor: 'rgba(211,47,47,0.08)',
                                   border: '1px solid rgba(211,47,47,0.2)',
                                   color: 'var(--color-danger)',
@@ -1815,7 +1815,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
                 พิมพ์หรือสแกนรหัสพรรณไม้ อพ.สธ. เพื่อดึงข้อมูลประวัติ สัณฐานวิทยา และรูปถ่าย 6 ด้านย่อย
               </p>
-              
+
               <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
                 <input
                   type="text"
@@ -1841,9 +1841,9 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
                         พบข้อมูลพืช: {qrLookupResult.thai_name}
                       </h4>
                       <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 10px 0' }}>{qrLookupResult.scientific_name}</p>
-                      <button 
-                        onClick={() => onSelectPlant(qrLookupResult)} 
-                        className="btn btn-secondary" 
+                      <button
+                        onClick={() => onSelectPlant(qrLookupResult)}
+                        className="btn btn-secondary"
                         style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
                       >
                         🔍 คลิกเพื่อดูสัณฐานวิเคราะห์ ก.7-003 และพิกัด

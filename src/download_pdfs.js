@@ -1,4 +1,4 @@
-import https from 'https';
+﻿import https from 'https';
 import fs from 'fs';
 import path from 'path';
 
@@ -18,7 +18,7 @@ if (!fs.existsSync(assetsDir)) {
 Object.entries(urls).forEach(([filename, url]) => {
   const destPath = path.join(assetsDir, filename);
   console.log(`Downloading ${url} to ${destPath}...`);
-  
+
   const file = fs.createWriteStream(destPath);
   https.get(url, (response) => {
     if (response.statusCode !== 200) {

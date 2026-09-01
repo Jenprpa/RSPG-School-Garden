@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, getDocs, setDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
@@ -13,7 +13,7 @@ export default function BannerConfig({ userRole }) {
     banner_url: '/school-banner.jpg',
     welcome_text: 'ยินดีต้อนรับสู่ระบบงานสวนพฤกษศาสตร์โรงเรียน แหล่งเรียนรู้ บ่มเพาะเยาวชน และรักษาสรรพสิ่งรอบตัว'
   });
-  
+
   const [goodness, setGoodness] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function BannerConfig({ userRole }) {
   const [status, setStatus] = useState('');
   const [schoolMapFile, setSchoolMapFile] = useState(null);
   const [mapPreviewUrl, setMapPreviewUrl] = useState('');
-  
+
   // Goodness form states
   const [gTitle, setGTitle] = useState('');
   const [gDesc, setGDesc] = useState('');
@@ -47,7 +47,7 @@ export default function BannerConfig({ userRole }) {
       if (!configSnap.empty) {
         setBanners(configSnap.docs[0].data());
       }
-      
+
       // 2. Fetch goodness items
       const goodSnap = await getDocs(collection(db, 'rspg_goodness'));
       const list = [];
@@ -147,7 +147,7 @@ export default function BannerConfig({ userRole }) {
     setStatus('กำลังบันทึกตั้งค่าเว็บไซต์ประชาสัมพันธ์...');
     try {
       let finalBanners = { ...banners };
-      
+
       if (schoolMapFile) {
         setStatus('กำลังบีบอัดและอัปโหลดภาพแผนที่โรงเรียน...');
         const mapUrl = await handleUploadSchoolMap(schoolMapFile);
@@ -287,7 +287,7 @@ export default function BannerConfig({ userRole }) {
       setDocFile(null);
       setDocUrl('');
       setDocSize('');
-      
+
       e.target.reset();
 
       setStatus('✅ บันทึกเอกสารเผยแพร่สาธารณะสำเร็จ!');
@@ -333,7 +333,7 @@ export default function BannerConfig({ userRole }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '2rem' }} className="rspg-progress-grid">
-        
+
         {/* Banner Configuration Panel */}
         <div>
           <div className="card">
@@ -402,9 +402,9 @@ export default function BannerConfig({ userRole }) {
                     <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 600, marginBottom: '6px' }}>
                       ภาพตัวอย่างแผนที่ใหม่ที่จะอัปโหลด (ขนาดไฟล์จริง: {(schoolMapFile.size / (1024 * 1024)).toFixed(2)} MB)
                     </div>
-                    <img 
-                      src={mapPreviewUrl} 
-                      alt="New map preview" 
+                    <img
+                      src={mapPreviewUrl}
+                      alt="New map preview"
                       style={{ width: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                     />
                   </div>
@@ -432,9 +432,9 @@ export default function BannerConfig({ userRole }) {
                         ลบแผนที่และกลับสู่ระบบจำลอง
                       </button>
                     </div>
-                    <img 
-                      src={banners.school_map_url} 
-                      alt="Current school map background" 
+                    <img
+                      src={banners.school_map_url}
+                      alt="Current school map background"
                       style={{ width: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                     />
                   </div>
@@ -479,7 +479,7 @@ export default function BannerConfig({ userRole }) {
             {['admin', 'rspg_board', 'teacher'].includes(userRole) && (
               <form onSubmit={handleAddGoodness} style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <h5 style={{ fontWeight: 700, marginBottom: '10px', fontSize: '0.9rem', color: 'var(--color-primary)' }}>✍️ เพิ่มบันทึกแบ่งปันความดีงามใหม่</h5>
-                
+
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.78rem' }}>ชื่อกิจกรรมความดีงาม</label>
                   <input
@@ -571,7 +571,7 @@ export default function BannerConfig({ userRole }) {
             <div>
               <form onSubmit={handleAddDocument} style={{ padding: '1rem', backgroundColor: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <h5 style={{ fontWeight: 700, marginBottom: '10px', fontSize: '0.9rem', color: 'var(--color-primary)' }}>✍️ อัปโหลดเอกสารเผยแพร่ใหม่</h5>
-                
+
                 <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.78rem' }}>ชื่อเรื่อง / ชื่อเอกสาร</label>
                   <input
@@ -651,9 +651,9 @@ export default function BannerConfig({ userRole }) {
                         </div>
                         {docFile.type.startsWith('image/') && (
                           <div style={{ marginTop: '5px' }}>
-                            <img 
-                              src={URL.createObjectURL(docFile)} 
-                              alt="Doc Preview" 
+                            <img
+                              src={URL.createObjectURL(docFile)}
+                              alt="Doc Preview"
                               style={{ maxHeight: '100px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                             />
                           </div>
@@ -687,10 +687,10 @@ export default function BannerConfig({ userRole }) {
                   </>
                 )}
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={uploadingDoc}
-                  className="btn btn-primary" 
+                  className="btn btn-primary"
                   style={{ display: 'flex', gap: '6px', alignItems: 'center', fontSize: '0.82rem', width: '100%', justifyContent: 'center' }}
                 >
                   <Plus size={14} /> {uploadingDoc ? 'กำลังบันทึก...' : 'บันทึกเอกสารเผยแพร่'}

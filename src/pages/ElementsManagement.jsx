@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -185,7 +185,7 @@ export default function ElementsManagement({ userRole }) {
           <Layers size={22} />
           ด้านที่ 2: การดำเนินงาน 5 องค์ประกอบ (15 ตัวชี้วัดสำหรับขอกรรมการประเมินขั้นที่ 1)
         </h3>
-        
+
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {[1, 2, 3, 4, 5].map(num => (
             <button
@@ -280,9 +280,9 @@ export default function ElementsManagement({ userRole }) {
 
                 <div>
                   {crit.image_url ? (
-                    <img 
-                      src={crit.image_url} 
-                      alt="รูปหลักฐานการจัดกิจกรรม" 
+                    <img
+                      src={crit.image_url}
+                      alt="รูปหลักฐานการจัดกิจกรรม"
                       style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border-color)' }}
                     />
                   ) : (
@@ -396,9 +396,9 @@ export default function ElementsManagement({ userRole }) {
               <div className="grid-2" style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--border-color)', marginTop: '1rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label" style={{ fontSize: '0.8rem' }}>ไฟล์เอกสารอ้างอิง (.pdf)</label>
-                  <input 
-                    type="file" 
-                    accept=".pdf" 
+                  <input
+                    type="file"
+                    accept=".pdf"
                     id="crit-file-pdf"
                     onChange={handlePdfChange}
                     style={{ display: 'none' }}
@@ -413,9 +413,9 @@ export default function ElementsManagement({ userRole }) {
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label" style={{ fontSize: '0.8rem' }}>ภาพหลักฐาน (.jpg/.png)</label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     id="crit-file-img"
                     onChange={handleImageChange}
                     style={{ display: 'none' }}
@@ -428,9 +428,9 @@ export default function ElementsManagement({ userRole }) {
                   </span>
                   {uploadImageFile && (
                     <div style={{ marginTop: '8px' }}>
-                      <img 
-                        src={URL.createObjectURL(uploadImageFile)} 
-                        alt="Evidence Preview" 
+                      <img
+                        src={URL.createObjectURL(uploadImageFile)}
+                        alt="Evidence Preview"
                         style={{ maxHeight: '80px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                       />
                     </div>

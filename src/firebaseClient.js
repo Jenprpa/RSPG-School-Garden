@@ -1,6 +1,7 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
+﻿import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
 
 // Hardcoded Firebase Config from user's project settings to connect automatically
 const defaultFirebaseConfig = {
@@ -9,7 +10,7 @@ const defaultFirebaseConfig = {
   projectId: "rspg-school-garden",
   storageBucket: "rspg-school-garden.firebasestorage.app",
   messagingSenderId: "891945309006",
-  appId: "1:891945309006:web:f6c2a4b8c144f33843041f",
+  appId: "1:891945309006:web:f6c2a4b8c144f3384304f5",
   measurementId: "G-3V4SHJ4R40"
 };
 
@@ -35,17 +36,18 @@ const getFirebaseConfig = () => {
 const setupFirebase = () => {
   const { config, isConfigured } = getFirebaseConfig();
   if (!isConfigured || !config) {
-    return { app: null, db: null, storage: null, isConfigured: false };
+    return { app: null, db: null, storage: null, auth: null, isConfigured: false };
   }
 
   try {
     const app = getApps().length === 0 ? initializeApp(config) : getApp();
     const db = getFirestore(app);
     const storage = getStorage(app);
-    return { app, db, storage, isConfigured: true };
+    const auth = getAuth(app);
+    return { app, db, storage, auth, isConfigured: true };
   } catch (err) {
     console.error('Firebase initialization error:', err);
-    return { app: null, db: null, storage: null, isConfigured: false };
+    return { app: null, db: null, storage: null, auth: null, isConfigured: false };
   }
 };
 
@@ -53,6 +55,7 @@ const firebaseSystem = setupFirebase();
 
 export const db = firebaseSystem.db;
 export const storage = firebaseSystem.storage;
+export const auth = firebaseSystem.auth;
 
 export const isFirebaseConfigured = () => {
   return firebaseSystem.isConfigured;

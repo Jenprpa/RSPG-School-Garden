@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MapPin, Info, X, Filter, Search } from 'lucide-react';
 
 export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
@@ -15,7 +15,7 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
   // Find min/max coordinate bounds to map them into SVG canvas
   const getCoordinates = () => {
     if (!plants || plants.length === 0) return [];
-    
+
     // Fixed geographic bounds matching the downloaded Pai Wittayakarn satellite map image:
     const minLat = 19.35450;
     const maxLat = 19.35744;
@@ -45,13 +45,13 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
 
   // Apply filters
   const filteredPlants = mappedPlants.filter(p => {
-    const matchSearch = (p.thai_name || '').toLowerCase().includes(search.toLowerCase()) || 
+    const matchSearch = (p.thai_name || '').toLowerCase().includes(search.toLowerCase()) ||
                         (p.plant_code || '').toLowerCase().includes(search.toLowerCase()) ||
                         (p.scientific_name || '').toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === 'all' || 
+    const matchType = typeFilter === 'all' ||
                       (typeFilter === 'tree' && p.plant_type === 'ไม้ต้น') ||
                       (typeFilter === 'other' && p.plant_type !== 'ไม้ต้น');
-    const matchTag = tagFilter === 'all' || 
+    const matchTag = tagFilter === 'all' ||
                      (tagFilter === 'yes' && p.is_tagged === 'มี') ||
                      (tagFilter === 'no' && p.is_tagged !== 'มี');
     return matchSearch && matchType && matchTag;
@@ -73,16 +73,16 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
       <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.02)', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flex: 1, minWidth: '180px', backgroundColor: 'var(--bg-card)', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
           <Search size={14} color="var(--text-muted)" />
-          <input 
-            type="text" 
-            placeholder="ค้นหาชื่อพืช หรือรหัส..." 
-            className="form-control" 
+          <input
+            type="text"
+            placeholder="ค้นหาชื่อพืช หรือรหัส..."
+            className="form-control"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setSelectedMapPlant(null); }}
             style={{ border: 'none', fontSize: '0.78rem', padding: '4px 2px', width: '100%', outline: 'none', backgroundColor: 'transparent' }}
           />
         </div>
-        
+
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setSelectedMapPlant(null); }}
@@ -93,7 +93,7 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
           <option value="tree">ไม้ยืนต้น / ไม้ต้น</option>
           <option value="other">พืชล้มลุก / อื่น ๆ</option>
         </select>
-        
+
         <select
           value={tagFilter}
           onChange={(e) => { setTagFilter(e.target.value); setSelectedMapPlant(null); }}
@@ -115,8 +115,8 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
         overflow: 'hidden'
       }}>
         {/* Interactive SVG School Layout */}
-        <svg 
-          viewBox={`0 0 ${width} ${height}`} 
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
           style={{ width: '100%', height: 'auto', display: 'block' }}
         >
           {/* Background grid */}
@@ -128,54 +128,54 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
           <rect width="100%" height="100%" fill="url(#grid)" />
 
           {/* Render satellite Google Earth image if available */}
-          <image 
-            href={schoolMapUrl || "/pai-satellite-map.png"} 
-            x="0" 
-            y="0" 
-            width={width} 
-            height={height} 
-            preserveAspectRatio="none" 
-            opacity="0.9" 
+          <image
+            href={schoolMapUrl || "/pai-satellite-map.png"}
+            x="0"
+            y="0"
+            width={width}
+            height={height}
+            preserveAspectRatio="none"
+            opacity="0.9"
           />
 
           {/* Plant Nodes */}
           {filteredPlants.map((plant) => {
             const isSelected = selectedMapPlant?.id === plant.id;
             return (
-              <g 
-                key={plant.id} 
+              <g
+                key={plant.id}
                 onClick={() => setSelectedMapPlant(plant)}
                 style={{ cursor: 'pointer' }}
               >
                 {/* Pulsing glow ring */}
-                <circle 
-                  cx={plant.mapX} 
-                  cy={plant.mapY} 
-                  r={isSelected ? "14" : "10"} 
-                  fill={isSelected ? "var(--color-gold)" : "var(--color-primary)"} 
+                <circle
+                  cx={plant.mapX}
+                  cy={plant.mapY}
+                  r={isSelected ? "14" : "10"}
+                  fill={isSelected ? "var(--color-gold)" : "var(--color-primary)"}
                   opacity={isSelected ? "0.5" : "0.3"}
                 >
                   <animate attributeName="r" values="6;12;6" dur="2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite" />
                 </circle>
-                
+
                 {/* Center point */}
-                <circle 
-                  cx={plant.mapX} 
-                  cy={plant.mapY} 
-                  r="6" 
-                  fill={plant.plant_type === 'ไม้ต้น' ? 'var(--color-primary)' : 'var(--color-orchid)'} 
-                  stroke={isSelected ? "var(--color-gold)" : "#fff"} 
-                  strokeWidth={isSelected ? "2.5" : "1.5"} 
+                <circle
+                  cx={plant.mapX}
+                  cy={plant.mapY}
+                  r="6"
+                  fill={plant.plant_type === 'ไม้ต้น' ? 'var(--color-primary)' : 'var(--color-orchid)'}
+                  stroke={isSelected ? "var(--color-gold)" : "#fff"}
+                  strokeWidth={isSelected ? "2.5" : "1.5"}
                 />
-                
+
                 {/* Text label */}
-                <text 
-                  x={plant.mapX} 
-                  y={plant.mapY - 12} 
-                  fontSize="8" 
-                  fontWeight="bold" 
-                  fill={isSelected ? "var(--color-gold)" : "var(--text-main)"} 
+                <text
+                  x={plant.mapX}
+                  y={plant.mapY - 12}
+                  fontSize="8"
+                  fontWeight="bold"
+                  fill={isSelected ? "var(--color-gold)" : "var(--text-main)"}
                   textAnchor="middle"
                   style={{
                     backgroundColor: 'var(--bg-card)',
@@ -235,14 +235,14 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
                 to { transform: translateY(0); opacity: 1; }
               }
             `}</style>
-            
+
             {/* Thumbnail */}
-            <img 
+            <img
               src={selectedMapPlant.image_url || `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><rect width="60" height="60" fill="%23a855f7" opacity="0.1"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="24">🌿</text></svg>`}
               alt={selectedMapPlant.thai_name}
               style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.12)', flexShrink: 0 }}
             />
-            
+
             {/* Information */}
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
@@ -250,7 +250,7 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--color-gold)' }}>
                     {selectedMapPlant.thai_name}
                   </h4>
-                  <button 
+                  <button
                     onClick={() => setSelectedMapPlant(null)}
                     style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
                   >
@@ -261,15 +261,15 @@ export default function PlantMap({ plants, onSelectPlant, schoolMapUrl }) {
                   {selectedMapPlant.scientific_name || 'ไม่ระบุชื่อวิทยาศาสตร์'}
                 </span>
               </div>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', flexWrap: 'wrap', gap: '6px' }}>
                 <div style={{ display: 'flex', gap: '8px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)' }}>
                   <span>รหัส: <b>{selectedMapPlant.plant_code}</b></span>
                   <span>•</span>
                   <span>ป้ายรหัส: <b>{selectedMapPlant.is_tagged === 'มี' ? 'ติดตั้งแล้ว' : 'ไม่มี'}</b></span>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => onSelectPlant(selectedMapPlant)}
                   style={{
                     padding: '3px 8px',

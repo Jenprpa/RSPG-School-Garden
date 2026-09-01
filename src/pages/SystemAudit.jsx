@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs } from 'firebase/firestore';
 import { ShieldAlert, CheckCircle, AlertTriangle, FileText, ArrowRight, UserCheck, Eye } from 'lucide-react';
@@ -81,7 +81,7 @@ export default function SystemAudit() {
       kList.forEach(k => {
         const matchingPlant = pList.find(p => p.id === k.plant_id);
         const name = matchingPlant ? matchingPlant.thai_name : 'ไม่ระบุชื่อพืช';
-        
+
         // Unchecked
         if (!k.status || k.status === 'รอตรวจ' || k.status === 'pending') {
           uncheckedK7Count++;
@@ -123,7 +123,7 @@ export default function SystemAudit() {
       // Scan 4: Criteria Completion
       const hasCommitteeOrder = aList.some(d => d.document_type === 'คำสั่งแต่งตั้งคณะกรรมการ' && d.attachment_url);
       const totalScore = cList.reduce((sum, item) => sum + (item.self_score || 0), 0);
-      
+
       if (totalScore >= 400 && hasCommitteeOrder) {
         readyToPrintCount = 1;
       }
@@ -193,7 +193,7 @@ export default function SystemAudit() {
 
       {/* Readiness Indicators */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }} className="rspg-progress-grid">
-        
+
         {/* Release Status */}
         <div className="card" style={{ borderLeft: '4px solid var(--color-primary)', display: 'flex', gap: '15px', alignItems: 'center' }}>
           <div style={{ padding: '12px', borderRadius: '50%', backgroundColor: 'rgba(186,85,211,0.06)' }}>

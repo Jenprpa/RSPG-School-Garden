@@ -1,160 +1,248 @@
-import React from 'react';
-import { Shield, BookOpen, Globe, Lock, CheckSquare } from 'lucide-react';
+﻿import { useState } from 'react';
+import { Calendar, ChevronDown, User, LogOut, Menu } from 'lucide-react';
 
-export default function Navbar({ activeTab, userRole, viewMode, setViewMode }) {
+export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
+  const [academicYear, setAcademicYear] = useState('2567');
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+
   const getTabTitle = () => {
     if (viewMode === 'public') {
       return 'เว็บไซต์เผยแพร่ข้อมูลสวนพฤกษศาสตร์โรงเรียน (สาธารณะ)';
     }
 
     switch (activeTab) {
-      case 'dashboard': return 'แดชบอร์ดบริหารดำเนินงานและปีการศึกษา';
+      case 'dashboard': return 'ภาพรวม (Dashboard)';
       case 'k7009-form': return 'แบบประเมินสถานศึกษา ก.7-009';
-      case 'k7003-docs': return 'ระบบวิเคราะห์สัณฐานพรรณไม้ ก.7-003';
-      case 'student-portfolios': return 'ผลงานนักเรียน ก.7-003 (Student Portfolios)';
-      case 'plant-registry': return 'ทะเบียนพรรณไม้โรงเรียน (Plant Registry)';
-      case 'plant-study': return 'พืชศึกษา (องค์ประกอบที่ 3)';
-      case 'teacher-learning': return 'ระบบเก็บเอกสารจัดการสอนของครู';
-      case 'local-resources': return 'ฐานทรัพยากรท้องถิ่น (Local Resources)';
-      case 'evidence-vault': return 'คลังหลักฐานสรุปผลเสนอประเมิน';
-      case 'evidence-mapping': return 'ระบบจัดแผนผังหลักฐานประเมิน (Evidence Mapping)';
-      case 'readiness-check': return 'ระบบเช็คความพร้อมการประเมิน (Readiness Audit)';
-      case 'evaluation-report': return 'ระบบพิมพ์และส่งออกเอกสารรายงาน';
-      case 'banners-config': return 'จัดการเว็บไซต์ประชาสัมพันธ์สาธารณะ';
-      case 'settings': return 'ตั้งค่าระบบฐานข้อมูล อพ.สธ.';
-      case 'profile': return 'ข้อมูลผู้ใช้งานและเปลี่ยนรหัสผ่าน';
-      case 'admin-management': return 'ด้านที่ 1: การบริหารและการจัดการดำเนินงาน อพ.สธ.';
-      case 'elements-management': return 'ด้านที่ 2: ดำเนินงาน 5 องค์ประกอบพฤกษศาสตร์โรงเรียน';
-      case 'system-audit': return 'ระบบตรวจความพร้อมและการตรวจสอบภายใน (System Audit)';
-      default: return 'ระบบงานสวนพฤกษศาสตร์โรงเรียน (อพ.สธ.)';
+      case 'k7003-docs': return 'องค์ประกอบที่ 5: การนำไปใช้ประโยชน์';
+      case 'student-portfolios': return 'องค์ประกอบที่ 4: รายงานผลการเรียนรู้';
+      case 'plant-registry': return 'องค์ประกอบที่ 2: รวบรวมพรรณไม้เข้าปลูก';
+      case 'plant-study': return 'องค์ประกอบที่ 3: ศึกษาข้อมูลด้านต่าง ๆ';
+      case 'teacher-learning': return 'ด้านที่ 3: ผลการดำเนินงาน';
+      case 'local-resources': return 'สาระที่ 3: ประโยชน์แท้แก่มหาชน';
+      case 'evidence-vault': return 'ตรวจหลักฐาน / คลังหลักฐาน';
+      case 'evidence-mapping': return 'สาระที่ 2: สรรพสิ่งล้วนพันเกี่ยว';
+      case 'readiness-check': return 'ด้านที่ 4: ความถูกต้องทางวิชาการ';
+      case 'evaluation-report': return 'รายงานและส่งออกเอกสาร';
+      case 'banners-config': return 'จัดการเว็บไซต์ประชาสัมพันธ์';
+      case 'settings': return 'ตั้งค่าระบบฐานข้อมูล';
+      case 'profile': return 'ข้อมูลผู้ใช้งาน';
+      case 'admin-management': return 'ด้านที่ 1: การบริหารและการจัดการ';
+      case 'elements-management': return 'ด้านที่ 2: การดำเนินงาน 5 องค์ประกอบ';
+      case 'system-audit': return 'ระบบตรวจความพร้อมภายใน';
+      case 'plant-tags': return 'องค์ประกอบที่ 1: จัดทำป้ายชื่อพรรณไม้';
+      case 'online-worksheets': return 'สาระที่ 1: ธรรมชาติแห่งชีวิต';
+      default: return 'ภาพรวม (Dashboard)';
     }
   };
 
   const getRoleLabel = (role) => {
     switch (role) {
-      case 'admin': return '1. ผู้ดูแลระบบ (Admin)';
-      case 'rspg_board': return '2. คณะกรรมการ อพ.สธ.';
-      case 'teacher': return '3. ครูผู้สอน';
-      case 'project_advisor': return '4. ครูที่ปรึกษาโครงงาน';
-      case 'student': return '5. นักเรียน';
-      case 'doc_officer': return '6. เจ้าหน้าที่งานเอกสาร';
-      case 'executive': return '7. ผู้บริหาร';
-      case 'evaluator': return '8. กรรมการประเมิน (Read-Only)';
-      default: return 'ผู้ใช้ทั่วไป';
+      case 'admin': return 'ผู้ดูแลระบบ (Admin)';
+      case 'rspg_board': return 'คณะกรรมการ อพ.สธ.';
+      case 'teacher': return 'ครูผู้รับผิดชอบ';
+      case 'project_advisor': return 'ครูที่ปรึกษา';
+      case 'student': return 'นักเรียน';
+      case 'doc_officer': return 'เจ้าหน้าที่งานเอกสาร';
+      case 'executive': return 'ผู้บริหาร';
+      case 'evaluator': return 'กรรมการประเมิน';
+      default: return 'ครูผู้รับผิดชอบ';
     }
   };
 
   return (
-    <header className="navbar" style={{ padding: '0.75rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-      
-      {/* Title */}
-      <div className="navbar-left">
-        <h2 className="page-title" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            backgroundColor: '#fff', 
-            borderRadius: '50%', 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            boxShadow: '0 0 6px rgba(0, 0, 0, 0.1)',
-            padding: '0px',
-            overflow: 'hidden',
-            flexShrink: 0
-          }}>
-            <img src="/rspg-logo.png" alt="อพ.สธ." style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-          {getTabTitle()}
-        </h2>
-      </div>
-
-      {/* Center: 3-Way Mode Switcher */}
-      <div style={{
+    <header
+      className="navbar"
+      style={{
+        height: '64px',
+        minHeight: '64px',
+        maxHeight: '64px',
+        backgroundColor: '#FFFFFF',
+        borderBottom: '1px solid #E7E4EA',
+        padding: '0 24px',
         display: 'flex',
-        backgroundColor: 'var(--bg-main)',
-        padding: '3px',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)'
-      }}>
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'sticky',
+        top: 0,
+        zIndex: 90
+      }}
+    >
+      {/* Left: Hamburger + Page Title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <button
-          onClick={() => setViewMode('public')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '0.4rem 0.9rem',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            backgroundColor: viewMode === 'public' ? 'var(--color-primary)' : 'transparent',
-            color: viewMode === 'public' ? '#fff' : 'var(--text-muted)',
-            transition: 'all 0.2s'
-          }}
+          style={{ background: 'none', border: 'none', color: '#24212A', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+          aria-label="Menu"
         >
-          <Globe size={14} />
-          <span>เว็บสาธารณะ</span>
+          <Menu size={20} color="#24212A" />
         </button>
-
-        <button
-          onClick={() => setViewMode('internal')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '0.4rem 0.9rem',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            backgroundColor: viewMode === 'internal' ? 'var(--color-primary)' : 'transparent',
-            color: viewMode === 'internal' ? '#fff' : 'var(--text-muted)',
-            transition: 'all 0.2s'
-          }}
-        >
-          <Lock size={14} />
-          <span>ดำเนินงานภายใน</span>
-        </button>
-
-        <button
-          onClick={() => setViewMode('evaluation')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '0.4rem 0.9rem',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            backgroundColor: viewMode === 'evaluation' ? 'var(--color-primary)' : 'transparent',
-            color: viewMode === 'evaluation' ? '#fff' : 'var(--text-muted)',
-            transition: 'all 0.2s'
-          }}
-        >
-          <CheckSquare size={14} />
-          <span>ตรวจสอบประเมินผล</span>
-        </button>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#24212A', margin: 0, lineHeight: 1.35 }}>
+          {getTabTitle()}
+        </h1>
       </div>
 
-      {/* Right User Role Badge */}
-      <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        {viewMode !== 'public' ? (
-          <span className={`role-badge role-${userRole === 'rspg_teacher' ? 'teacher' : userRole}`} style={{ fontSize: '0.78rem' }}>
-            <Shield size={12} />
-            {getRoleLabel(userRole)}
-          </span>
-        ) : (
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            🟢 บุคคลทั่วไปเข้าเยี่ยมชม
-          </span>
-        )}
-      </div>
+      {/* Right: Academic Year Selector + Current User Badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Academic Year Selector */}
+        <div style={{ position: 'relative' }}>
+          <div
+            onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              border: '1px solid #E7E4EA',
+              backgroundColor: '#FFFFFF',
+              fontSize: '13px',
+              color: '#24212A',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            <Calendar size={14} color="#7137A8" />
+            <span>ปีการศึกษา {academicYear}</span>
+            <ChevronDown size={14} color="#8E8A95" />
+          </div>
 
+          {isYearDropdownOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '38px',
+                left: 0,
+                width: '140px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '8px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                border: '1px solid #E7E4EA',
+                padding: '4px',
+                zIndex: 100
+              }}
+            >
+              {['2567', '2566', '2565'].map(yr => (
+                <button
+                  key={yr}
+                  onClick={() => {
+                    setAcademicYear(yr);
+                    setIsYearDropdownOpen(false);
+                  }}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '6px 10px',
+                    border: 'none',
+                    background: yr === academicYear ? '#F5EFFA' : 'none',
+                    color: yr === academicYear ? '#7137A8' : '#24212A',
+                    fontWeight: yr === academicYear ? 600 : 400,
+                    fontSize: '13px',
+                    borderRadius: '4px',
+                    textAlign: 'left',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ปีการศึกษา {yr}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* User Identity & Menu Dropdown */}
+        <div style={{ position: 'relative' }}>
+          <div
+            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '8px',
+              transition: 'background-color 0.15s ease'
+            }}
+          >
+            {/* Avatar Circle */}
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: '#F5EFFA',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#7137A8',
+                fontWeight: 600,
+                fontSize: '14px',
+                border: '1px solid #E7E4EA'
+              }}
+            >
+              <User size={18} color="#7137A8" />
+            </div>
+
+            {/* Name and Role */}
+            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#24212A', lineHeight: 1.2 }}>
+                นางสาวเจนประภา เรียนคำ
+              </span>
+              <span style={{ fontSize: '11px', color: '#8E8A95', lineHeight: 1.2, marginTop: '2px' }}>
+                {getRoleLabel(userRole)}
+              </span>
+            </div>
+          </div>
+
+          {/* User Dropdown Menu */}
+          {isUserMenuOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '48px',
+                right: 0,
+                width: '180px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '8px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                border: '1px solid #E7E4EA',
+                padding: '6px',
+                zIndex: 100
+              }}
+            >
+              <div style={{ padding: '8px 10px', borderBottom: '1px solid #F0EDF3', fontSize: '12px', color: '#6F6A78' }}>
+                เข้าสู่ระบบด้วยสิทธิ์ <strong style={{ color: '#7137A8' }}>{getRoleLabel(userRole)}</strong>
+              </div>
+              {onLogout && (
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    onLogout();
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    width: '100%',
+                    padding: '8px 10px',
+                    border: 'none',
+                    background: 'none',
+                    color: '#D94A4A',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    marginTop: '4px',
+                    textAlign: 'left'
+                  }}
+                >
+                  <LogOut size={14} color="#D94A4A" />
+                  <span>ออกจากระบบ</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
 }

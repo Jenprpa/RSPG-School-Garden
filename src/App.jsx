@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import FirebaseWizard from './components/FirebaseWizard';
@@ -23,8 +23,9 @@ import AdminManagement from './pages/AdminManagement';
 import ElementsManagement from './pages/ElementsManagement';
 import SystemAudit from './pages/SystemAudit';
 import PlantTagGenerator from './pages/PlantTagGenerator';
-import { db, isFirebaseConfigured } from './firebaseClient';
+import { db, isFirebaseConfigured, auth } from './firebaseClient';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { X, MapPin, Tag, Shield, Calendar, BookOpen, AlertTriangle, Key } from 'lucide-react';
 
 // Central menuItems routing configuration to map mode and allowed roles
@@ -57,22 +58,20 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState('light');
-  const [userRole, setUserRole] = useState('admin'); // admin | rspg_teacher | teacher | student | visitor
+  const [userRole, setUserRole] = useState('visitor'); // admin | rspg_board | teacher | student | visitor
+  const [authLoading, setAuthLoading] = useState(isFirebaseConfigured() && auth ? true : false);
 
   // Authentication States
   const [authMode, setAuthMode] = useState('login'); // login | signup
   const [email, setEmail] = useState('sample@email.com');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [selectedRole, setSelectedRole] = useState('student');
+  const [selectedRole] = useState('student');
   const [classroom, setClassroom] = useState('');
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
-  const [forgotStep, setForgotStep] = useState(1);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Inspect plant detail modal state
   const [inspectedPlant, setInspectedPlant] = useState(null);
   const [showSurvey, setShowSurvey] = useState(false);
@@ -90,19 +89,61 @@ export default function App() {
     };
   }, []);
 
-  // Load login session from localStorage
+  // Load login session from Firebase Auth onAuthStateChanged
   useEffect(() => {
-    const savedUser = localStorage.getItem('rspg_logged_in_user');
-    if (savedUser) {
-      try {
-        const u = JSON.parse(savedUser);
-        setUserRole(u.role);
-        setIsLoggedIn(true);
-        setViewMode('internal');
-      } catch (err) {
-        console.error('Error loading saved session:', err);
+    if (!isFirebaseConfigured() || !auth) return;
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const emailClean = firebaseUser.email.trim().toLowerCase();
+          const docRef = doc(db, 'users', emailClean);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            const role = userData.role;
+
+            const validRoles = [
+              'admin', 'rspg_board', 'teacher', 'project_advisor',
+              'student', 'doc_officer', 'executive', 'evaluator'
+            ];
+
+            if (validRoles.includes(role)) {
+              setUserRole(role);
+              setIsLoggedIn(true);
+              setViewMode('internal');
+            } else {
+              console.error('Unauthorized role in user profile:', role);
+              alert('บทบาทผู้ใช้งานไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ');
+              await signOut(auth);
+              setIsLoggedIn(false);
+              setUserRole('visitor');
+            }
+          } else {
+            console.error('No Firestore user document found for authenticated user:', emailClean);
+            alert('ไม่พบบัญชีประวัติผู้ใช้งานในฐานข้อมูล กรุณาติดต่อผู้ดูแลระบบ');
+            await signOut(auth);
+            setIsLoggedIn(false);
+            setUserRole('visitor');
+          }
+        } catch (err) {
+          console.error('Error fetching auth user profile:', err);
+          alert('เกิดข้อผิดพลาดในการโหลดข้อมูลสิทธิ์การเข้าใช้งาน: ' + err.message);
+          await signOut(auth);
+          setIsLoggedIn(false);
+          setUserRole('visitor');
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUserRole('visitor');
+        // Switch back to public if user is logged out and currently in a protected mode
+        setViewMode(prev => (prev === 'internal' || prev === 'evaluation') ? 'public' : prev);
       }
-    }
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // 10 minutes Satisfaction Survey Timer
@@ -122,7 +163,9 @@ export default function App() {
 
     let timer;
     if (remaining <= 0) {
-      setShowSurvey(true);
+      setTimeout(() => {
+        setShowSurvey(true);
+      }, 0);
     } else {
       timer = setTimeout(() => {
         setShowSurvey(true);
@@ -172,18 +215,20 @@ export default function App() {
     syncDatabaseWelcomeText();
   }, []);
 
-  // Apply theme automatically based on viewMode and userRole (Admin gets Dark/Light by choice, others get Light Mode)
   useEffect(() => {
-    if (viewMode !== 'public' && userRole === 'admin') {
-      const savedChoice = localStorage.getItem('rspg_admin_theme_choice');
-      if (savedChoice) {
-        setTheme(savedChoice);
+    const timer = setTimeout(() => {
+      if (viewMode !== 'public' && userRole === 'admin') {
+        const savedChoice = localStorage.getItem('rspg_admin_theme_choice');
+        if (savedChoice) {
+          setTheme(savedChoice);
+        } else {
+          setTheme('dark'); // Default to dark for admin
+        }
       } else {
-        setTheme('dark'); // Default to dark for admin
+        setTheme('light');
       }
-    } else {
-      setTheme('light');
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [viewMode, userRole]);
 
   // Apply Theme to DOM
@@ -246,38 +291,19 @@ export default function App() {
     }
   }, [userRole, viewMode]);
 
-  // Adjust active tab when switching modes or user roles
   useEffect(() => {
-    if (viewMode === 'public') return;
-    const allowed = menuItems.filter(item => item.mode === viewMode && item.roles.includes(userRole));
-    const allowedIds = allowed.map(i => i.id);
-    if (!allowedIds.includes(activeTab)) {
-      setActiveTab(allowedIds[0] || 'dashboard');
-    }
-  }, [viewMode, userRole]);
-
-  // Handle opening deep linked plants from QR codes
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const plantId = params.get('plantId');
-    if (plantId && isFirebaseConfigured()) {
-      fetchAndInspectPlant(plantId);
-    }
-  }, []);
-
-  const fetchAndInspectPlant = async (id) => {
-    try {
-      const docRef = doc(db, 'plants', id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        handleInspectPlant({ id: docSnap.id, ...docSnap.data() });
+    const timer = setTimeout(() => {
+      if (viewMode === 'public') return;
+      const allowed = menuItems.filter(item => item.mode === viewMode && item.roles.includes(userRole));
+      const allowedIds = allowed.map(i => i.id);
+      if (!allowedIds.includes(activeTab)) {
+        setActiveTab(allowedIds[0] || 'dashboard');
       }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [viewMode, userRole, activeTab]);
 
-  const handleInspectPlant = async (plant) => {
+  const handleInspectPlant = useCallback(async (plant) => {
     setInspectedPlant(plant);
     setInspectedPlantK7(null);
     setInspectedLogs([]);
@@ -292,7 +318,7 @@ export default function App() {
         }
 
         const logsQuery = query(
-          collection(db, 'plant_logs'), 
+          collection(db, 'plant_logs'),
           where('plant_id', '==', plant.id),
           orderBy('created_at', 'desc')
         );
@@ -306,7 +332,31 @@ export default function App() {
         console.error('Error fetching plant details:', err);
       }
     }
-  };
+  }, []);
+
+  const fetchAndInspectPlant = useCallback(async (id) => {
+    try {
+      const docRef = doc(db, 'plants', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        handleInspectPlant({ id: docSnap.id, ...docSnap.data() });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [handleInspectPlant]);
+
+  // Handle opening deep linked plants from QR codes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const plantId = params.get('plantId');
+    if (plantId && isFirebaseConfigured()) {
+      const timer = setTimeout(() => {
+        fetchAndInspectPlant(plantId);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [fetchAndInspectPlant]);
 
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
@@ -314,8 +364,8 @@ export default function App() {
     setAuthSuccess('');
     setIsSubmitting(true);
 
-    if (!isFirebaseConfigured() || !db) {
-      setAuthError('ฐานข้อมูลยังไม่ได้ตั้งค่าการเชื่อมต่อในหน้าตั้งค่า');
+    if (!isFirebaseConfigured() || !auth) {
+      setAuthError('ระบบยืนยันตัวตนยังไม่ได้ตั้งค่าการเชื่อมต่อในหน้าตั้งค่า');
       setIsSubmitting(false);
       return;
     }
@@ -323,82 +373,73 @@ export default function App() {
     const emailClean = email.trim().toLowerCase();
 
     if (authMode === 'signup') {
-      try {
-        const docRef = doc(db, 'users', emailClean);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setAuthError('อีเมลนี้ได้รับการลงทะเบียนเป็นผู้ใช้แล้ว');
-          setIsSubmitting(false);
-          return;
-        }
+      if (password.length < 6) {
+        setAuthError('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+        setIsSubmitting(false);
+        return;
+      }
 
-        const resolvedRole = emailClean === 'jenprapa@pwtk.ac.th' ? 'admin' : selectedRole;
+      try {
+        // 1. Create user in Firebase Authentication
+        await createUserWithEmailAndPassword(auth, emailClean, password);
+
+        // 2. Write profile document in Firestore (role is strictly student)
+        const docRef = doc(db, 'users', emailClean);
         const payload = {
           email: emailClean,
-          password: password,
           name: fullName,
-          role: resolvedRole,
-          classroom: resolvedRole === 'student' ? classroom : '',
+          role: 'student', // Strictly forced in frontend code
+          classroom: classroom,
           created_at: new Date().toISOString()
         };
 
         await setDoc(docRef, payload);
-        setAuthSuccess('สมัครสมาชิกบัญชีผู้ใช้สำเร็จ! สลับหน้าจอเข้าสู่ระบบในครู่เดียว...');
+        setAuthSuccess('สมัครสมาชิกบัญชีผู้ใช้สำเร็จ! กำลังสลับหน้าจอเข้าสู่ระบบ...');
         setTimeout(() => {
           setAuthMode('login');
           setAuthSuccess('');
           setPassword('');
         }, 1500);
       } catch (err) {
-        setAuthError('สมัครสมาชิกขัดข้อง: ' + err.message);
+        console.error('Sign-up error:', err);
+        let localizedError;
+        if (err.code === 'auth/email-already-in-use') {
+          localizedError = 'อีเมลนี้ได้รับการลงทะเบียนเป็นผู้ใช้แล้ว';
+        } else if (err.code === 'auth/invalid-email') {
+          localizedError = 'รูปแบบอีเมลไม่ถูกต้อง';
+        } else if (err.code === 'auth/weak-password') {
+          localizedError = 'รหัสผ่านอ่อนแอเกินไป รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร';
+        } else if (err.code === 'auth/network-request-failed') {
+          localizedError = 'การเชื่อมต่อเครือข่ายล้มเหลว กรุณาตรวจสอบอินเทอร์เน็ต';
+        } else {
+          localizedError = err.message;
+        }
+        setAuthError(localizedError);
       } finally {
         setIsSubmitting(false);
       }
     } else {
       try {
-        const docRef = doc(db, 'users', emailClean);
-        let docSnap = await getDoc(docRef);
-
-        // Safety seeding: if jenprapa@pwtk.ac.th admin does not exist, auto-create
-        if (!docSnap.exists() && emailClean === 'jenprapa@pwtk.ac.th') {
-          const defaultAdmin = {
-            email: 'jenprapa@pwtk.ac.th',
-            password: password || 'admin1234',
-            name: 'ครูเจนประภา แก้วงาม',
-            role: 'admin',
-            created_at: new Date().toISOString()
-          };
-          await setDoc(docRef, defaultAdmin);
-          docSnap = await getDoc(docRef);
-        }
-
-        if (!docSnap.exists()) {
-          setAuthError('ไม่พบบัญชีผู้ใช้นี้ในระบบ กรุณาสมัครสมาชิกก่อนเข้าใช้งาน');
-          setIsSubmitting(false);
-          return;
-        }
-
-        const userData = docSnap.data();
-        if (userData.password !== password) {
-          setAuthError('รหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง');
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Login Success
-        setUserRole(userData.role);
-        setIsLoggedIn(true);
-        setViewMode('internal');
-
-        localStorage.setItem('rspg_logged_in_user', JSON.stringify({
-          email: userData.email,
-          name: userData.name,
-          role: userData.role
-        }));
-
+        // Login via Firebase Authentication
+        await signInWithEmailAndPassword(auth, emailClean, password);
         setAuthSuccess('เข้าสู่ระบบสำเร็จ!');
       } catch (err) {
-        setAuthError('เข้าสู่ระบบผิดพลาด: ' + err.message);
+        console.error('Login error:', err);
+        let localizedError;
+        if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+          localizedError = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง';
+        } else if (err.code === 'auth/invalid-email') {
+          localizedError = 'รูปแบบอีเมลไม่ถูกต้อง';
+        } else if (err.code === 'auth/user-disabled') {
+          localizedError = 'บัญชีผู้ใช้นี้ถูกปิดใช้งานชั่วคราว กรุณาติดต่อผู้ดูแลระบบ';
+        } else if (err.code === 'auth/too-many-requests') {
+          localizedError = 'มีการส่งคำร้องขอมากเกินไป กรุณาลองใหม่อีกครั้งในภายหลัง';
+        } else if (err.code === 'auth/network-request-failed') {
+          localizedError = 'การเชื่อมต่อเครือข่ายล้มเหลว กรุณาตรวจสอบอินเทอร์เน็ต';
+        } else {
+          localizedError = err.message;
+        }
+        setAuthError(localizedError);
       } finally {
         setIsSubmitting(false);
       }
@@ -411,78 +452,51 @@ export default function App() {
     setAuthSuccess('');
     setIsSubmitting(true);
 
-    if (!isFirebaseConfigured() || !db) {
-      setAuthError('ฐานข้อมูลยังไม่ได้ตั้งค่าการเชื่อมต่อ');
+    if (!isFirebaseConfigured() || !auth) {
+      setAuthError('ระบบยืนยันตัวตนยังไม่ได้ตั้งค่า');
       setIsSubmitting(false);
       return;
     }
 
     const emailClean = email.trim().toLowerCase();
     try {
-      const docRef = doc(db, 'users', emailClean);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) {
-        setAuthError('ไม่พบอีเมลผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
+      await sendPasswordResetEmail(auth, emailClean);
+      // We display generic success message to prevent user enumeration
+      setAuthSuccess('หากอีเมลนี้มีบัญชีอยู่ในระบบ ระบบจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้ทางอีเมลเรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความของท่าน');
+      setEmail('');
+    } catch (err) {
+      console.error('Password reset request error:', err);
+      if (err.code === 'auth/invalid-email') {
+        setAuthError('รูปแบบอีเมลไม่ถูกต้อง');
+      } else if (err.code === 'auth/network-request-failed') {
+        setAuthError('การเชื่อมต่อเครือข่ายล้มเหลว กรุณาตรวจสอบอินเทอร์เน็ต');
       } else {
-        setForgotStep(2);
-        setAuthSuccess('ตรวจสอบผ่านแล้ว กรุณากำหนดรหัสผ่านใหม่');
+        // Fallback to generic message to prevent account enumeration
+        setAuthSuccess('หากอีเมลนี้มีบัญชีอยู่ในระบบ ระบบจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้ทางอีเมลเรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความของท่าน');
+        setEmail('');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+
+  const handleLogout = async () => {
+    try {
+      if (auth) {
+        await signOut(auth);
       }
     } catch (err) {
-      setAuthError('เกิดข้อผิดพลาดในการตรวจสอบบัญชี: ' + err.message);
+      console.error('Sign-out error:', err);
     } finally {
-      setIsSubmitting(false);
+      setIsLoggedIn(false);
+      setUserRole('visitor');
+      setViewMode('public');
+      localStorage.removeItem('rspg_user_display_cache');
+      setEmail('');
+      setPassword('');
     }
-  };
-
-  const handleForgotResetPassword = async (e) => {
-    e.preventDefault();
-    setAuthError('');
-    setAuthSuccess('');
-    
-    if (newPassword !== confirmPassword) {
-      setAuthError('รหัสผ่านใหม่และรหัสผ่านยืนยันไม่ตรงกัน');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setAuthError('รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
-      return;
-    }
-
-    setIsSubmitting(true);
-    const emailClean = email.trim().toLowerCase();
-    try {
-      const docRef = doc(db, 'users', emailClean);
-      await updateDoc(docRef, { password: newPassword });
-      setAuthSuccess('รีเซ็ตรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่');
-      setTimeout(() => {
-        setAuthMode('login');
-        setForgotStep(1);
-        setEmail(emailClean);
-        setPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setAuthSuccess('');
-      }, 2000);
-    } catch (err) {
-      setAuthError('เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน: ' + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleQuickLogin = (emailVal, passVal) => {
-    setEmail(emailVal);
-    setPassword(passVal);
-    setAuthMode('login');
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setViewMode('public');
-    localStorage.removeItem('rspg_logged_in_user');
-    setEmail('');
-    setPassword('');
   };
 
   const toggleTheme = () => {
@@ -544,16 +558,31 @@ export default function App() {
 
   const defaultImage = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%232E7D32" opacity="0.1"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="40">🌿</text></svg>`;
 
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: 'var(--bg-main)', gap: '1rem' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid var(--bg-sidebar)', borderTop: '4px solid var(--color-gold)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+        <span style={{ color: 'var(--color-primary)', fontWeight: 600, fontFamily: 'Outfit, Inter, Sans-Serif' }}>กำลังตรวจสอบข้อมูลการเข้าสู่ระบบ...</span>
+      </div>
+    );
+  }
+
   return (
     <div className={`app-container ${viewMode === 'public' ? 'public-portal-theme' : ''}`}>
-      
+
       {/* RENDER PUBLIC PORTAL MODE */}
       {viewMode === 'public' ? (
         <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Navbar activeTab="" userRole="visitor" viewMode={viewMode} setViewMode={setViewMode} />
           <main style={{ flex: 1, backgroundColor: 'var(--bg-main)' }}>
-            <PublicPortal 
-              onSelectPlant={handleInspectPlant} 
+            <PublicPortal
+              onSelectPlant={handleInspectPlant}
               isLoggedIn={isLoggedIn}
               userRole={userRole}
               setActiveTab={setActiveTab}
@@ -588,29 +617,29 @@ export default function App() {
             }}>
               <div className="card glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
                 <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <div style={{ 
-                    width: '105px', 
-                    height: '105px', 
-                    backgroundColor: '#fff', 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
+                  <div style={{
+                    width: '105px',
+                    height: '105px',
+                    backgroundColor: '#fff',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     boxShadow: '0 0 12px rgba(255, 255, 255, 0.5)',
                     padding: '0px',
                     overflow: 'hidden'
                   }}>
                     <img src="/rspg-logo.png" alt="อพ.สธ. ปายวิทยาคาร" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </div>
-                  <img 
-                    src="/school-logo.png" 
-                    alt="โรงเรียนปายวิทยาคาร" 
-                    style={{ 
-                      width: '85px', 
-                      height: '85px', 
-                      objectFit: 'contain', 
+                  <img
+                    src="/school-logo.png"
+                    alt="โรงเรียนปายวิทยาคาร"
+                    style={{
+                      width: '85px',
+                      height: '85px',
+                      objectFit: 'contain',
                       boxShadow: '0 0 12px rgba(255, 255, 255, 0.4)'
-                    }} 
+                    }}
                   />
                 </div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-primary)', textAlign: 'center', margin: '0 0 4px 0' }}>ระบบงานสวนพฤกษศาสตร์ อพ.สธ.</h2>
@@ -674,62 +703,23 @@ export default function App() {
 
                 {/* Form fields */}
                 {authMode === 'forgot' ? (
-                  <form onSubmit={forgotStep === 1 ? handleForgotVerifyEmail : handleForgotResetPassword}>
+                  <form onSubmit={handleForgotVerifyEmail}>
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '1rem', textAlign: 'center' }}>
                       🔑 รีเซ็ตรหัสผ่านใหม่
                     </h3>
-                    
-                    {forgotStep === 1 ? (
-                      <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ระบุอีเมลผู้ใช้งานที่ลงทะเบียนไว้</label>
-                        <input
-                          type="email"
-                          className="form-control"
-                          placeholder="เช่น jenprapa@pwtk.ac.th"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>อีเมลผู้ใช้งาน</label>
-                          <input
-                            type="email"
-                            className="form-control"
-                            value={email}
-                            disabled
-                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-main)', cursor: 'not-allowed' }}
-                          />
-                        </div>
-                        <div className="form-group" style={{ marginBottom: '0.75rem' }}>
-                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>กำหนดรหัสผ่านใหม่ (ความยาว 6 ตัวอักษรขึ้นไป)</label>
-                          <input
-                            type="password"
-                            className="form-control"
-                            placeholder="รหัสผ่านใหม่"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            required
-                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                          />
-                        </div>
-                        <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                          <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ยืนยันรหัสผ่านใหม่</label>
-                          <input
-                            type="password"
-                            className="form-control"
-                            placeholder="พิมพ์ยืนยันรหัสผ่านใหม่อีกครั้ง"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
-                          />
-                        </div>
-                      </>
-                    )}
+
+                    <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                      <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>ระบุอีเมลผู้ใช้งานที่ลงทะเบียนไว้</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        placeholder="เช่น jenprapa@pwtk.ac.th"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                      />
+                    </div>
 
                     <button
                       type="submit"
@@ -738,13 +728,13 @@ export default function App() {
                       style={{ width: '100%', padding: '0.55rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', marginBottom: '0.75rem' }}
                     >
                       <Key size={14} />
-                      <span>{isSubmitting ? 'กำลังดำเนินการ...' : forgotStep === 1 ? 'ตรวจสอบบัญชีผู้ใช้' : 'รีเซ็ตรหัสผ่านใหม่'}</span>
+                      <span>{isSubmitting ? 'กำลังส่งข้อมูล...' : 'ส่งลิงก์ตั้งรหัสผ่านใหม่'}</span>
                     </button>
 
                     <div style={{ textAlign: 'center' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => { setAuthMode('login'); setForgotStep(1); setAuthError(''); setAuthSuccess(''); }}
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
                         style={{ border: 'none', background: 'none', color: 'var(--text-muted)', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
                       >
                         ย้อนกลับไปหน้าเข้าสู่ระบบ
@@ -796,9 +786,9 @@ export default function App() {
 
                     {authMode === 'login' && (
                       <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
-                        <button 
-                          type="button" 
-                          onClick={() => { setAuthMode('forgot'); setForgotStep(1); setAuthError(''); setAuthSuccess(''); }}
+                        <button
+                          type="button"
+                          onClick={() => { setAuthMode('forgot'); setAuthError(''); setAuthSuccess(''); }}
                           style={{ border: 'none', background: 'none', color: 'var(--color-primary)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
                         >
                           ลืมรหัสผ่าน?
@@ -812,20 +802,14 @@ export default function App() {
                           <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600 }}>เลือกบทบาทในระบบ</label>
                           <select
                             className="form-control"
-                            value={selectedRole}
-                            onChange={(e) => setSelectedRole(e.target.value)}
-                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
+                            value="student"
+                            disabled
+                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-main)', cursor: 'not-allowed' }}
                           >
                             <option value="student">5. นักเรียน (Student)</option>
-                            <option value="teacher">3. ครูผู้สอน (Teacher)</option>
-                            <option value="rspg_board">2. คณะกรรมการ อพ.สธ. (RSPG Board)</option>
-                            <option value="project_advisor">4. ครูที่ปรึกษาโครงงาน</option>
-                            <option value="doc_officer">6. เจ้าหน้าที่งานเอกสาร</option>
-                            <option value="executive">7. ผู้บริหารสถานศึกษา</option>
-                            <option value="evaluator">8. กรรมการประเมินภายนอก</option>
                           </select>
                           <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', margin: 0 }}>
-                            *หมายเหตุ: อีเมล jenprapa@pwtk.ac.th จะได้รับบทบาทแอดมิน (Admin) โดยอัตโนมัติ
+                            *หมายเหตุ: สิทธิ์สมัครสมาชิกตั้งต้นคือ "นักเรียน" เท่านั้น สำหรับอาจารย์และบทบาทอื่น กรุณาติดต่อผู้ดูแลระบบเพื่อเปิดสิทธิ์ใช้งานในภายหลัง
                           </p>
                         </div>
 
@@ -864,11 +848,11 @@ export default function App() {
           ) : (
             /* Inside Administration Shell */
             <>
-              <Sidebar 
-                activeTab={activeTab} 
-                setActiveTab={setActiveTab} 
-                theme={theme} 
-                toggleTheme={toggleTheme} 
+              <Sidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                theme={theme}
+                toggleTheme={toggleTheme}
                 userRole={userRole}
                 setUserRole={setUserRole}
                 viewMode={viewMode}
@@ -877,8 +861,8 @@ export default function App() {
               />
 
               <div className="main-content">
-                <Navbar activeTab={activeTab} userRole={userRole} viewMode={viewMode} setViewMode={setViewMode} />
-                
+                <Navbar activeTab={activeTab} userRole={userRole} viewMode={viewMode} setViewMode={setViewMode} onLogout={handleLogout} />
+
                 <main className="content-body">
                   {renderTabContent()}
                 </main>
@@ -903,10 +887,10 @@ export default function App() {
 
             <div className="grid-3" style={{ gridTemplateColumns: '1.2fr 1.8fr', gap: '1.5rem' }}>
               <div>
-                <img 
-                  src={inspectedPlant.image_url || defaultImage} 
-                  alt={inspectedPlant.thai_name} 
-                  style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '1rem' }} 
+                <img
+                  src={inspectedPlant.image_url || defaultImage}
+                  alt={inspectedPlant.thai_name}
+                  style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '1rem' }}
                 />
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
@@ -983,7 +967,7 @@ export default function App() {
                       <div><b>ลักษณะใบ:</b> {inspectedPlantK7.leaf_detail || '-'}</div>
                       <div><b>ลักษณะดอก:</b> {inspectedPlantK7.flower_detail || '-'}</div>
                       <div><b>ผลและเมล็ด:</b> {inspectedPlantK7.fruit_detail || '-'} / {inspectedPlantK7.seed_detail || '-'}</div>
-                      
+
                       <div style={{ padding: '8px', backgroundColor: 'var(--bg-nature-soft)', borderRadius: '6px', borderLeft: '3px solid var(--color-nature)', marginTop: '6px' }}>
                         <div><b>ประโยชน์:</b> {inspectedPlantK7.botanical_data || '-'}</div>
                         <div><b>ภูมิปัญญาท้องถิ่น:</b> {inspectedPlantK7.local_wisdom || '-'}</div>
@@ -1031,7 +1015,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {showSurvey && <SatisfactionSurveyPopup onClose={() => setShowSurvey(false)} />}
+      {showSurvey && <SatisfactionSurveyPopup onClose={() => setShowSurvey(false)} userRole={userRole} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, deleteDoc, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -150,11 +150,11 @@ export default function EvidenceVault({ userRole }) {
   };
 
   const filteredEvidence = evidenceList.filter(ev => {
-    const matchesSearch = 
+    const matchesSearch =
       ev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (ev.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (ev.responsible_person || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesCategory = selectedCategory === 'ทั้งหมด' || ev.category.includes(selectedCategory);
 
     return matchesSearch && matchesCategory;
@@ -194,9 +194,9 @@ export default function EvidenceVault({ userRole }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
           <div className="search-wrapper" style={{ flex: 1, minWidth: '250px', marginBottom: 0 }}>
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              className="search-input" 
+            <input
+              type="text"
+              className="search-input"
               placeholder="ค้นหาชื่อหลักฐาน คำอธิบาย หรือผู้ดูแล..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -248,7 +248,7 @@ export default function EvidenceVault({ userRole }) {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '8px', marginTop: 'auto', fontSize: '0.8rem' }}>
                 <span>👤 <b>ผู้ดูแล:</b> {ev.responsible_person || 'ไม่ระบุ'}</span>
-                
+
                 {ev.attachment_url && (
                   <a
                     href={ev.attachment_url}
@@ -307,8 +307,8 @@ export default function EvidenceVault({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">หัวข้อหลักฐาน</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -319,7 +319,7 @@ export default function EvidenceVault({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">รายละเอียดคำอธิบายสั้นๆ</label>
-                <textarea 
+                <textarea
                   className="form-control"
                   rows="3"
                   value={description}
@@ -331,8 +331,8 @@ export default function EvidenceVault({ userRole }) {
 
               <div className="form-group">
                 <label className="form-label">ผู้จัดทำ / ผู้รับผิดชอบหลัก</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   value={responsiblePerson}
                   onChange={(e) => setResponsiblePerson(e.target.value)}
@@ -344,7 +344,7 @@ export default function EvidenceVault({ userRole }) {
               <div className="form-group" style={{ padding: '1rem', backgroundColor: 'var(--bg-main)', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
                 <label className="form-label">เลือกไฟล์หลักฐาน (PDF หรือรูปภาพ)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '0.5rem' }}>
-                  <input 
+                  <input
                     type="file"
                     onChange={(e) => setUploadFile(e.target.files[0])}
                     id="vault-file-picker"

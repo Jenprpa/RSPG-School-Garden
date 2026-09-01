@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { db, isFirebaseConfigured } from '../firebaseClient';
+﻿import { useState, useEffect } from 'react';
+import { db, isFirebaseConfigured, auth } from '../firebaseClient';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { Shield, Key, Check, AlertTriangle, User } from 'lucide-react';
 
 export default function UserProfile() {
@@ -20,25 +21,6 @@ export default function UserProfile() {
   const [profileSuccess, setProfileSuccess] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setEditName(user.name || '');
-      setEditClassroom(user.classroom || '');
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('rspg_logged_in_user');
-    if (savedUser) {
-      try {
-        const u = JSON.parse(savedUser);
-        fetchUserData(u.email);
-      } catch (e) {
-        console.error('Error parsing logged in user:', e);
-      }
-    }
-  }, []);
-
   const fetchUserData = async (email) => {
     if (!isFirebaseConfigured() || !db) return;
     try {
@@ -52,11 +34,33 @@ export default function UserProfile() {
     }
   };
 
+  useEffect(() => {
+    const loadProfile = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser && currentUser.email) {
+        await fetchUserData(currentUser.email);
+      } else {
+        const savedUser = localStorage.getItem('rspg_user_display_cache');
+        if (savedUser) {
+          try {
+            const u = JSON.parse(savedUser);
+            if (u.email) {
+              await fetchUserData(u.email);
+            }
+          } catch (e) {
+            console.error('Error parsing user display cache:', e);
+          }
+        }
+      }
+    };
+    loadProfile();
+  }, []);
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setProfileError('');
     setProfileSuccess('');
-    
+
     if (!editName.trim()) {
       setProfileError('กรุณากรอกชื่อ-นามสกุล');
       return;
@@ -69,19 +73,15 @@ export default function UserProfile() {
       if (user.role === 'student') {
         updates.classroom = editClassroom;
       }
-      
+
       await updateDoc(docRef, updates);
-      
-      const savedUser = localStorage.getItem('rspg_logged_in_user');
-      if (savedUser) {
-        try {
-          const u = JSON.parse(savedUser);
-          u.name = editName;
-          localStorage.setItem('rspg_logged_in_user', JSON.stringify(u));
-        } catch (e) {
-          console.error('Error saving user to localStorage:', e);
-        }
-      }
+
+      const cacheObj = {
+        email: user.email,
+        name: editName,
+        classroom: user.role === 'student' ? editClassroom : ''
+      };
+      localStorage.setItem('rspg_user_display_cache', JSON.stringify(cacheObj));
 
       setUser(prev => ({
         ...prev,
@@ -123,31 +123,40 @@ export default function UserProfile() {
       return;
     }
 
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setError('ไม่พบเซสชันการเข้าสู่ระบบปัจจุบัน กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+      return;
+    }
+
     setLoading(true);
     try {
-      const docRef = doc(db, 'users', user.email);
-      const docSnap = await getDoc(docRef);
-      
-      if (!docSnap.exists()) {
-        setError('ไม่พบบัญชีผู้ใช้นี้ในระบบ');
-        setLoading(false);
-        return;
-      }
+      // Re-authenticate user
+      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+      await reauthenticateWithCredential(currentUser, credential);
 
-      const userData = docSnap.data();
-      if (userData.password !== currentPassword) {
-        setError('รหัสผ่านปัจจุบันไม่ถูกต้อง');
-        setLoading(false);
-        return;
-      }
+      // Update password in Firebase Auth
+      await updatePassword(currentUser, newPassword);
 
-      await updateDoc(docRef, { password: newPassword });
       setSuccess('เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว!');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน: ' + err.message);
+      console.error('Password change error:', err);
+      let localizedError;
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        localizedError = 'รหัสผ่านปัจจุบันไม่ถูกต้อง';
+      } else if (err.code === 'auth/weak-password') {
+        localizedError = 'รหัสผ่านใหม่มีความปลอดภัยไม่เพียงพอ รหัสต้องมีความยาวอย่างน้อย 6 ตัวอักษร';
+      } else if (err.code === 'auth/requires-recent-login') {
+        localizedError = 'กรุณาออกจากระบบและเข้าสู่ระบบใหม่อีกครั้ง เพื่อดำเนินการขั้นตอนด้านความปลอดภัย';
+      } else if (err.code === 'auth/network-request-failed') {
+        localizedError = 'การเชื่อมต่อเครือข่ายล้มเหลว กรุณาตรวจสอบอินเทอร์เน็ต';
+      } else {
+        localizedError = err.message || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน';
+      }
+      setError(localizedError);
     } finally {
       setLoading(false);
     }
@@ -173,7 +182,7 @@ export default function UserProfile() {
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '1rem' }}>
-      
+
       {isEditing ? (
         /* Profile Card (Edit Mode) */
         <div className="card" style={{ marginBottom: '2rem', borderLeft: '4px solid var(--color-gold)' }}>
@@ -257,22 +266,22 @@ export default function UserProfile() {
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>{user.name}</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{user.email}</p>
             </div>
-            <button 
-              onClick={() => { setIsEditing(true); setProfileSuccess(''); }} 
+            <button
+              onClick={() => { setEditName(user.name || ''); setEditClassroom(user.classroom || ''); setIsEditing(true); setProfileSuccess(''); }}
               className="btn btn-secondary"
               style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               แก้ไขข้อมูล
             </button>
           </div>
-          
+
           {profileSuccess && (
             <div style={{ padding: '8px 12px', borderRadius: '6px', backgroundColor: 'rgba(46,125,50,0.06)', border: '1px solid rgba(46,125,50,0.15)', color: 'var(--color-success)', fontSize: '0.82rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Check size={14} />
               <span>{profileSuccess}</span>
             </div>
           )}
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', fontSize: '0.9rem' }}>
             <div>
               <span style={{ color: 'var(--text-muted)', marginRight: '10px' }}>บทบาทในระบบ:</span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -209,7 +209,7 @@ export default function StudentPortfolios({ userRole }) {
   const uniquePlants = Array.from(new Set(portfolios.map(p => p.plant_name).filter(Boolean)));
 
   const filteredPortfolios = portfolios.filter(p => {
-    const matchesSearch = 
+    const matchesSearch =
       p.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.plant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.teacher_name || '').toLowerCase().includes(searchQuery.toLowerCase());
@@ -264,9 +264,9 @@ export default function StudentPortfolios({ userRole }) {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '12px', alignItems: 'center' }}>
           <div className="search-wrapper" style={{ marginBottom: 0 }}>
             <Search className="search-icon" size={18} />
-            <input 
-              type="text" 
-              className="search-input" 
+            <input
+              type="text"
+              className="search-input"
               placeholder="ค้นชื่อนักเรียน พรรณไม้ที่ศึกษา หรือครูผู้สอน..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -309,7 +309,7 @@ export default function StudentPortfolios({ userRole }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
           {filteredPortfolios.map(port => (
             <div key={port.id} className="card" style={{ display: 'flex', flexDirection: 'column', position: 'relative', border: '1px solid var(--border-color)', gap: '12px' }}>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-primary)' }}>🏷️ ห้องเรียน: {port.classroom}</span>
                 {getStatusBadge(port.status)}
@@ -325,9 +325,9 @@ export default function StudentPortfolios({ userRole }) {
               </div>
 
               {port.drawing_url && (
-                <img 
-                  src={port.drawing_url} 
-                  alt="ผลงานพฤกษศาสตร์" 
+                <img
+                  src={port.drawing_url}
+                  alt="ผลงานพฤกษศาสตร์"
                   style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
                 />
               )}
@@ -398,24 +398,24 @@ export default function StudentPortfolios({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">ชื่อ-สกุล นักเรียน</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={studentName} 
-                    onChange={(e) => setStudentName(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={studentName}
+                    onChange={(e) => setStudentName(e.target.value)}
                     disabled={selectedPort && !canEdit}
-                    required 
+                    required
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">ห้องเรียน (เช่น ม.3/2)</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={classroom} 
-                    onChange={(e) => setClassroom(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={classroom}
+                    onChange={(e) => setClassroom(e.target.value)}
                     disabled={selectedPort && !canEdit}
-                    required 
+                    required
                   />
                 </div>
               </div>
@@ -423,31 +423,31 @@ export default function StudentPortfolios({ userRole }) {
               <div className="grid-3">
                 <div className="form-group">
                   <label className="form-label">ปีการศึกษา</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={academicYear} 
-                    onChange={(e) => setAcademicYear(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={academicYear}
+                    onChange={(e) => setAcademicYear(e.target.value)}
                     disabled={selectedPort && !canEdit}
-                    required 
+                    required
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">ครูผู้รับผิดชอบ/ผู้สอน</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={teacherName} 
-                    onChange={(e) => setTeacherName(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={teacherName}
+                    onChange={(e) => setTeacherName(e.target.value)}
                     disabled={selectedPort && !canEdit}
-                    required 
+                    required
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">สถานะ ก.7-003</label>
-                  <select 
-                    className="form-control" 
-                    value={k7003Status} 
+                  <select
+                    className="form-control"
+                    value={k7003Status}
                     onChange={(e) => setK7003Status(e.target.value)}
                     disabled={selectedPort && !canEdit}
                   >
@@ -461,24 +461,24 @@ export default function StudentPortfolios({ userRole }) {
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">ชื่อพรรณไม้ที่ศึกษา</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={plantName} 
-                    onChange={(e) => setPlantName(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={plantName}
+                    onChange={(e) => setPlantName(e.target.value)}
                     disabled={selectedPort && !canEdit}
-                    required 
+                    required
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">รหัสพรรณไม้ อพ.สธ.</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={plantCode} 
-                    onChange={(e) => setPlantCode(e.target.value)} 
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={plantCode}
+                    onChange={(e) => setPlantCode(e.target.value)}
                     disabled={selectedPort && !canEdit}
-                    required 
+                    required
                   />
                 </div>
               </div>
@@ -486,7 +486,7 @@ export default function StudentPortfolios({ userRole }) {
               {/* Uploads and attachments */}
               <div style={{ backgroundColor: 'var(--bg-main)', padding: '15px', borderRadius: '8px', border: '1px dashed var(--border-color)', marginBottom: '1.25rem' }}>
                 <h4 style={{ fontSize: '0.9rem', fontWeight: 700, margin: '0 0 10px 0' }}>📂 แนบไฟล์ผลงานสะสมงาน (เอกสาร/วิดีโอสูงสุด 10MB)</h4>
-                
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.8rem' }}>
                   <div>
                     <label style={{ display: 'block', fontWeight: 600, marginBottom: '2px' }}>1. ภาพวาดทางพฤกษศาสตร์ (ลายเส้น/สีน้ำ)</label>
@@ -545,10 +545,10 @@ export default function StudentPortfolios({ userRole }) {
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">คำแนะนำและข้อเสนอแนะครูผู้สอน</label>
-                    <textarea 
-                      className="form-control" 
+                    <textarea
+                      className="form-control"
                       rows="2"
-                      value={feedback} 
+                      value={feedback}
                       onChange={(e) => setFeedback(e.target.value)}
                       placeholder="เช่น เพิ่มพิกัดสวนสมุนไพรทิศเหนือ หรือปรับน้ำหนักสีใบไม้ให้อ่อนลง..."
                     />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured } from '../firebaseClient';
 import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -7,14 +7,14 @@ import { Image, Upload, Plus, Trash2, BookOpen, AlertCircle, FileText } from 'lu
 export default function PlantStudy({ userRole }) {
   const [studies, setStudies] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Form states
   const [plantName, setPlantName] = useState('');
   const [drawingType, setDrawingType] = useState('ภาพวาดสีน้ำพฤกษศาสตร์'); // 'ภาพวาดสีน้ำพฤกษศาสตร์', 'ภาพวาดลายเส้นลายมือ', 'เอกสารวิจัยโครงสร้าง'
   const [artist, setArtist] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
-  
+
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -134,7 +134,7 @@ export default function PlantStudy({ userRole }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '2rem' }} className="rspg-progress-grid">
-        
+
         {/* Upload Form (Only shown if NOT read-only) */}
         <div>
           <div className="card">
@@ -174,7 +174,7 @@ export default function PlantStudy({ userRole }) {
                       <option value="เอกสารวิจัยโครงสร้าง">เอกสารวิจัยโครงสร้าง</option>
                     </select>
                   </div>
-                  
+
                   <div className="form-group">
                     <label className="form-label">ผู้จัดทำ / วาดภาพ</label>
                     <input
@@ -202,10 +202,10 @@ export default function PlantStudy({ userRole }) {
 
                 <div className="form-group" style={{ padding: '10px', border: '1px dashed var(--border-color)', borderRadius: '8px', backgroundColor: 'var(--bg-main)', marginBottom: '1.25rem' }}>
                   <label className="form-label" style={{ fontWeight: 'bold' }}>แนบภาพวาด / เอกสาร PDF ผลงาน</label>
-                  <input 
-                    type="file" 
-                    onChange={(e) => setFile(e.target.files[0])} 
-                    style={{ fontSize: '0.8rem', marginTop: '4px' }} 
+                  <input
+                    type="file"
+                    onChange={(e) => setFile(e.target.files[0])}
+                    style={{ fontSize: '0.8rem', marginTop: '4px' }}
                     required
                   />
                 </div>
@@ -235,9 +235,9 @@ export default function PlantStudy({ userRole }) {
               {defaultStudies.map(study => (
                 <div key={study.id} className="card" style={{ padding: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', position: 'relative' }}>
                   {study.file_url ? (
-                    <img 
-                      src={study.file_url} 
-                      alt={study.plant_name} 
+                    <img
+                      src={study.file_url}
+                      alt={study.plant_name}
                       style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '6px', marginBottom: '8px' }}
                     />
                   ) : (
@@ -256,8 +256,8 @@ export default function PlantStudy({ userRole }) {
                   </div>
 
                   {(userRole === 'admin' || userRole === 'rspg_board') && (
-                    <button 
-                      onClick={() => handleDelete(study.id)} 
+                    <button
+                      onClick={() => handleDelete(study.id)}
                       style={{ position: 'absolute', top: '15px', right: '15px', padding: '6px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(211,47,47,0.8)', color: '#fff', cursor: 'pointer' }}
                     >
                       <Trash2 size={12} />
