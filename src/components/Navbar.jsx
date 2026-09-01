@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Calendar, ChevronDown, User, LogOut, Menu } from 'lucide-react';
 
 export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
@@ -150,109 +150,30 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
           )}
         </div>
 
-        {/* User Identity & Menu Dropdown */}
-        <div style={{ position: 'relative' }}>
-          <div
-            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+        {/* Direct Clean Logout Action Button (Replaces status box) */}
+        {onLogout && (
+          <button
+            onClick={onLogout}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              cursor: 'pointer',
-              padding: '4px 10px',
+              gap: '6px',
+              padding: '6px 12px',
               borderRadius: '8px',
-              border: '1px solid #E8DEEE',
-              backgroundColor: '#FAF7FC',
-              transition: 'background-color 0.15s ease'
+              border: '1px solid #F5C2C2',
+              backgroundColor: '#FFF5F5',
+              color: '#D32F2F',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
             }}
+            title="ออกจากระบบ"
           >
-            {/* Avatar Circle */}
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: '#F6EEFB',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#5C1D8D',
-                fontWeight: 700,
-                fontSize: '14px',
-                border: '1.5px solid #E5D0F5'
-              }}
-            >
-              <User size={18} color="#5C1D8D" />
-            </div>
-
-            {/* Name and Role */}
-            <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#1F1929', lineHeight: 1.2 }}>
-                นางสาวเจนประภา เรือนคำ
-              </span>
-              <span style={{ fontSize: '11px', color: '#5C1D8D', fontWeight: 600, lineHeight: 1.2, marginTop: '2px' }}>
-                {getRoleLabel(userRole)}
-              </span>
-            </div>
-          </div>
-
-          {/* User Dropdown Menu */}
-          {isUserMenuOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '48px',
-                right: 0,
-                width: '210px',
-                backgroundColor: '#FFFFFF',
-                borderRadius: '8px',
-                boxShadow: '0 6px 20px rgba(42, 8, 78, 0.15)',
-                border: '1px solid #E5CA79',
-                padding: '8px',
-                zIndex: 100
-              }}
-            >
-              <div style={{ padding: '8px 10px', borderBottom: '1px solid #F0EDF3', fontSize: '12px', color: '#584F66' }}>
-                <div style={{ fontWeight: 700, color: '#1F1929', fontSize: '13px', marginBottom: '2px' }}>
-                  นางสาวเจนประภา เรือนคำ
-                </div>
-                <div style={{ color: '#827891', fontSize: '11px', marginBottom: '6px' }}>
-                  serser12six@gmail.com
-                </div>
-                <div>
-                  สิทธิ์: <strong style={{ color: '#5C1D8D' }}>{getRoleLabel(userRole)}</strong>
-                </div>
-              </div>
-              {onLogout && (
-                <button
-                  onClick={() => {
-                    setIsUserMenuOpen(false);
-                    onLogout();
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    width: '100%',
-                    padding: '8px 10px',
-                    border: 'none',
-                    background: 'none',
-                    color: '#D94A4A',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    marginTop: '4px',
-                    textAlign: 'left'
-                  }}
-                >
-                  <LogOut size={14} color="#D94A4A" />
-                  <span>ออกจากระบบ</span>
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+            <LogOut size={14} color="#D32F2F" />
+            <span>ออกจากระบบ</span>
+          </button>
+        )}
       </div>
     </header>
   );
