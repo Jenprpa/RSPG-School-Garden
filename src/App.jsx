@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import PublicPortal from './pages/PublicPortal';
@@ -65,7 +65,7 @@ export default function App() {
 
   // Authentication States
   const [authMode, setAuthMode] = useState('login'); // login | signup
-  const [email, setEmail] = useState('serser12six@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedRole] = useState('student');
@@ -845,7 +845,7 @@ export default function App() {
                         <input
                           type="email"
                           className="form-control"
-                          placeholder="เช่น serser12six@gmail.com"
+                          placeholder="กรอกอีเมลของคุณ"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
@@ -918,7 +918,7 @@ export default function App() {
                         <input
                           type="email"
                           className="form-control"
-                          placeholder={authMode === 'login' ? 'serser12six@gmail.com' : 'name@email.com'}
+                          placeholder="กรอกอีเมลผู้ใช้งาน"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
