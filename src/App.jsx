@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import FirebaseWizard from './components/FirebaseWizard';
@@ -93,7 +93,13 @@ export default function App() {
   useEffect(() => {
     if (!isFirebaseConfigured() || !auth) return;
 
+    // Safety fallback timer so public portal renders immediately even if network is slow
+    const safetyTimer = setTimeout(() => {
+      setAuthLoading(false);
+    }, 1500);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(safetyTimer);
       if (firebaseUser) {
         try {
           const emailClean = firebaseUser.email.trim().toLowerCase();
@@ -143,7 +149,10 @@ export default function App() {
       setAuthLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, []);
 
   // 10 minutes Satisfaction Survey Timer
