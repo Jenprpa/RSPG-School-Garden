@@ -105,9 +105,9 @@ export default function App() {
         const emailClean = (firebaseUser.email || '').trim().toLowerCase();
 
         // Default role mapping
-        if (emailClean === 'serser12six@gmail.com' || emailClean.includes('admin')) {
+        if (emailClean === 'jenprapa@pwtk.ac.th' || emailClean === 'serser12six@gmail.com' || emailClean.includes('admin')) {
           assignedRole = 'admin';
-        } else if (emailClean.includes('teacher') || emailClean.includes('jenprapa')) {
+        } else if (emailClean.includes('teacher')) {
           assignedRole = 'teacher';
         }
 
@@ -390,6 +390,24 @@ export default function App() {
         setAuthSuccess('เข้าสู่ระบบสำเร็จ!');
       } catch (err) {
         console.error('Login error:', err);
+        // Seamless auto-provisioning for designated admin if account is not yet created
+        if ((err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') && emailClean === 'jenprapa@pwtk.ac.th' && password === 'jenprapa1433') {
+          try {
+            await createUserWithEmailAndPassword(auth, emailClean, password);
+            const docRef = doc(db, 'users', emailClean);
+            await setDoc(docRef, {
+              email: emailClean,
+              name: 'ครูเจนประภา เรือนคำ',
+              role: 'admin',
+              created_at: new Date().toISOString()
+            }, { merge: true }).catch(() => null);
+            setAuthSuccess('เข้าสู่ระบบในฐานะผู้ดูแลระบบสำเร็จ!');
+            return;
+          } catch (createErr) {
+            console.error('Auto-create admin error:', createErr);
+          }
+        }
+
         let localizedError;
         if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
           localizedError = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง';

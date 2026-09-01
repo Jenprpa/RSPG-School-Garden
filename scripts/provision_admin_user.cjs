@@ -1,4 +1,4 @@
-﻿/**
+/**
  * script: provision_admin_user.cjs
  * Description: Admin SDK script to provision or verify the designated Admin user (serser12six@gmail.com).
  *
@@ -36,8 +36,8 @@ try {
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const ADMIN_EMAIL = 'serser12six@gmail.com';
-const ADMIN_NAME = 'นางสาวเจนประภา เรือนคำ';
+const ADMIN_EMAIL = 'jenprapa@pwtk.ac.th';
+const ADMIN_NAME = 'ครูเจนประภา เรือนคำ';
 const ADMIN_ROLE = 'admin';
 
 async function provisionAdmin() {
