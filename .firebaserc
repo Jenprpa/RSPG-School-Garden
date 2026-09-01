@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "rspg-school-garden",
+    "firebase deploy --only hosting": "rspg-school-garden"
+  },
+  "targets": {},
+  "etags": {}
+}
