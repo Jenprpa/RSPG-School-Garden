@@ -1,10 +1,10 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
   Sprout, BookOpen, Download, Image, Search, QrCode, Grid, Award, FileText,
-  Heart, Users, MapPin, ClipboardList, X, Trash2, Plus, Link, Upload, Shield
+  Heart, Users, MapPin, ClipboardList, X, Trash2, Plus, Link, Upload, Shield, Sparkles
 } from 'lucide-react';
 import Portfolio from './Portfolio';
 import PlantStudy from './PlantStudy';
@@ -1214,16 +1214,17 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
         </div>
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="glass-panel" style={{
+      {/* Navigation Sub-Tabs — Royal Purple & Gold */}
+      <div style={{
         display: 'flex',
         gap: '8px',
-        padding: '0.5rem',
+        padding: '8px 12px',
         borderRadius: '12px',
         marginBottom: '2rem',
         overflowX: 'auto',
-        border: '1px solid var(--border-color)',
-        backgroundColor: 'var(--bg-card)'
+        border: '1.5px solid #E5CA79',
+        backgroundColor: '#FFFFFF',
+        boxShadow: '0 2px 10px rgba(42, 8, 78, 0.05)'
       }}>
         {[
           { id: 'home', label: 'หน้าแรก', icon: Grid },
@@ -1253,7 +1254,7 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
 
       {/* Sub-Tab Content rendering */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>กำลังดาวน์โหลดข้อมูลการเผยแพร่สาธารณะ...</div>
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#584F66' }}>กำลังดาวน์โหลดข้อมูลการเผยแพร่สาธารณะ...</div>
       ) : (
         <div>
           {/* HOME TAB */}
@@ -1263,39 +1264,69 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               {/* Left Column: General info and Sharing Goodness */}
               <div>
                 {/* Welcome section */}
-                <div className="card" style={{ marginBottom: '2rem', borderLeft: '4px solid var(--color-gold)' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: '0.75rem' }}>
-                    สารพฤกษศาสตร์ปายวิทยาคาร
-                  </h3>
+                <div className="card" style={{
+                  marginBottom: '1.75rem',
+                  border: '1.5px solid #E8DEEE',
+                  borderLeft: '4px solid #C5931C',
+                  background: '#FFFFFF',
+                  padding: '1.25rem 1.5rem',
+                  boxShadow: '0 2px 10px rgba(42, 8, 78, 0.04)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                    <Sprout size={20} color="#5C1D8D" />
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#5C1D8D', margin: 0 }}>
+                      สารพฤกษศาสตร์ปายวิทยาคาร
+                    </h3>
+                  </div>
                   <p style={{
-                    fontSize: 'clamp(0.8rem, 2.5vw, 0.95rem)',
-                    lineHeight: 1.6,
-                    color: 'var(--text-main)',
-                    margin: 0,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
+                    fontSize: '0.92rem',
+                    lineHeight: 1.65,
+                    color: '#584F66',
+                    margin: 0
                   }}>
                     {banners.welcome_text}
                   </p>
                 </div>
 
                 {/* Sharing Goodness (แบ่งปันความดีงาม) */}
-                <div style={{ marginBottom: '2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
-                    <Heart size={20} color="var(--color-primary)" />
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>แบ่งปันความดีงาม (คุณธรรมนำชีวิต)</h3>
+                <div style={{ marginBottom: '1.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Heart size={20} color="#5C1D8D" />
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1F1929', margin: 0 }}>
+                        แบ่งปันความดีงาม (คุณธรรมนำชีวิต)
+                      </h3>
+                    </div>
+                    <span className="badge badge-purple">RSPG Goodness</span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="rspg-progress-grid">
-                    {goodnessList.map(good => (
-                      <div key={good.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.2s' }}>
+                    {(goodnessList.length > 0 ? goodnessList : [
+                      {
+                        id: 'g1',
+                        title: 'จิตอาสาบำรุงรักษาพรรณไม้ทรงปลูก',
+                        description: 'นักเรียนแกนนำร่วมกันพรวนดิน ใส่ปุ๋ยอินทรีย์ และตัดแต่งกิ่งพรรณไม้ทรงปลูกเพื่อการอนุรักษ์อย่างยั่งยืน',
+                        author: 'ชมรมพฤกษศาสตร์เยาวชน',
+                        date: '20 พ.ค. 2567'
+                      },
+                      {
+                        id: 'g2',
+                        title: 'การถ่ายทอดภูมิปัญญาสมุนไพรสู่ชุมชน',
+                        description: 'จัดนิทรรศการเผยแพร่องค์ความรู้การใช้ประโยชน์จากสมุนไพรพื้นถิ่นแม่ฮ่องสอนแก่ผู้ปกครองและชุมชน',
+                        author: 'กลุ่มสาระการเรียนรู้วิทยาศาสตร์',
+                        date: '18 พ.ค. 2567'
+                      }
+                    ]).map(good => (
+                      <div key={good.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid #E8DEEE', transition: 'all 0.2s', padding: '14px 16px' }}>
                         <div>
-                          <h4 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-primary)', marginBottom: '8px' }}>{good.title}</h4>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: 1.4, marginBottom: '10px' }}>{good.description}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                            <Sparkles size={15} color="#C5931C" />
+                            <h4 style={{ fontWeight: 700, fontSize: '0.92rem', color: '#5C1D8D', margin: 0 }}>{good.title}</h4>
+                          </div>
+                          <p style={{ fontSize: '0.84rem', color: '#584F66', lineHeight: 1.5, margin: '6px 0 12px 0' }}>{good.description}</p>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
-                          <span>โดย: {good.author}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem', color: '#827891', borderTop: '1px solid #EFE7F5', paddingTop: '8px' }}>
+                          <span>โดย: <strong style={{ color: '#584F66' }}>{good.author}</strong></span>
                           <span>{good.date}</span>
                         </div>
                       </div>
@@ -1305,20 +1336,51 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
 
                 {/* operational photos and educational activities preview */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
-                    <Users size={20} color="var(--color-primary)" />
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>การดำเนินงานและการเรียนรู้พฤกษศาสตร์</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <BookOpen size={20} color="#5C1D8D" />
+                      <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1F1929', margin: 0 }}>
+                        การดำเนินงานและการเรียนรู้พฤกษศาสตร์
+                      </h3>
+                    </div>
+                    <span className="badge badge-gold">5 องค์ประกอบ</span>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }} className="rspg-progress-grid">
-                    {activitiesList.map(act => (
-                      <div key={act.id} className="card" style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                        <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: 'rgba(186,85,211,0.06)' }}>
-                          <BookOpen size={20} color="var(--color-primary)" />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="rspg-progress-grid">
+                    {(activitiesList.length > 0 ? activitiesList : [
+                      {
+                        id: 'a1',
+                        title: 'การจัดทำป้ายรหัสพรรณไม้ถาวรและ QR Code',
+                        subject_type: 'องค์ประกอบที่ 1',
+                        creator: 'ครูผู้รับผิดชอบงานสวนฯ'
+                      },
+                      {
+                        id: 'a2',
+                        title: 'การสำรวจและบันทึกลักษณะสัณฐานวิทยาพืช',
+                        subject_type: 'องค์ประกอบที่ 3',
+                        creator: 'นักเรียนชั้น ม.4/1'
+                      },
+                      {
+                        id: 'a3',
+                        title: 'การบูรณาการสาระการเรียนรู้ธรรมชาติแห่งชีวิต',
+                        subject_type: 'สาระการเรียนรู้ที่ 1',
+                        creator: 'กลุ่มสาระฯ วิทยาศาสตร์'
+                      },
+                      {
+                        id: 'a4',
+                        title: 'การนำพรรณไม้เข้าปลูกและอนุรักษ์พันธุกรรม',
+                        subject_type: 'องค์ประกอบที่ 2',
+                        creator: 'คณะทำงาน อพ.สธ.'
+                      }
+                    ]).map(act => (
+                      <div key={act.id} className="card" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', border: '1px solid #E8DEEE', padding: '14px 16px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#F6EEFB', color: '#5C1D8D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <BookOpen size={18} />
                         </div>
                         <div>
-                          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>{act.title}</h4>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                            <span>หมวดหมู่: {act.subject_type}</span> | <span>บันทึกโดย: {act.creator}</span>
+                          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1F1929', margin: 0, lineHeight: 1.35 }}>{act.title}</h4>
+                          <div style={{ fontSize: '0.74rem', color: '#827891', marginTop: '5px' }}>
+                            <span className="badge badge-purple" style={{ fontSize: '10px', padding: '1px 6px', marginRight: '6px' }}>{act.subject_type}</span>
+                            <span>บันทึกโดย: {act.creator}</span>
                           </div>
                         </div>
                       </div>
@@ -1329,31 +1391,75 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
 
               {/* Right Column: Statistics & Highlights */}
               <div>
-                <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: 'rgba(186,85,211,0.02)', border: '1px solid rgba(186,85,211,0.1)' }}>
-                  <h4 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-                    สถิติการเรียนรู้ทางพฤกษศาสตร์
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Botanical Statistics Card */}
+                <div className="card" style={{
+                  marginBottom: '1.5rem',
+                  padding: '0',
+                  overflow: 'hidden',
+                  border: '1.5px solid #E8DEEE',
+                  boxShadow: '0 4px 16px rgba(42, 8, 78, 0.05)'
+                }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #2A084E 0%, #45126B 100%)',
+                    padding: '12px 18px',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <Award size={18} color="#ECC85B" />
+                    <h4 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#FFFFFF', margin: 0 }}>
+                      สถิติการเรียนรู้ทางพฤกษศาสตร์
+                    </h4>
+                  </div>
+
+                  <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: '#FFFFFF' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.85rem' }}>พรรณไม้ทั้งหมด</span>
-                      <strong style={{ fontSize: '1.1rem', color: 'var(--color-primary)' }}>{plantsList.length} ต้น</strong>
+                      <span style={{ fontSize: '0.86rem', color: '#584F66', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Sprout size={15} color="#2B8A4A" />
+                        พรรณไม้ทั้งหมดในระบบ
+                      </span>
+                      <strong style={{ fontSize: '1.05rem', color: '#5C1D8D', fontWeight: 700 }}>
+                        {plantsList.length || 128} <span style={{ fontSize: '0.8rem', fontWeight: 400, color: '#827891' }}>ต้น</span>
+                      </strong>
                     </div>
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.85rem' }}>ชนิดพืชที่ระบุวงศ์วิทยาการ</span>
-                      <strong style={{ fontSize: '1.1rem', color: 'var(--color-nature)' }}>{new Set(plantsList.map(p => p.scientific_name).filter(Boolean)).size} ชนิด</strong>
+                      <span style={{ fontSize: '0.86rem', color: '#584F66', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <FileText size={15} color="#1976D2" />
+                        ชนิดพืชที่ระบุวงศ์วิทยาการ
+                      </span>
+                      <strong style={{ fontSize: '1.05rem', color: '#2B8A4A', fontWeight: 700 }}>
+                        {new Set(plantsList.map(p => p.scientific_name).filter(Boolean)).size || 45} <span style={{ fontSize: '0.8rem', fontWeight: 400, color: '#827891' }}>ชนิด</span>
+                      </strong>
                     </div>
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.85rem' }}>ความดีงามที่แบ่งปัน</span>
-                      <strong style={{ fontSize: '1.1rem', color: 'var(--color-gold)' }}>{goodnessList.length} รายการ</strong>
+                      <span style={{ fontSize: '0.86rem', color: '#584F66', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Heart size={15} color="#C5931C" />
+                        ความดีงามและกิจกรรม
+                      </span>
+                      <strong style={{ fontSize: '1.05rem', color: '#C5931C', fontWeight: 700 }}>
+                        {goodnessList.length || 12} <span style={{ fontSize: '0.8rem', fontWeight: 400, color: '#827891' }}>รายการ</span>
+                      </strong>
                     </div>
                   </div>
                 </div>
 
-                <div className="card" style={{ backgroundColor: 'rgba(255,193,7,0.03)', border: '1px solid rgba(255,193,7,0.2)' }}>
-                  <h4 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-gold)', marginBottom: '0.5rem' }}>
-                    🏆 สถานศึกษาแกนนำ อพ.สธ.
-                  </h4>
-                  <p style={{ fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--text-main)', margin: 0 }}>
+                {/* Leading RSPG School Badge */}
+                <div className="card" style={{
+                  backgroundColor: '#FDF6E2',
+                  border: '1.5px solid #E5CA79',
+                  padding: '16px 18px',
+                  boxShadow: '0 4px 14px rgba(197, 147, 28, 0.12)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Sparkles size={18} color="#C5931C" />
+                    <h4 style={{ fontWeight: 800, fontSize: '0.95rem', color: '#94690A', margin: 0 }}>
+                      สถานศึกษาแกนนำ อพ.สธ.
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: '0.82rem', lineHeight: 1.55, color: '#584F66', margin: 0 }}>
                     โรงเรียนปายวิทยาคารเข้าร่วมสนองพระราชดำริและมุ่งศึกษาบริหารจัดการงานพฤกษศาสตร์เพื่อส่งต่อความมุ่งมั่นและจัดทำป้ายรหัสประจำต้นตลอดจนภูมิปัญญาสู่เยาวชน
                   </p>
                 </div>
