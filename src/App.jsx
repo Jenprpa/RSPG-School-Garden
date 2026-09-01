@@ -63,7 +63,7 @@ export default function App() {
 
   // Authentication States
   const [authMode, setAuthMode] = useState('login'); // login | signup
-  const [email, setEmail] = useState('sample@email.com');
+  const [email, setEmail] = useState('serser12six@gmail.com');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedRole] = useState('student');

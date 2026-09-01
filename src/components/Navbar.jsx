@@ -188,7 +188,7 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
             {/* Name and Role */}
             <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
               <span style={{ fontSize: '13px', fontWeight: 700, color: '#1F1929', lineHeight: 1.2 }}>
-                นางสาวเจนประภา เรียนคำ
+                นางสาวเจนประภา เรือนคำ
               </span>
               <span style={{ fontSize: '11px', color: '#5C1D8D', fontWeight: 600, lineHeight: 1.2, marginTop: '2px' }}>
                 {getRoleLabel(userRole)}
@@ -203,17 +203,25 @@ export default function Navbar({ activeTab, userRole, viewMode, onLogout }) {
                 position: 'absolute',
                 top: '48px',
                 right: 0,
-                width: '180px',
+                width: '210px',
                 backgroundColor: '#FFFFFF',
                 borderRadius: '8px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                border: '1px solid #E7E4EA',
-                padding: '6px',
+                boxShadow: '0 6px 20px rgba(42, 8, 78, 0.15)',
+                border: '1px solid #E5CA79',
+                padding: '8px',
                 zIndex: 100
               }}
             >
-              <div style={{ padding: '8px 10px', borderBottom: '1px solid #F0EDF3', fontSize: '12px', color: '#6F6A78' }}>
-                เข้าสู่ระบบด้วยสิทธิ์ <strong style={{ color: '#7137A8' }}>{getRoleLabel(userRole)}</strong>
+              <div style={{ padding: '8px 10px', borderBottom: '1px solid #F0EDF3', fontSize: '12px', color: '#584F66' }}>
+                <div style={{ fontWeight: 700, color: '#1F1929', fontSize: '13px', marginBottom: '2px' }}>
+                  นางสาวเจนประภา เรือนคำ
+                </div>
+                <div style={{ color: '#827891', fontSize: '11px', marginBottom: '6px' }}>
+                  serser12six@gmail.com
+                </div>
+                <div>
+                  สิทธิ์: <strong style={{ color: '#5C1D8D' }}>{getRoleLabel(userRole)}</strong>
+                </div>
               </div>
               {onLogout && (
                 <button

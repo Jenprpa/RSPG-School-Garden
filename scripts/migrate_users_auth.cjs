@@ -1,7 +1,7 @@
-/**
+﻿/**
  * script: migrate_users_auth.cjs
  * Description: Admin SDK migration script to provision Firebase Auth accounts for existing Firestore users.
- * 
+ *
  * Safety constraints:
  * 1. Default mode is DRY-RUN.
  * 2. Requires the "--apply" flag to make real changes (blocked in this sprint unless authorized).
