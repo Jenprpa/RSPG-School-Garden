@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
 import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -1217,14 +1217,15 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
       {/* Navigation Sub-Tabs — Royal Purple & Gold */}
       <div style={{
         display: 'flex',
-        gap: '8px',
-        padding: '8px 12px',
-        borderRadius: '12px',
+        gap: '6px',
+        padding: '6px 8px',
+        borderRadius: '14px',
         marginBottom: '2rem',
         overflowX: 'auto',
         border: '1.5px solid #E5CA79',
         backgroundColor: '#FFFFFF',
-        boxShadow: '0 2px 10px rgba(42, 8, 78, 0.05)'
+        boxShadow: '0 4px 16px rgba(42, 8, 78, 0.08)',
+        alignItems: 'center'
       }}>
         {[
           { id: 'home', label: 'หน้าแรก', icon: Grid },
@@ -1244,8 +1245,27 @@ export default function PublicPortal({ onSelectPlant, isLoggedIn, userRole, setA
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
               className={`public-nav-button ${isSelected ? 'active' : ''}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                padding: '8px 15px',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                fontWeight: isSelected ? 700 : 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease',
+                border: isSelected ? '1.5px solid #ECC85B' : '1px solid #E8DEEE',
+                background: isSelected 
+                  ? 'linear-gradient(135deg, #2A084E 0%, #45126B 50%, #6A1B9A 100%)' 
+                  : '#FAF8FC',
+                color: isSelected ? '#FFFFFF' : '#4A3E56',
+                boxShadow: isSelected ? '0 4px 12px rgba(42, 8, 78, 0.25)' : 'none',
+                outline: 'none'
+              }}
             >
-              <Icon size={16} />
+              <Icon size={16} color={isSelected ? '#ECC85B' : '#7B1FA2'} />
               <span>{tab.label}</span>
             </button>
           );

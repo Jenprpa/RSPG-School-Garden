@@ -1,4 +1,4 @@
-﻿/* index.css - PWTK Botanical Garden: Royal Purple & Gold Design System (ธีมสีม่วงพระเทพ) */
+/* index.css - PWTK Botanical Garden: Royal Purple & Gold Design System (ธีมสีม่วงพระเทพ) */
 
 :root {
   /* Fonts */
@@ -772,32 +772,37 @@ button, input, select, textarea {
 
 /* Design System Navigation Buttons - Royal Purple & Gold */
 .public-nav-button {
-  display: flex;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0.6rem 1.1rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background-color: transparent;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  font-weight: 500;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 10px;
+  border: 1px solid #E8DEEE;
+  background-color: #FAF8FC;
+  color: #4A3E56;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   white-space: nowrap;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .public-nav-button:hover {
-  background-color: var(--brand-purple-soft) !important;
-  color: var(--brand-purple) !important;
-  border-color: #E8DEEE;
+  background-color: #F3E8FC !important;
+  color: #5C1D8D !important;
+  border-color: #D1C4E9 !important;
+  transform: translateY(-1px);
 }
 
 .public-nav-button.active {
-  background: linear-gradient(135deg, #5C1D8D 0%, #45126B 100%) !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #2A084E 0%, #45126B 50%, #6A1B9A 100%) !important;
+  color: #FFFFFF !important;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(92, 29, 141, 0.25);
-  border: 1px solid #E5CA79;
+  box-shadow: 0 4px 14px rgba(42, 8, 78, 0.25) !important;
+  border: 1.5px solid #ECC85B !important;
 }
 
