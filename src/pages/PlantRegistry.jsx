@@ -1,205 +1,342 @@
-import { useState, useEffect } from 'react';
-import { db, storage, isFirebaseConfigured, compressImage } from '../firebaseClient';
-import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Search, Plus, FileSpreadsheet, Upload, Trash2, Edit3, X,
-  MapPin, Image as ImageIcon, QrCode, FileText,
-  ShieldCheck, Printer
+  Search, Plus, Filter, ArrowUpDown, Upload, Trash2, Edit3, X,
+  MapPin, Image as ImageIcon, QrCode, FileText, CheckCircle2,
+  AlertTriangle, ShieldCheck, Printer, Calendar, Info, Layers,
+  Compass, Eye, Check, RefreshCw, AlertCircle
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { QRCodeSVG } from 'qrcode.react';
 import PlantCard from '../components/PlantCard';
 import PlantIncident from './PlantIncident';
-import { QRCodeSVG } from 'qrcode.react';
+import {
+  PLANT_USES, MEDIA_CATEGORIES, LOCATION_METHODS,
+  PAGE8_MATCH_STATUS, ACADEMIC_YEARS, SCHOOL_ZONES
+} from '../constants/rspgEnums';
+import { plantRepository } from '../services/plantRepository';
 
-// Standard RSPG Uses Multi-Select Options
-export const STANDARD_USES_OPTIONS = [
-  { id: 'medicinal', label: '🌿 ยาสมุนไพร / การแพทย์พื้นบ้าน' },
-  { id: 'food', label: '🍲 อาหาร / เครื่องดื่ม / พืชผัก' },
-  { id: 'timber', label: '🪵 ไม้ใช้สอย / ก่อสร้าง / เครื่องเรือน' },
-  { id: 'ornamental', label: '🌸 ไม้ประดับ / ให้ร่มเงา / ปรับภูมิทัศน์' },
-  { id: 'ritual', label: '🕯️ พิธีกรรม / ประเพณี / ความเชื่อ' },
-  { id: 'craft', label: '🧵 หัตถกรรม / สีย้อมธรรมชาติ / เส้นใย' },
-  { id: 'other', label: '💡 อื่นๆ (ระบุในหมายเหตุ)' }
-];
+export default function PlantRegistry({ onSelectPlant, userRole }) {
+  // Context States
+  const [schoolId, setSchoolId] = useState('pwtk');
+  const [academicYear, setAcademicYear] = useState('2569');
 
-// Botanical Part Categories
-export const BOTANICAL_CATEGORIES = [
-  { key: 'habit', label: '1. วิสัย / ทรงต้น (Habit)', icon: '🌳', placeholder: 'เช่น ไม้ต้นผลัดใบ สูง 10-15 เมตร ทรงพุ่มกลมทึบ...' },
-  { key: 'stem', label: '2. ลำต้นและเปลือก (Stem & Bark)', icon: '🪵', placeholder: 'เช่น เปลือกต้นสีเทาอมน้ำตาล แตกเป็นร่องตื้นตามยาว...' },
-  { key: 'leaf', label: '3. ลักษณะใบ (Leaves)', icon: '🍃', placeholder: 'เช่น ใบประกอบแบบขนนกปลายคู่ เรียงสลับ แผ่นใบรูปไข่...' },
-  { key: 'flower', label: '4. ลักษณะดอก (Flowers)', icon: '🌸', placeholder: 'เช่น ดอกช่อกระจะออกตามซอกใบ กลีบดอกสีชมพูอ่อนถึงขาว...' },
-  { key: 'fruit', label: '5. ผลและเมล็ด (Fruits & Seeds)', icon: '🌰', placeholder: 'เช่น ผลเป็นฝักทรงกระบอกยาว 30-40 ซม. เมล็ดแบนรูปไข่...' },
-  { key: 'drawing', label: '6. ภาพวาดพฤกษศาสตร์ (ก.7-003 Drawing)', icon: '🎨', placeholder: 'ภาพวาดลายเส้นแสดงส่วนประกอบครบถ้วนตามแบบ ก.7-003' }
-];
-
-// Interactive School Zones
-export const SCHOOL_ZONES = [
-  { id: 'Zone A', name: 'โซน A: สวนพฤกษศาสตร์หน้าอาคาร 1', color: '#5C1D8D', x: 25, y: 30 },
-  { id: 'Zone B', name: 'โซน B: สวนหย่อมเรือนเพาะชำ', color: '#1E6B37', x: 70, y: 35 },
-  { id: 'Zone C', name: 'โซน C: แปลงเกษตรและพืชสมุนไพร', color: '#C5931C', x: 30, y: 75 },
-  { id: 'Zone D', name: 'โซน D: ลานพรรณไม้ทรงปลูกหน้าหอประชุม', color: '#1565C0', x: 75, y: 75 },
-  { id: 'Zone E', name: 'โซน E: แนวรั้วรอบโรงเรียนและพืชริมทาง', color: '#7B1FA2', x: 50, y: 15 },
-  { id: 'Zone F', name: 'โซน F: พื้นที่อนุรักษ์ป่าธรรมชาติหลังโรงเรียน', color: '#00695C', x: 50, y: 90 }
-];
-
-export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole }) {
+  // Plant List State
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('ทั้งหมด');
-  const [selectedArea, setSelectedArea] = useState('ทั้งหมด');
+  const [selectedUseFilter, setSelectedUseFilter] = useState('ทั้งหมด');
+  const [selectedZoneFilter, setSelectedZoneFilter] = useState('ทั้งหมด');
+  const [sortField, setSortField] = useState('code'); // 'code' | 'localName'
+  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
 
-  // Modal states
+  // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlant, setEditingPlant] = useState(null);
-  const [modalTab, setModalTab] = useState('page1'); // 'page1' | 'page2to7' | 'page8' | 'location'
+  const [modalTab, setModalTab] = useState('page1'); // 'basic' | 'page1' | 'page2to7' | 'page8' | 'location' | 'media'
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
   const [isTagPreviewOpen, setIsTagPreviewOpen] = useState(false);
   const [selectedTagPlant, setSelectedTagPlant] = useState(null);
 
-  // Form fields: Page 1 Local Info
-  const [plantCode, setPlantCode] = useState('');
-  const [thaiName, setThaiName] = useState('');
-  const [localUses, setLocalUses] = useState([]);
-  const [localLocation, setLocalLocation] = useState('');
-  const [informantName, setInformantName] = useState('');
+  // Form Fields: 1. Basic Info
+  const [code, setCode] = useState('');
+  const [localName, setLocalName] = useState('');
   const [status, setStatus] = useState('draft'); // 'draft' | 'pending_review' | 'approved'
 
-  // Form fields: Pages 2-7 Botanical morphology descriptions & category media
-  const [categoryTexts, setCategoryTexts] = useState({
+  // Form Fields: 2. StudySheet Page 1 (Local Info)
+  const [unknownFlag, setUnknownFlag] = useState(false);
+  const [uses, setUses] = useState([]);
+  const [usesOther, setUsesOther] = useState('');
+  const [informantName, setInformantName] = useState('');
+  const [informantAge, setInformantAge] = useState('');
+  const [informantAddress, setInformantAddress] = useState('');
+  const [interviewDate, setInterviewDate] = useState(new Date().toISOString().split('T')[0]);
+  const [interviewLocation, setInterviewLocation] = useState('');
+
+  // Form Fields: 3. StudySheet Pages 2-7 (Morphology 7 Parts)
+  const [morphology, setMorphology] = useState({
     habit: '',
+    root: '',
     stem: '',
     leaf: '',
     flower: '',
     fruit: '',
-    drawing: ''
+    seed: ''
   });
-  const [categoryMedia, setCategoryMedia] = useState({
-    habit: '',
-    stem: '',
-    leaf: '',
-    flower: '',
-    fruit: '',
-    drawing: ''
-  });
-  const [uploadingCategory, setUploadingCategory] = useState(null);
 
-  // Form fields: Pages 8-10 Scientific Comparison & References
-  const [scientificName, setScientificName] = useState('');
-  const [familyName, setFamilyName] = useState('');
-  const [commonName, setCommonName] = useState('');
-  const [plantType, setPlantType] = useState('ไม้ต้น');
-  const [matchStatus, setMatchStatus] = useState('ตรงกับเอกสารอ้างอิงทั้งหมด');
-  const [referenceSources, setReferenceSources] = useState('ชื่อพรรณไม้แห่งประเทศไทย (เต็ม สมิตินันทน์ ฉบับแก้ไขเพิ่มเติม พ.ศ. 2557)');
-  const [herbariumNumber, setHerbariumNumber] = useState('');
-  const [description, setDescription] = useState('');
+  // Form Fields: 4. StudySheet Pages 8-10 (Comparison & References)
+  const [fieldDataSummary, setFieldDataSummary] = useState('');
+  const [referenceDataSummary, setReferenceDataSummary] = useState('');
+  const [matchStatus, setMatchStatus] = useState('match');
+  const [references, setReferences] = useState([
+    'ชื่อพรรณไม้แห่งประเทศไทย (เต็ม สมิตินันทน์ ฉบับแก้ไขเพิ่มเติม พ.ศ. 2557)'
+  ]);
+  const [confirmedScientificName, setConfirmedScientificName] = useState('');
+  const [confirmedFamilyName, setConfirmedFamilyName] = useState('');
+  const [confirmedCommonName, setConfirmedCommonName] = useState('');
 
-  // Form fields: Location & Pinning
-  const [plantingLocation, setPlantingLocation] = useState('Zone A');
+  // Form Fields: 5. Location & Canopy
+  const [locationMethod, setLocationMethod] = useState('gps');
+  const [gpsLat, setGpsLat] = useState('19.355400');
+  const [gpsLng, setGpsLng] = useState('98.442000');
+  const [coordX, setCoordX] = useState(25);
+  const [coordY, setCoordY] = useState(30);
+  const [zone, setZone] = useState('Zone A');
   const [surveyor, setSurveyor] = useState('');
-  const [gpsLat, setGpsLat] = useState('');
-  const [gpsLng, setGpsLng] = useState('');
-  const [pinCoordinates, setPinCoordinates] = useState({ x: 25, y: 30 });
-  const [isTagged, setIsTagged] = useState('มี');
+  const [canopyWidth, setCanopyWidth] = useState({
+    north: 0,
+    south: 0,
+    east: 0,
+    west: 0
+  });
 
+  // Form Fields: 6. Media Gallery
+  const [plantMediaList, setPlantMediaList] = useState([]);
+  const [selectedUploadCategory, setSelectedUploadCategory] = useState('');
+  const [uploadCaption, setUploadCaption] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  // Validation & Error States (Inline)
+  const [errors, setErrors] = useState({});
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitSuccessMsg, setSubmitSuccessMsg] = useState('');
 
-  // GPS Location getter
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      alert('เบราว์เซอร์นี้ไม่รองรับการดึงพิกัดตำแหน่ง (Geolocation)');
-      return;
-    }
-    const btn = document.getElementById('btn-get-gps');
-    if (btn) {
-      btn.innerHTML = '⏳ กำลังระบุตำแหน่ง...';
-      btn.disabled = true;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setGpsLat(position.coords.latitude.toFixed(6));
-        setGpsLng(position.coords.longitude.toFixed(6));
-        if (btn) {
-          btn.innerHTML = '📍 ดึงพิกัด GPS สำเร็จ';
-          btn.disabled = false;
-        }
-      },
-      (error) => {
-        console.error(error);
-        if (btn) {
-          btn.innerHTML = '📍 ดึงพิกัด GPS ปัจจุบัน';
-          btn.disabled = false;
-        }
-        alert('เกิดข้อผิดพลาดในการดึงพิกัด GPS: ' + error.message);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
-
-  // Load plants
-  const fetchPlants = async () => {
+  // Load plants when context changes
+  const loadPlants = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'plants'), orderBy('plant_code'));
-      const querySnapshot = await getDocs(q);
-      const list = [];
-      querySnapshot.forEach(docSnap => {
-        list.push({ id: docSnap.id, ...docSnap.data() });
-      });
-      setPlants(list);
+      const data = await plantRepository.getPlants(schoolId, academicYear);
+      setPlants(data);
     } catch (err) {
-      console.error('Error fetching plants:', err.message);
+      console.error('Failed to load plants:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isFirebaseConfigured()) {
-      fetchPlants();
-    } else {
-      setLoading(false);
-    }
-  }, []);
+    loadPlants();
+  }, [schoolId, academicYear]);
 
-  // Handle single category image upload
-  const handleUploadCategoryImage = async (categoryKey, file) => {
-    if (!file || !storage) return;
-    setUploadingCategory(categoryKey);
-    try {
-      const processedFile = await compressImage(file);
-      const fileExt = processedFile.name.split('.').pop();
-      const fileName = `plants/${categoryKey}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const storageRef = ref(storage, fileName);
-
-      const snapshot = await uploadBytes(storageRef, processedFile);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
-
-      setCategoryMedia(prev => ({ ...prev, [categoryKey]: downloadUrl }));
-    } catch (err) {
-      console.error('Upload error:', err.message);
-      alert(`ไม่สามารถอัปโหลดรูปภาพส่วน ${categoryKey} ได้: ` + err.message);
-    } finally {
-      setUploadingCategory(null);
-    }
+  // Code Uniqueness Check
+  const validateCodeUnique = (codeVal) => {
+    if (!codeVal.trim()) return 'กรุณาระบุรหัสพรรณไม้ (Code)';
+    const exists = plants.some(
+      p => (p.plant_code || p.code || '').toLowerCase() === codeVal.trim().toLowerCase() &&
+           (!editingPlant || p.id !== editingPlant.id)
+    );
+    if (exists) return 'รหัสพรรณไม้นี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสที่ไม่ซ้ำกัน';
+    return null;
   };
 
-  // Toggle local uses checkboxes
-  const handleToggleUse = (useId) => {
-    setLocalUses(prev =>
-      prev.includes(useId) ? prev.filter(id => id !== useId) : [...prev, useId]
+  // Open Add / Edit Modal
+  const openModal = (plant = null) => {
+    setErrors({});
+    setSubmitSuccessMsg('');
+    if (plant) {
+      setEditingPlant(plant);
+      setCode(plant.plant_code || plant.code || '');
+      setLocalName(plant.thai_name || plant.local_name || plant.localName || '');
+      setStatus(plant.status || 'draft');
+
+      // Page 1
+      setUnknownFlag(Boolean(plant.unknownFlag));
+      setUses(Array.isArray(plant.uses) ? plant.uses : Array.isArray(plant.local_uses) ? plant.local_uses : []);
+      setUsesOther(plant.usesOther || '');
+      setInformantName(plant.informantName || plant.informant_name || '');
+      setInformantAge(plant.informantAge || '');
+      setInformantAddress(plant.informantAddress || '');
+      setInterviewDate(plant.interviewDate || plant.survey_date || new Date().toISOString().split('T')[0]);
+      setInterviewLocation(plant.interviewLocation || plant.local_location || '');
+
+      // Pages 2-7
+      setMorphology({
+        habit: plant.morphology?.habit || plant.habit || '',
+        root: plant.morphology?.root || '',
+        stem: plant.morphology?.stem || '',
+        leaf: plant.morphology?.leaf || '',
+        flower: plant.morphology?.flower || '',
+        fruit: plant.morphology?.fruit || '',
+        seed: plant.morphology?.seed || ''
+      });
+
+      // Pages 8-10
+      setFieldDataSummary(plant.fieldDataSummary || plant.description || '');
+      setReferenceDataSummary(plant.referenceDataSummary || '');
+      setMatchStatus(plant.matchStatus || plant.match_status || 'match');
+      setReferences(
+        Array.isArray(plant.references) && plant.references.length > 0
+          ? plant.references
+          : [plant.reference_sources || 'ชื่อพรรณไม้แห่งประเทศไทย (เต็ม สมิตินันทน์)']
+      );
+      setConfirmedScientificName(plant.scientific_name || plant.confirmedScientificName || '');
+      setConfirmedFamilyName(plant.family_name || plant.confirmedFamilyName || '');
+      setConfirmedCommonName(plant.common_name || plant.confirmedCommonName || '');
+
+      // Location
+      setLocationMethod(plant.location?.method || plant.locationMethod || 'gps');
+      setGpsLat(plant.gps_lat ? String(plant.gps_lat) : '19.355400');
+      setGpsLng(plant.gps_lng ? String(plant.gps_lng) : '98.442000');
+      setCoordX(plant.location?.x || plant.pin_coordinates?.x || 25);
+      setCoordY(plant.location?.y || plant.pin_coordinates?.y || 30);
+      setZone(plant.planting_location || plant.zone || 'Zone A');
+      setSurveyor(plant.surveyor || '');
+      setCanopyWidth(plant.canopyWidth || { north: 0, south: 0, east: 0, west: 0 });
+
+      // Media
+      setPlantMediaList(plant.media || []);
+    } else {
+      setEditingPlant(null);
+      const nextNum = String(plants.length + 1).padStart(3, '0');
+      setCode(`7-50300-001-${nextNum}`);
+      setLocalName('');
+      setStatus('draft');
+
+      setUnknownFlag(false);
+      setUses(['medicine', 'ornamental']);
+      setUsesOther('');
+      setInformantName('');
+      setInformantAge('');
+      setInformantAddress('');
+      setInterviewDate(new Date().toISOString().split('T')[0]);
+      setInterviewLocation('บริเวณโรงเรียนปายวิทยาคาร');
+
+      setMorphology({
+        habit: '',
+        root: '',
+        stem: '',
+        leaf: '',
+        flower: '',
+        fruit: '',
+        seed: ''
+      });
+
+      setFieldDataSummary('');
+      setReferenceDataSummary('');
+      setMatchStatus('match');
+      setReferences(['ชื่อพรรณไม้แห่งประเทศไทย (เต็ม สมิตินันทน์ ฉบับแก้ไขเพิ่มเติม พ.ศ. 2557)']);
+      setConfirmedScientificName('');
+      setConfirmedFamilyName('');
+      setConfirmedCommonName('');
+
+      setLocationMethod('gps');
+      setGpsLat('19.355400');
+      setGpsLng('98.442000');
+      setCoordX(25);
+      setCoordY(30);
+      setZone('Zone A');
+      setSurveyor('');
+      setCanopyWidth({ north: 0, south: 0, east: 0, west: 0 });
+
+      setPlantMediaList([]);
+    }
+
+    setSelectedUploadCategory('');
+    setUploadCaption('');
+    setModalTab('page1');
+    setIsModalOpen(true);
+  };
+
+  // Toggle Uses Multi-Select Checkboxes
+  const handleToggleUse = (useVal) => {
+    if (unknownFlag) return;
+    setUses(prev =>
+      prev.includes(useVal) ? prev.filter(v => v !== useVal) : [...prev, useVal]
     );
   };
 
-  // Click on SVG Map to place pin
-  const handleMapClick = (e) => {
+  // Toggle Unknown Flag
+  const handleToggleUnknownFlag = (checked) => {
+    setUnknownFlag(checked);
+    if (checked) {
+      setUses([]);
+      setUsesOther('');
+      setInformantName('-');
+      setInformantAge('');
+      setInformantAddress('-');
+      setInterviewLocation('-');
+    }
+  };
+
+  // Reference List Handlers
+  const handleAddReference = () => {
+    if (references.length >= 10) {
+      alert('สามารถเพิ่มเอกสารอ้างอิงได้สูงสุด 10 รายการ');
+      return;
+    }
+    setReferences(prev => [...prev, '']);
+  };
+
+  const handleUpdateReference = (index, value) => {
+    setReferences(prev => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
+
+  const handleRemoveReference = (index) => {
+    if (references.length <= 1) {
+      alert('ต้องมีเอกสารอ้างอิงอย่างน้อย 1 รายการ');
+      return;
+    }
+    setReferences(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Dedicated Category Media Upload
+  const handleUploadCategoryMedia = async (file, category) => {
+    if (!file) return;
+    if (!category) {
+      setErrors(prev => ({ ...prev, media: 'กรุณาเลือกหมวดหมู่ภาพ (category) ก่อนทำการอัปโหลด' }));
+      return;
+    }
+    setUploading(true);
+    setErrors(prev => ({ ...prev, media: null }));
+    try {
+      const url = await plantRepository.uploadMedia(file, category, code || 'new');
+      const newMediaItem = {
+        category: category,
+        url: url,
+        caption: uploadCaption.trim() || `ภาพ ${category} ของ ${localName || code}`,
+        uploadedAt: new Date().toISOString()
+      };
+      setPlantMediaList(prev => [...prev, newMediaItem]);
+      setUploadCaption('');
+      setSelectedUploadCategory('');
+    } catch (err) {
+      console.error(err);
+      setErrors(prev => ({ ...prev, media: `การอัปโหลดล้มเหลว: ${err.message}` }));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // GPS Location Getter
+  const handleGetGpsLocation = () => {
+    if (!navigator.geolocation) {
+      alert('อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับการดึงพิกัด Geolocation');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsLat(pos.coords.latitude.toFixed(6));
+        setGpsLng(pos.coords.longitude.toFixed(6));
+      },
+      (err) => {
+        alert(`เกิดข้อผิดพลาดในการดึงพิกัด GPS: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // Interactive Map Pinning
+  const handleMapPin = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
-    setPinCoordinates({ x, y });
+    setCoordX(x);
+    setCoordY(y);
 
+    // Auto-detect zone
     let nearest = SCHOOL_ZONES[0];
     let minDist = 99999;
     SCHOOL_ZONES.forEach(z => {
@@ -209,293 +346,202 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
         nearest = z;
       }
     });
-    setPlantingLocation(nearest.id);
+    setZone(nearest.id);
   };
 
-  // Open Add/Edit Modal
-  const openModal = (plant = null) => {
-    if (plant) {
-      setEditingPlant(plant);
-      setPlantCode(plant.plant_code || '');
-      setThaiName(plant.thai_name || plant.local_name || '');
-      setLocalUses(Array.isArray(plant.local_uses) ? plant.local_uses : []);
-      setLocalLocation(plant.local_location || '');
-      setInformantName(plant.informant_name || '');
-      setStatus(plant.status || 'draft');
-
-      setCategoryTexts({
-        habit: plant.morphology?.habit || plant.habit || '',
-        stem: plant.morphology?.stem || '',
-        leaf: plant.morphology?.leaf || '',
-        flower: plant.morphology?.flower || '',
-        fruit: plant.morphology?.fruit || '',
-        drawing: plant.morphology?.drawing || ''
-      });
-
-      setCategoryMedia({
-        habit: plant.media_categories?.habit || plant.image_url || '',
-        stem: plant.media_categories?.stem || '',
-        leaf: plant.media_categories?.leaf || '',
-        flower: plant.media_categories?.flower || '',
-        fruit: plant.media_categories?.fruit || '',
-        drawing: plant.media_categories?.drawing || ''
-      });
-
-      setScientificName(plant.scientific_name || '');
-      setFamilyName(plant.family_name || '');
-      setCommonName(plant.common_name || '');
-      setPlantType(plant.plant_type || 'ไม้ต้น');
-      setMatchStatus(plant.match_status || 'ตรงกับเอกสารอ้างอิงทั้งหมด');
-      setReferenceSources(plant.reference_sources || 'ชื่อพรรณไม้แห่งประเทศไทย (เต็ม สมิตินันทน์ ฉบับแก้ไขเพิ่มเติม พ.ศ. 2557)');
-      setHerbariumNumber(plant.herbarium_number || '');
-      setDescription(plant.description || '');
-
-      setPlantingLocation(plant.planting_location || 'Zone A');
-      setSurveyor(plant.surveyor || '');
-      setGpsLat(plant.gps_lat || '');
-      setGpsLng(plant.gps_lng || '');
-      setPinCoordinates(plant.pin_coordinates || { x: 25, y: 30 });
-      setIsTagged(plant.is_tagged || 'มี');
-    } else {
-      setEditingPlant(null);
-      const nextNum = String(plants.length + 1).padStart(3, '0');
-      setPlantCode(`7-50300-001-${nextNum}`);
-      setThaiName('');
-      setLocalUses(['medicinal', 'ornamental']);
-      setLocalLocation('บริเวณโรงเรียนปายวิทยาคาร');
-      setInformantName('');
-      setStatus('draft');
-
-      setCategoryTexts({
-        habit: '',
-        stem: '',
-        leaf: '',
-        flower: '',
-        fruit: '',
-        drawing: ''
-      });
-
-      setCategoryMedia({
-        habit: '',
-        stem: '',
-        leaf: '',
-        flower: '',
-        fruit: '',
-        drawing: ''
-      });
-
-      setScientificName('');
-      setFamilyName('');
-      setCommonName('');
-      setPlantType('ไม้ต้น');
-      setMatchStatus('ตรงกับเอกสารอ้างอิงทั้งหมด');
-      setReferenceSources('ชื่อพรรณไม้แห่งประเทศไทย (เต็ม สมิตินันทน์ ฉบับแก้ไขเพิ่มเติม พ.ศ. 2557)');
-      setHerbariumNumber('');
-      setDescription('');
-
-      setPlantingLocation('Zone A');
-      setSurveyor('');
-      setGpsLat('19.355400');
-      setGpsLng('98.442000');
-      setPinCoordinates({ x: 25, y: 30 });
-      setIsTagged('มี');
-    }
-
-    setModalTab('page1');
-    setIsModalOpen(true);
-  };
-
-  // Submit Add / Edit Plant
+  // Form Submit Handler with Strict Validation
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = {};
 
-    if (!plantCode.trim()) {
-      alert('กรุณาระบุรหัสพรรณไม้ (Plant Code) ให้เรียบร้อยก่อน');
-      setModalTab('page1');
-      return;
+    // 1. Validate Code
+    const codeError = validateCodeUnique(code);
+    if (codeError) validationErrors.code = codeError;
+
+    // 2. Validate Local Name
+    if (!localName.trim()) {
+      validationErrors.localName = 'กรุณาระบุชื่อพื้นเมือง/ชื่อไทย (localName)';
     }
-    if (!thaiName.trim()) {
-      alert('กรุณาระบุชื่อพื้นเมือง/ชื่อไทย (Local Name) ให้เรียบร้อยก่อน');
-      setModalTab('page1');
+
+    // 3. Validate References (no empty items)
+    const emptyRefIndex = references.findIndex(r => !r.trim());
+    if (emptyRefIndex !== -1) {
+      validationErrors.references = `เอกสารอ้างอิงลำดับที่ ${emptyRefIndex + 1} ต้องไม่เป็นค่าว่าง`;
+    }
+
+    // 4. Validate Character Counts (max 2000 per field)
+    Object.entries(morphology).forEach(([k, text]) => {
+      if (text && text.length > 2000) {
+        validationErrors[k] = `เนื้อหาหมวด ${k} เกินขีดจำกัด 2000 ตัวอักษร (ปัจจุบัน ${text.length})`;
+      }
+    });
+    if (fieldDataSummary.length > 2000) {
+      validationErrors.fieldDataSummary = 'คำอธิบายข้อมูลภาคสนามเกิน 2000 ตัวอักษร';
+    }
+    if (referenceDataSummary.length > 2000) {
+      validationErrors.referenceDataSummary = 'คำอธิบายข้อมูลเอกสารอ้างอิงเกิน 2000 ตัวอักษร';
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      // Auto-switch to tab containing error
+      if (validationErrors.code || validationErrors.localName) setModalTab('page1');
+      else if (Object.keys(morphology).some(k => validationErrors[k])) setModalTab('page2to7');
+      else if (validationErrors.references || validationErrors.fieldDataSummary) setModalTab('page8');
       return;
     }
 
     setSubmitLoading(true);
+    setErrors({});
+
     try {
-      const mediaList = [];
-      Object.entries(categoryMedia).forEach(([cat, url]) => {
-        if (url) {
-          mediaList.push({
-            category: cat,
-            url: url,
-            caption: categoryTexts[cat] || `ภาพ${cat}ของ ${thaiName}`,
-            uploadedAt: new Date().toISOString()
-          });
-        }
-      });
+      // Find main image from media list or habit
+      const habitMedia = plantMediaList.find(m => m.category === 'habit');
+      const mainImageUrl = habitMedia ? habitMedia.url : (plantMediaList[0]?.url || '');
 
       const plantData = {
-        plant_code: plantCode.trim(),
-        thai_name: thaiName.trim(),
-        local_name: thaiName.trim(),
-        local_uses: localUses,
-        local_location: localLocation,
-        informant_name: informantName,
+        plant_code: code.trim(),
+        code: code.trim(),
+        thai_name: localName.trim(),
+        local_name: localName.trim(),
+        localName: localName.trim(),
         status: status,
 
-        // Pages 2-7 Morphology
-        morphology: categoryTexts,
-        habit: categoryTexts.habit || plantType,
-        media_categories: categoryMedia,
-        media: mediaList,
-        image_url: categoryMedia.habit || categoryMedia.flower || categoryMedia.leaf || '',
+        // Page 1
+        unknownFlag: unknownFlag,
+        uses: uses,
+        local_uses: uses,
+        usesOther: uses.includes('other') ? usesOther.trim() : '',
+        informantName: informantName.trim(),
+        informantAge: informantAge ? parseInt(informantAge, 10) : null,
+        informantAddress: informantAddress.trim(),
+        interviewDate: interviewDate,
+        interviewLocation: interviewLocation.trim(),
 
-        // Pages 8-10 Scientific info
-        scientific_name: scientificName.trim(),
-        family_name: familyName.trim(),
-        common_name: commonName.trim(),
-        plant_type: plantType,
-        match_status: matchStatus,
-        reference_sources: referenceSources,
-        herbarium_number: herbariumNumber,
-        description: description || categoryTexts.habit,
+        // Pages 2-7
+        morphology: morphology,
+        habit: morphology.habit,
 
-        // Location & Tagging
-        planting_location: plantingLocation,
-        survey_date: new Date().toISOString().split('T')[0],
-        surveyor: surveyor || 'คณะทำงาน อพ.สธ.',
+        // Pages 8-10
+        fieldDataSummary: fieldDataSummary.trim(),
+        referenceDataSummary: referenceDataSummary.trim(),
+        matchStatus: matchStatus,
+        match_status: matchStatus === 'match' ? 'ตรงกับเอกสารอ้างอิงทั้งหมด' : matchStatus === 'partial' ? 'ตรงบางส่วน' : 'ไม่ตรงกับเอกสารอ้างอิง',
+        references: references.map(r => r.trim()).filter(Boolean),
+        reference_sources: references.join(', '),
+        scientific_name: confirmedScientificName.trim(),
+        family_name: confirmedFamilyName.trim(),
+        common_name: confirmedCommonName.trim(),
+
+        // Location & Canopy
+        location: {
+          method: locationMethod,
+          gpsLat: gpsLat ? parseFloat(gpsLat) : null,
+          gpsLng: gpsLng ? parseFloat(gpsLng) : null,
+          x: coordX,
+          y: coordY,
+          zone: zone
+        },
+        locationMethod: locationMethod,
         gps_lat: gpsLat ? parseFloat(gpsLat) : null,
         gps_lng: gpsLng ? parseFloat(gpsLng) : null,
-        pin_coordinates: pinCoordinates,
-        is_tagged: isTagged,
-        updated_at: new Date().toISOString()
+        planting_location: zone,
+        surveyor: surveyor.trim(),
+        survey_date: interviewDate,
+        canopyWidth: canopyWidth,
+
+        // Media
+        media: plantMediaList,
+        image_url: mainImageUrl
       };
 
       if (editingPlant) {
-        await setDoc(doc(db, 'plants', editingPlant.id), plantData, { merge: true });
+        await plantRepository.update(editingPlant.id, plantData, schoolId, academicYear);
       } else {
-        plantData.created_at = new Date().toISOString();
-        await addDoc(collection(db, 'plants'), plantData);
+        await plantRepository.create(plantData, schoolId, academicYear);
       }
 
-      setIsModalOpen(false);
-      fetchPlants();
+      setSubmitSuccessMsg('บันทึกข้อมูลพรรณไม้สำเร็จเรียบร้อยแล้ว');
+      setTimeout(() => {
+        setIsModalOpen(false);
+        loadPlants();
+      }, 600);
     } catch (err) {
       console.error(err);
-      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + err.message);
+      setErrors({ form: `บันทึกล้มเหลว: ${err.message}` });
     } finally {
       setSubmitLoading(false);
     }
   };
 
-  // Delete plant
-  const handleDelete = async (id) => {
-    if (window.confirm('คุณแน่ใจว่าต้องการลบข้อมูลพรรณไม้นี้ออกจากทะเบียน?')) {
+  // Delete Plant
+  const handleDeletePlant = async (id) => {
+    if (window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบพรรณไม้นี้ออกจากทะเบียน?')) {
       try {
-        await deleteDoc(doc(db, 'plants', id));
-        fetchPlants();
+        await plantRepository.delete(id, schoolId, academicYear);
+        loadPlants();
       } catch (err) {
         alert('เกิดข้อผิดพลาดในการลบ: ' + err.message);
       }
     }
   };
 
-  // Export to Excel (.xlsx) using SheetJS
-  const handleExportExcel = () => {
-    if (plants.length === 0) {
-      alert('ไม่พบข้อมูลพรรณไม้สำหรับส่งออก');
-      return;
-    }
+  // Filtered & Sorted Plants
+  const filteredPlants = useMemo(() => {
+    return plants
+      .filter(p => {
+        const nameMatch =
+          (p.thai_name || p.local_name || p.localName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.scientific_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.plant_code || p.code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.family_name || '').toLowerCase().includes(searchQuery.toLowerCase());
 
-    const excelData = plants.map((p, index) => {
-      const usesLabel = (p.local_uses || [])
-        .map(uId => {
-          const opt = STANDARD_USES_OPTIONS.find(o => o.id === uId);
-          return opt ? opt.label.replace(/^[^\s]+\s/, '') : uId;
-        })
-        .join(', ');
+        const plantUsesList = Array.isArray(p.uses) ? p.uses : Array.isArray(p.local_uses) ? p.local_uses : [];
+        const useMatch = selectedUseFilter === 'ทั้งหมด' || plantUsesList.includes(selectedUseFilter);
+        const zoneMatch = selectedZoneFilter === 'ทั้งหมด' || (p.planting_location || p.zone) === selectedZoneFilter;
 
-      return {
-        'ลำดับ': index + 1,
-        'รหัสพรรณไม้': p.plant_code || '',
-        'ชื่อพื้นเมือง / ชื่อไทย': p.thai_name || p.local_name || '',
-        'ชื่อวิทยาศาสตร์': p.scientific_name || '-',
-        'ชื่อวงศ์ (Family)': p.family_name || '-',
-        'ชื่อสามัญ (Common Name)': p.common_name || '-',
-        'วิสัยพืช (Habit)': p.habit || p.plant_type || '-',
-        'การใช้ประโยชน์พื้นบ้าน (Uses)': usesLabel || 'ไม่ระบุ',
-        'สถานที่ปลูก / โซน': p.planting_location || '-',
-        'พิกัด GPS': (p.gps_lat && p.gps_lng) ? `${p.gps_lat}, ${p.gps_lng}` : '-',
-        'สถานะเทียบเคียง (หน้า 8)': p.match_status || 'ตรงกับเอกสารอ้างอิงทั้งหมด',
-        'สถานะข้อมูล': p.status === 'draft' ? 'ฉบับร่าง (Draft)' : p.status === 'pending_review' ? 'รอตรวจสอบ' : 'อนุมัติแล้ว',
-        'ผู้สำรวจ': p.surveyor || '-',
-        'วันที่สำรวจ': p.survey_date || '-'
-      };
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    const columnWidths = [
-      { wch: 6 },
-      { wch: 18 },
-      { wch: 22 },
-      { wch: 26 },
-      { wch: 18 },
-      { wch: 18 },
-      { wch: 14 },
-      { wch: 35 },
-      { wch: 20 },
-      { wch: 22 },
-      { wch: 28 },
-      { wch: 16 },
-      { wch: 18 },
-      { wch: 14 }
-    ];
-    worksheet['!cols'] = columnWidths;
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'ทะเบียนพรรณไม้_อพ.สธ.');
-    XLSX.writeFile(workbook, `RSPG_Plant_Registry_PWTK_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
-  // Filtered Plants
-  const filteredPlants = plants.filter(plant => {
-    const matchesSearch =
-      (plant.thai_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (plant.scientific_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (plant.plant_code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (plant.family_name || '').toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesType = selectedType === 'ทั้งหมด' || plant.plant_type === selectedType || plant.habit === selectedType;
-    const matchesArea = selectedArea === 'ทั้งหมด' || plant.planting_location === selectedArea;
-
-    return matchesSearch && matchesType && matchesArea;
-  });
+        return nameMatch && useMatch && zoneMatch;
+      })
+      .sort((a, b) => {
+        let valA = (sortField === 'code' ? (a.plant_code || a.code || '') : (a.thai_name || a.local_name || a.localName || '')).toLowerCase();
+        let valB = (sortField === 'code' ? (b.plant_code || b.code || '') : (b.thai_name || b.local_name || b.localName || '')).toLowerCase();
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [plants, searchQuery, selectedUseFilter, selectedZoneFilter, sortField, sortDirection]);
 
   return (
     <div>
-      {/* Search & Actions Header Card */}
-      <div className="card glass-panel" style={{ marginBottom: '1.75rem', border: '1.5px solid #E5CA79' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '1rem' }}>
+      {/* Upper Context Header: School & Academic Year Context Selector */}
+      <div className="card glass-panel" style={{ marginBottom: '1.5rem', border: '1.5px solid #E5CA79', padding: '16px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2A084E', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2A084E', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ShieldCheck size={22} color="#5C1D8D" />
-              ทะเบียนพรรณไม้ (ก.7-003 & สารระบบงานพฤกษศาสตร์)
+              ทะเบียนพรรณไม้ — Plant Registry (Sprint 1)
             </h3>
-            <p style={{ fontSize: '0.84rem', color: '#584F66', margin: '4px 0 0 0' }}>
-              ระบบบันทึกข้อมูลพื้นบ้าน (หน้า 1), ลักษณะพฤกษศาสตร์ (หน้า 2-7), เปรียบเทียบข้อมูล (หน้า 8), และผังพิกัดพรรณไม้
+            <p style={{ fontSize: '0.82rem', color: '#584F66', margin: '3px 0 0 0' }}>
+              ระบบบันทึกข้อมูลพรรณไม้แบบ Structured Schema ตามมาตรฐาน อพ.สธ. (หน้า 1 ถึง 10)
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              onClick={handleExportExcel}
-              className="btn btn-secondary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.86rem', padding: '8px 14px', backgroundColor: '#EAF7ED', color: '#1E6B37', border: '1px solid #B8E5C4' }}
-            >
-              <FileSpreadsheet size={16} color="#1E6B37" />
-              <span>ส่งออก Excel (.xlsx)</span>
-            </button>
+          {/* Context Selector: Academic Year & School */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#F6EEFB', padding: '4px 10px', borderRadius: '8px', border: '1px solid #E5D0F5' }}>
+              <Calendar size={15} color="#5C1D8D" />
+              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5C1D8D' }}>ปีการศึกษา:</span>
+              <select
+                className="form-control"
+                value={academicYear}
+                onChange={(e) => setAcademicYear(e.target.value)}
+                style={{ fontSize: '0.82rem', padding: '4px 8px', fontWeight: 700, color: '#5C1D8D', border: 'none', background: 'transparent' }}
+              >
+                {ACADEMIC_YEARS.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
 
             {userRole !== 'visitor' && (
               <button
@@ -504,63 +550,86 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.86rem', padding: '8px 16px' }}
               >
                 <Plus size={16} />
-                <span>เพิ่มพรรณไม้ใหม่ (ก.7-003)</span>
+                <span>เพิ่มพรรณไม้ใหม่</span>
               </button>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Filter Bar */}
+      {/* Filter & Search Bar */}
+      <div className="card glass-panel" style={{ marginBottom: '1.5rem', padding: '14px 18px' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-          <div className="search-wrapper" style={{ flex: 1, minWidth: '240px', marginBottom: 0 }}>
+          {/* Search Box */}
+          <div className="search-wrapper" style={{ flex: 1, minWidth: '220px', marginBottom: 0 }}>
             <Search className="search-icon" size={16} />
             <input
               type="text"
               className="search-input"
-              placeholder="🔍 ค้นหาด้วยชื่อไทย, ชื่อวิทยาศาสตร์, วงศ์ หรือรหัสพรรณไม้..."
+              placeholder="🔍 ค้นหารหัส, ชื่อพื้นเมือง, ชื่อวิทย์ หรือวงศ์..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ fontSize: '0.86rem', padding: '8px 12px 8px 36px' }}
+              style={{ fontSize: '0.84rem', padding: '7px 12px 7px 34px' }}
             />
           </div>
 
-          <div style={{ minWidth: '140px' }}>
+          {/* Plant Uses Filter (Mandatory Enum Whitelist) */}
+          <div style={{ minWidth: '170px' }}>
             <select
               className="form-control"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              style={{ fontSize: '0.84rem', padding: '7px 10px' }}
+              value={selectedUseFilter}
+              onChange={(e) => setSelectedUseFilter(e.target.value)}
+              style={{ fontSize: '0.82rem', padding: '7px 10px' }}
             >
-              <option value="ทั้งหมด">ทุกวิสัยพืช</option>
-              <option value="ไม้ต้น">ไม้ต้น</option>
-              <option value="ไม้พุ่ม">ไม้พุ่ม</option>
-              <option value="ไม้ล้มลุก">ไม้ล้มลุก</option>
-              <option value="ไม้เลื้อย">ไม้เลื้อย</option>
-              <option value="หญ้า">หญ้า</option>
-              <option value="เฟิร์น">เฟิร์น</option>
-              <option value="กล้วยไม้">กล้วยไม้</option>
+              <option value="ทั้งหมด">🎯 ทุกการใช้ประโยชน์พื้นบ้าน</option>
+              {PLANT_USES.map(u => (
+                <option key={u.value} value={u.value}>{u.label}</option>
+              ))}
             </select>
           </div>
 
-          <div style={{ minWidth: '160px' }}>
+          {/* Zone Filter */}
+          <div style={{ minWidth: '150px' }}>
             <select
               className="form-control"
-              value={selectedArea}
-              onChange={(e) => setSelectedArea(e.target.value)}
-              style={{ fontSize: '0.84rem', padding: '7px 10px' }}
+              value={selectedZoneFilter}
+              onChange={(e) => setSelectedZoneFilter(e.target.value)}
+              style={{ fontSize: '0.82rem', padding: '7px 10px' }}
             >
-              <option value="ทั้งหมด">ทุกโซน / ผังพรรณไม้</option>
+              <option value="ทั้งหมด">📍 ทุกโซน / ผัง</option>
               {SCHOOL_ZONES.map(z => (
                 <option key={z.id} value={z.id}>{z.name}</option>
               ))}
             </select>
           </div>
+
+          {/* Sort Field & Direction */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <select
+              className="form-control"
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              style={{ fontSize: '0.82rem', padding: '7px 10px' }}
+            >
+              <option value="code">เรียงตามรหัสพรรณไม้</option>
+              <option value="localName">เรียงตามชื่อพื้นเมือง</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="icon-btn"
+              title={`สลับลำดับ: ${sortDirection === 'asc' ? 'น้อยไปมาก' : 'มากไปน้อย'}`}
+              style={{ width: '32px', height: '32px', backgroundColor: '#F6EEFB', border: '1px solid #E5D0F5' }}
+            >
+              <ArrowUpDown size={14} color="#5C1D8D" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Plants Grid */}
+      {/* Plant Cards Grid */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#5C1D8D' }}>กำลังดาวน์โหลดข้อมูลทะเบียนพรรณไม้...</div>
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#5C1D8D' }}>กำลังโหลดข้อมูลพรรณไม้ ปีการศึกษา {academicYear}...</div>
       ) : filteredPlants.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3rem', color: '#827891' }}>
           ไม่พบรายการพรรณไม้ที่ตรงกับเงื่อนไขการค้นหา
@@ -576,27 +645,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                   else openModal(p);
                 }}
               />
-              <div style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                display: 'flex',
-                gap: '6px',
-                zIndex: 10
-              }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedTagPlant(plant);
-                    setIsTagPreviewOpen(true);
-                  }}
-                  className="icon-btn"
-                  title="ดูตัวอย่างและสั่งพิมพ์ป้ายชื่อพรรณไม้"
-                  style={{ width: '28px', height: '28px', backgroundColor: '#FDF6E2', border: '1px solid #ECC85B' }}
-                >
-                  <QrCode size={13} color="#C5931C" />
-                </button>
-
+              <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px', zIndex: 10 }}>
                 {userRole !== 'visitor' && (
                   <>
                     <button
@@ -614,7 +663,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDelete(plant.id);
+                          handleDeletePlant(plant.id);
                         }}
                         className="icon-btn"
                         title="ลบพรรณไม้"
@@ -631,23 +680,25 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
         </div>
       )}
 
-      {/* 4-STEP WIZARD MODAL: RSPG PLANT REGISTRY & MORPHOLOGY */}
+      {/* ======================================================== */}
+      {/* SPRINT 1 STRUCTURED MODAL (PAGES 1 TO 10) */}
+      {/* ======================================================== */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '880px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px', border: '1.5px solid #E5CA79', padding: '24px' }}
+            style={{ maxWidth: '900px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px', border: '1.5px solid #E5CA79', padding: '24px' }}
           >
             {/* Modal Header */}
             <div className="modal-header" style={{ marginBottom: '1rem', borderBottom: '1px solid #E8DEEE', paddingBottom: '12px' }}>
               <div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2A084E', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <ShieldCheck size={22} color="#5C1D8D" />
-                  {editingPlant ? `แก้ไขข้อมูลพรรณไม้: ${thaiName || plantCode}` : 'บันทึกพรรณไม้ใหม่ (แบบ ก.7-003)'}
+                  {editingPlant ? `แก้ไขข้อมูล: ${localName || code}` : 'เพิ่มพรรณไม้ใหม่ (ก.7-003)'}
                 </h3>
-                <span style={{ fontSize: '0.8rem', color: '#827891' }}>
-                  มาตรฐานงานสวนพฤกษศาสตร์โรงเรียน อพ.สธ.
+                <span style={{ fontSize: '0.78rem', color: '#827891' }}>
+                  สังกัดโรงเรียน: <strong>{schoolId}</strong> | ปีการศึกษา: <strong>{academicYear}</strong>
                 </span>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="modal-close">
@@ -655,7 +706,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               </button>
             </div>
 
-            {/* Modal Navigation Sub-Tabs */}
+            {/* Modal Tabs */}
             <div style={{
               display: 'flex',
               gap: '6px',
@@ -668,9 +719,10 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
             }}>
               {[
                 { id: 'page1', label: '1. ข้อมูลพื้นบ้าน (หน้า 1)', icon: FileText },
-                { id: 'page2to7', label: '2. สัณฐานวิทยา & ภาพหมวดหมู่ (หน้า 2-7)', icon: ImageIcon },
-                { id: 'page8', label: '3. เทียบเคียงชื่อวิทยาศาสตร์ (หน้า 8-10)', icon: FileText },
-                { id: 'location', label: '4. ผังพิกัด & ปักหมุดแผนที่', icon: MapPin }
+                { id: 'page2to7', label: '2. สัณฐานวิทยา (หน้า 2-7)', icon: Layers },
+                { id: 'page8', label: '3. เปรียบเทียบข้อมูล (หน้า 8-10)', icon: Info },
+                { id: 'location', label: '4. ผังพรรณไม้ & พิกัด', icon: MapPin },
+                { id: 'media', label: `5. คลังภาพแยกหมวด (${plantMediaList.length})`, icon: ImageIcon }
               ].map(t => {
                 const isCurrent = modalTab === t.id;
                 const Icon = t.icon;
@@ -681,18 +733,18 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                     onClick={() => setModalTab(t.id)}
                     style={{
                       flex: 1,
-                      minWidth: '160px',
+                      minWidth: '150px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
-                      padding: '8px 12px',
+                      padding: '8px 10px',
                       borderRadius: '8px',
                       border: isCurrent ? '1.5px solid #ECC85B' : '1px solid transparent',
                       background: isCurrent ? 'linear-gradient(135deg, #2A084E 0%, #5C1D8D 100%)' : 'transparent',
                       color: isCurrent ? '#FFFFFF' : '#4A3E56',
                       fontWeight: isCurrent ? 700 : 500,
-                      fontSize: '0.82rem',
+                      fontSize: '0.8rem',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease'
                     }}
@@ -704,56 +756,112 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
               })}
             </div>
 
+            {/* Error & Success Banner */}
+            {errors.form && (
+              <div style={{ padding: '10px 14px', backgroundColor: '#FDEAEA', color: '#D32F2F', borderRadius: '8px', border: '1px solid #F5C2C2', fontSize: '0.84rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={16} />
+                <span>{errors.form}</span>
+              </div>
+            )}
+            {submitSuccessMsg && (
+              <div style={{ padding: '10px 14px', backgroundColor: '#EAF7ED', color: '#1E6B37', borderRadius: '8px', border: '1px solid #B8E5C4', fontSize: '0.84rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={16} />
+                <span>{submitSuccessMsg}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
-              {/* TAB 1: PAGE 1 LOCAL INFO */}
+              {/* ==================================================== */}
+              {/* TAB 1: ADD PLANT & STUDY SHEET PAGE 1 LOCAL INFO */}
+              {/* ==================================================== */}
               {modalTab === 'page1' && (
                 <div>
+                  {/* Basic Code & Local Name */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label" style={{ fontWeight: 700, color: '#2A084E' }}>
                         รหัสพรรณไม้ (Plant Code) <span style={{ color: '#D32F2F' }}>*</span>
                       </label>
                       <input
                         type="text"
                         className="form-control"
-                        value={plantCode}
-                        onChange={(e) => setPlantCode(e.target.value)}
+                        value={code}
+                        onChange={(e) => {
+                          setCode(e.target.value);
+                          if (errors.code) setErrors(prev => ({ ...prev, code: null }));
+                        }}
                         placeholder="เช่น 7-50300-001-001"
-                        required
-                        style={{ fontWeight: 700, color: '#5C1D8D' }}
+                        style={{ fontWeight: 700, color: '#5C1D8D', borderColor: errors.code ? '#D32F2F' : undefined }}
                       />
-                      <span style={{ fontSize: '0.74rem', color: '#827891', marginTop: '2px', display: 'block' }}>
-                        รูปแบบมาตรฐาน: 7-รหัสโรงเรียน-ลำดับพื้นที่-ลำดับต้น
-                      </span>
+                      {errors.code && (
+                        <span style={{ fontSize: '0.74rem', color: '#D32F2F', marginTop: '3px', display: 'block', fontWeight: 600 }}>
+                          ⚠️ {errors.code}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label" style={{ fontWeight: 700, color: '#2A084E' }}>
                         ชื่อพื้นเมือง / ชื่อท้องถิ่น (Local Name) <span style={{ color: '#D32F2F' }}>*</span>
                       </label>
                       <input
                         type="text"
                         className="form-control"
-                        value={thaiName}
-                        onChange={(e) => setThaiName(e.target.value)}
-                        placeholder="เช่น กัลปพฤกษ์, ชวนชม, มะม่วงป่า"
-                        required
-                        style={{ fontWeight: 700 }}
+                        value={localName}
+                        onChange={(e) => {
+                          setLocalName(e.target.value);
+                          if (errors.localName) setErrors(prev => ({ ...prev, localName: null }));
+                        }}
+                        placeholder="เช่น กัลปพฤกษ์, มะม่วงป่า"
+                        style={{ fontWeight: 700, borderColor: errors.localName ? '#D32F2F' : undefined }}
                       />
+                      {errors.localName && (
+                        <span style={{ fontSize: '0.74rem', color: '#D32F2F', marginTop: '3px', display: 'block', fontWeight: 600 }}>
+                          ⚠️ {errors.localName}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Multi-Select Uses Checkboxes (RSPG Page 1) */}
-                  <div className="form-group" style={{ marginBottom: '1.25rem', padding: '14px', backgroundColor: '#FAF8FC', borderRadius: '10px', border: '1px solid #E8DEEE' }}>
+                  {/* Unknown Flag Toggle */}
+                  <div style={{
+                    padding: '12px 14px',
+                    backgroundColor: unknownFlag ? '#FFF9E6' : '#FAF8FC',
+                    border: unknownFlag ? '1.5px solid #E5CA79' : '1px solid #E8DEEE',
+                    borderRadius: '10px',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div>
+                      <strong style={{ fontSize: '0.86rem', color: '#2A084E' }}>ผู้รู้ไม่ทราบข้อมูลพื้นบ้าน (-)</strong>
+                      <div style={{ fontSize: '0.75rem', color: '#584F66' }}>
+                        ตามเกณฑ์ อพ.สธ.: หากผู้รู้ไม่ทราบข้อมูล ให้ทำเครื่องหมาย - และปิดการกรอกข้อมูลในหน้านี้
+                      </div>
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 700, color: '#5C1D8D', fontSize: '0.84rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={unknownFlag}
+                        onChange={(e) => handleToggleUnknownFlag(e.target.checked)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      <span>ไม่ทราบข้อมูล (-)</span>
+                    </label>
+                  </div>
+
+                  {/* Multi-Select Uses Checkboxes (Strict Whitelist Enum) */}
+                  <div className="form-group" style={{ marginBottom: '1.25rem', padding: '14px', backgroundColor: '#FAF8FC', borderRadius: '10px', border: '1px solid #E8DEEE', opacity: unknownFlag ? 0.5 : 1 }}>
                     <label className="form-label" style={{ fontWeight: 700, color: '#2A084E', marginBottom: '8px' }}>
-                      การใช้ประโยชน์พื้นบ้าน (Local Uses — เลือกได้หลายข้อ)
+                      การใช้ประโยชน์พื้นบ้าน (Plant Uses Whitelist — ห้ามพิมพ์อิสระ)
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
-                      {STANDARD_USES_OPTIONS.map(opt => {
-                        const checked = localUses.includes(opt.id);
+                      {PLANT_USES.map(u => {
+                        const checked = uses.includes(u.value);
                         return (
                           <label
-                            key={opt.id}
+                            key={u.value}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -765,64 +873,110 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                               fontSize: '0.82rem',
                               fontWeight: checked ? 700 : 500,
                               color: checked ? '#5C1D8D' : '#4A3E56',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease'
+                              cursor: unknownFlag ? 'not-allowed' : 'pointer'
                             }}
                           >
                             <input
                               type="checkbox"
                               checked={checked}
-                              onChange={() => handleToggleUse(opt.id)}
-                              style={{ cursor: 'pointer' }}
+                              disabled={unknownFlag}
+                              onChange={() => handleToggleUse(u.value)}
                             />
-                            <span>{opt.label}</span>
+                            <span>{u.label}</span>
                           </label>
                         );
                       })}
                     </div>
+
+                    {/* usesOther text field enabled ONLY when 'other' is checked */}
+                    {uses.includes('other') && !unknownFlag && (
+                      <div style={{ marginTop: '10px' }}>
+                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5C1D8D' }}>
+                          ระบุรายละเอียดการใช้ประโยชน์อื่นๆ (usesOther)
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={usesOther}
+                          onChange={(e) => setUsesOther(e.target.value)}
+                          placeholder="เช่น ใช้ทำเครื่องจักสาน, ประดับในงานบายศรี..."
+                          style={{ fontSize: '0.82rem' }}
+                        />
+                      </div>
+                    )}
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 600 }}>ถิ่นอาศัย / บริเวณที่พบในท้องถิ่น</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={localLocation}
-                        onChange={(e) => setLocalLocation(e.target.value)}
-                        placeholder="เช่น ริมลำห้วยปาย, ป่าเบญจพรรณเชิงเขา, ในชุมชน"
-                      />
+                  {/* Informant Fields */}
+                  <div style={{ opacity: unknownFlag ? 0.5 : 1 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontWeight: 600 }}>ชื่อผู้ให้ข้อมูล / ปราชญ์ชาวบ้าน (informantName)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={informantName}
+                          disabled={unknownFlag}
+                          onChange={(e) => setInformantName(e.target.value)}
+                          placeholder="เช่น พ่อหลวงสมควร ชัยนาม"
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontWeight: 600 }}>อายุ (ปี)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="150"
+                          className="form-control"
+                          value={informantAge}
+                          disabled={unknownFlag}
+                          onChange={(e) => setInformantAge(e.target.value)}
+                          placeholder="เช่น 68"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontWeight: 600 }}>สถานที่สัมภาษณ์ / ถิ่นอาศัย (interviewLocation)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={interviewLocation}
+                          disabled={unknownFlag}
+                          onChange={(e) => setInterviewLocation(e.target.value)}
+                          placeholder="เช่น หมู่ 3 บ้านเวียงใต้ ต.เวียงใต้ อ.ปาย"
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ fontWeight: 600 }}>วันที่สัมภาษณ์ (interviewDate)</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={interviewDate}
+                          disabled={unknownFlag}
+                          onChange={(e) => setInterviewDate(e.target.value)}
+                        />
+                      </div>
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 600 }}>ผู้ให้ข้อมูล / ปราชญ์ชาวบ้าน</label>
+                      <label className="form-label" style={{ fontWeight: 600 }}>ที่อยู่ผู้ให้ข้อมูล (informantAddress)</label>
                       <input
                         type="text"
                         className="form-control"
-                        value={informantName}
-                        onChange={(e) => setInformantName(e.target.value)}
-                        placeholder="เช่น พ่อหลวงสมควร, แม่เฒ่าคำใส, คณะครู"
+                        value={informantAddress}
+                        disabled={unknownFlag}
+                        onChange={(e) => setInformantAddress(e.target.value)}
+                        placeholder="บ้านเลขที่, หมู่บ้าน, ตำบล, อำเภอ"
                       />
                     </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" style={{ fontWeight: 600 }}>สถานะเอกสารพรรณไม้</label>
-                    <select
-                      className="form-control"
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      style={{ fontWeight: 700, color: status === 'draft' ? '#94690A' : '#1E6B37' }}
-                    >
-                      <option value="draft">📝 ฉบับร่าง (Draft) — กำลังจัดทำข้อมูล</option>
-                      <option value="pending_review">⏳ รอการตรวจสอบความถูกต้อง (Pending Review)</option>
-                      <option value="approved">✅ ตรวจสอบและอนุมัติแล้ว (Approved)</option>
-                    </select>
                   </div>
                 </div>
               )}
 
-              {/* TAB 2: PAGES 2-7 MORPHOLOGY & CATEGORY-BOUND MEDIA */}
+              {/* ==================================================== */}
+              {/* TAB 2: STUDY SHEET PAGES 2-7 BOTANICAL MORPHOLOGY */}
+              {/* ==================================================== */}
               {modalTab === 'page2to7' && (
                 <div>
                   <div style={{
@@ -834,110 +988,94 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                     color: '#5C1D8D',
                     marginBottom: '1.25rem'
                   }}>
-                    💡 <strong>คำแนะนำ:</strong> กรอกคำอธิบายและอัปโหลดรูปภาพแยกตามหมวดหมู่โครงสร้างพืช (Habit, Stem, Leaf, Flower, Fruit, Drawing) ภาพถ่ายจะถูกผูกเข้ากับหมวดหมู่นั้นทันที
+                    💡 <strong>7 ส่วนลักษณะพฤกษศาสตร์:</strong> แต่ละช่องจำกัดสูงสุด 2,000 ตัวอักษรตามสัญญา Backend และสามารถแนบรูปภาพเฉพาะส่วนเพื่อผูกหมวดหมู่โดยตรง
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    {BOTANICAL_CATEGORIES.map(cat => {
-                      const isUploading = uploadingCategory === cat.key;
-                      const currentMediaUrl = categoryMedia[cat.key];
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {[
+                      { key: 'habit', label: '1. วิสัย / ทรงต้น (Habit)', icon: '🌳', placeholder: 'เช่น ไม้ต้นผลัดใบ สูง 10-15 เมตร ทรงพุ่มกลมทึบ...' },
+                      { key: 'root', label: '2. ระบบราก (Root)', icon: '🌱', placeholder: 'เช่น ระบบรากแก้ว รากแขนงแผ่กว้าง...' },
+                      { key: 'stem', label: '3. ลำต้นและเปลือก (Stem & Bark)', icon: '🪵', placeholder: 'เช่น ลำต้นตั้งตรง เปลือกต้นสีเทาอมน้ำตาล แตกเป็นร่องตื้น...' },
+                      { key: 'leaf', label: '4. ลักษณะใบ (Leaf)', icon: '🍃', placeholder: 'เช่น ใบประกอบแบบขนนกปลายคู่ เรียงสลับ แผ่นใบรูปไข่...' },
+                      { key: 'flower', label: '5. ลักษณะดอก (Flower)', icon: '🌸', placeholder: 'เช่น ดอกช่อกระจะออกตามซอกใบ กลีบดอกสีชมพูอ่อน...' },
+                      { key: 'fruit', label: '6. ลักษณะผล (Fruit)', icon: '🍎', placeholder: 'เช่น ผลเป็นฝักทรงกระบอกยาว 30-40 ซม. ผิวเรียบ...' },
+                      { key: 'seed', label: '7. ลักษณะเมล็ด (Seed)', icon: '🌰', placeholder: 'เช่น เมล็ดรูปไข่แบน สีน้ำตาลเข้ม เรียงตัวตามขวาง...' }
+                    ].map(part => {
+                      const charCount = (morphology[part.key] || '').length;
+                      const isOverLimit = charCount > 2000;
+                      const hasAttachedPhoto = plantMediaList.some(m => m.category === part.key);
 
                       return (
                         <div
-                          key={cat.key}
+                          key={part.key}
                           style={{
-                            padding: '14px',
+                            padding: '12px 16px',
                             borderRadius: '10px',
-                            border: '1px solid #E8DEEE',
+                            border: `1px solid ${isOverLimit ? '#D32F2F' : '#E8DEEE'}`,
                             backgroundColor: '#FFFFFF',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
                           }}
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#2A084E' }}>
-                              {cat.icon} {cat.label}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#2A084E' }}>
+                              {part.icon} {part.label}
                             </span>
-                            {currentMediaUrl && (
-                              <span style={{ fontSize: '0.74rem', color: '#1E6B37', fontWeight: 600 }}>
-                                ✓ แนบภาพแล้ว
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {hasAttachedPhoto && (
+                                <span style={{ fontSize: '0.72rem', color: '#1E6B37', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                  <Check size={12} /> มีภาพแนบ
+                                </span>
+                              )}
+                              <span style={{
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                color: isOverLimit ? '#D32F2F' : charCount > 1800 ? '#C5931C' : '#827891'
+                              }}>
+                                {charCount} / 2000 ตัวอักษร
                               </span>
-                            )}
+                            </div>
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '12px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'start' }}>
                             <textarea
                               className="form-control"
                               rows="2"
-                              value={categoryTexts[cat.key]}
-                              onChange={(e) => setCategoryTexts(prev => ({ ...prev, [cat.key]: e.target.value }))}
-                              placeholder={cat.placeholder}
+                              value={morphology[part.key] || ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setMorphology(prev => ({ ...prev, [part.key]: val }));
+                              }}
+                              placeholder={part.placeholder}
                               style={{ fontSize: '0.82rem' }}
                             ></textarea>
 
-                            <div style={{
-                              border: '1.5px dashed #E5CA79',
-                              borderRadius: '8px',
-                              padding: '8px',
-                              backgroundColor: '#FAF8FC',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              textAlign: 'center',
-                              minHeight: '80px'
-                            }}>
-                              {currentMediaUrl ? (
-                                <div style={{ width: '100%', position: 'relative' }}>
-                                  <img
-                                    src={currentMediaUrl}
-                                    alt={cat.label}
-                                    style={{ width: '100%', height: '65px', objectFit: 'cover', borderRadius: '4px' }}
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => setCategoryMedia(prev => ({ ...prev, [cat.key]: '' }))}
-                                    style={{
-                                      position: 'absolute',
-                                      top: '2px',
-                                      right: '2px',
-                                      background: 'rgba(217, 74, 74, 0.9)',
-                                      color: '#fff',
-                                      border: 'none',
-                                      borderRadius: '50%',
-                                      width: '18px',
-                                      height: '18px',
-                                      fontSize: '10px',
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ) : (
-                                <>
-                                  <input
-                                    type="file"
-                                    id={`upload-${cat.key}`}
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                      if (e.target.files?.[0]) {
-                                        handleUploadCategoryImage(cat.key, e.target.files[0]);
-                                      }
-                                    }}
-                                    style={{ display: 'none' }}
-                                  />
-                                  <label
-                                    htmlFor={`upload-${cat.key}`}
-                                    className="btn btn-secondary"
-                                    style={{ padding: '4px 10px', fontSize: '0.76rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                                  >
-                                    <Upload size={12} /> {isUploading ? 'กำลังอัปโหลด...' : 'แนบภาพส่วนนี้'}
-                                  </label>
-                                  <span style={{ fontSize: '0.7rem', color: '#827891', marginTop: '4px' }}>
-                                    หมวด {cat.key}
-                                  </span>
-                                </>
-                              )}
+                            <div>
+                              <input
+                                type="file"
+                                id={`file-part-${part.key}`}
+                                accept="image/*"
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) {
+                                    handleUploadCategoryMedia(e.target.files[0], part.key);
+                                  }
+                                }}
+                                style={{ display: 'none' }}
+                              />
+                              <label
+                                htmlFor={`file-part-${part.key}`}
+                                className="btn btn-secondary"
+                                style={{
+                                  padding: '6px 10px',
+                                  fontSize: '0.76rem',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                <Upload size={12} /> แนบภาพ {part.key}
+                              </label>
                             </div>
                           </div>
                         </div>
@@ -947,189 +1085,296 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                 </div>
               )}
 
-              {/* TAB 3: PAGES 8-10 SCIENTIFIC COMPARISON */}
+              {/* ==================================================== */}
+              {/* TAB 3: STUDY SHEET PAGES 8-10 COMPARISON & REFS */}
+              {/* ==================================================== */}
               {modalTab === 'page8' && (
                 <div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 700 }}>
-                        ชื่อวิทยาศาสตร์ (Scientific Name / Binomial Name)
-                      </label>
-                      <input
-                        type="text"
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <label className="form-label" style={{ fontWeight: 700, marginBottom: 0 }}>
+                          สรุปข้อมูลภาคสนาม (fieldDataSummary)
+                        </label>
+                        <span style={{ fontSize: '0.72rem', color: fieldDataSummary.length > 2000 ? '#D32F2F' : '#827891' }}>
+                          {fieldDataSummary.length} / 2000
+                        </span>
+                      </div>
+                      <textarea
                         className="form-control"
-                        value={scientificName}
-                        onChange={(e) => setScientificName(e.target.value)}
-                        placeholder="เช่น Cassia bakeriana Craib"
-                        style={{ fontStyle: 'italic', fontWeight: 600 }}
-                      />
+                        rows="3"
+                        value={fieldDataSummary}
+                        onChange={(e) => setFieldDataSummary(e.target.value)}
+                        placeholder="บันทึกสรุปลักษณะสำคัญที่พบจริงในพื้นที่โรงเรียน..."
+                        style={{ fontSize: '0.82rem' }}
+                      ></textarea>
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label" style={{ fontWeight: 700 }}>
-                        ชื่อวงศ์ (Family Name)
-                      </label>
-                      <input
-                        type="text"
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <label className="form-label" style={{ fontWeight: 700, marginBottom: 0 }}>
+                          สรุปข้อมูลจากเอกสารอ้างอิง (referenceDataSummary)
+                        </label>
+                        <span style={{ fontSize: '0.72rem', color: referenceDataSummary.length > 2000 ? '#D32F2F' : '#827891' }}>
+                          {referenceDataSummary.length} / 2000
+                        </span>
+                      </div>
+                      <textarea
                         className="form-control"
-                        value={familyName}
-                        onChange={(e) => setFamilyName(e.target.value)}
-                        placeholder="เช่น FABACEAE (LEGUMINOSAE)"
-                        style={{ fontWeight: 600 }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">ชื่อสามัญ (Common Name)</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={commonName}
-                        onChange={(e) => setCommonName(e.target.value)}
-                        placeholder="เช่น Pink Shower, Wishing Tree"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">วิสัยพืช (Habit)</label>
-                      <select
-                        className="form-control"
-                        value={plantType}
-                        onChange={(e) => setPlantType(e.target.value)}
-                      >
-                        <option value="ไม้ต้น">ไม้ต้น (Tree)</option>
-                        <option value="ไม้พุ่ม">ไม้พุ่ม (Shrub)</option>
-                        <option value="ไม้ล้มลุก">ไม้ล้มลุก (Herb)</option>
-                        <option value="ไม้เลื้อย">ไม้เลื้อย (Climber)</option>
-                        <option value="หญ้า">หญ้า (Grass)</option>
-                        <option value="เฟิร์น">เฟิร์น (Fern)</option>
-                        <option value="กล้วยไม้">กล้วยไม้ (Orchid)</option>
-                        <option value="อื่นๆ">อื่นๆ</option>
-                      </select>
+                        rows="3"
+                        value={referenceDataSummary}
+                        onChange={(e) => setReferenceDataSummary(e.target.value)}
+                        placeholder="บันทึกสรุปตามคู่มือหรือหนังสือพรรณไม้ทางวิชาการ..."
+                        style={{ fontSize: '0.82rem' }}
+                      ></textarea>
                     </div>
                   </div>
 
-                  <div className="form-group" style={{ marginBottom: '1rem' }}>
-                    <label className="form-label" style={{ fontWeight: 700, color: '#5C1D8D' }}>
-                      สถานะการเปรียบเทียบข้อมูลพรรณไม้ (Match Status)
+                  {/* Match Status Dropdown (Strict Whitelist Enum) */}
+                  <div className="form-group" style={{ marginBottom: '1.25rem', padding: '14px', backgroundColor: '#FAF8FC', borderRadius: '10px', border: '1px solid #E8DEEE' }}>
+                    <label className="form-label" style={{ fontWeight: 700, color: '#5C1D8D', marginBottom: '6px' }}>
+                      สถานะการเปรียบเทียบข้อมูล (matchStatus Dropdown — ห้ามพิมพ์อิสระ)
                     </label>
                     <select
                       className="form-control"
                       value={matchStatus}
                       onChange={(e) => setMatchStatus(e.target.value)}
-                      style={{ fontWeight: 700, color: matchStatus.includes('100%') || matchStatus.includes('ทั้งหมด') ? '#1E6B37' : '#C5931C' }}
+                      style={{ fontWeight: 700, color: matchStatus === 'match' ? '#1E6B37' : matchStatus === 'partial' ? '#94690A' : '#D32F2F' }}
                     >
-                      <option value="ตรงกับเอกสารอ้างอิงทั้งหมด">✅ ตรงกับเอกสารอ้างอิงทั้งหมด (100% Verified Match)</option>
-                      <option value="ตรงบางส่วน / อยู่ระหว่างเทียบเคียง">⚠️ ตรงบางส่วน / อยู่ระหว่างเทียบเคียง (Partial Match)</option>
-                      <option value="ยังไม่พบข้อมูลในฐานอ้างอิง">❓ ยังไม่พบข้อมูลในฐานอ้างอิง (Under Research)</option>
+                      {PAGE8_MATCH_STATUS.map(st => (
+                        <option key={st.value} value={st.value}>{st.label}</option>
+                      ))}
                     </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">เอกสารและแหล่งอ้างอิง</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={referenceSources}
-                        onChange={(e) => setReferenceSources(e.target.value)}
-                        placeholder="ชื่อหนังสือ เล่มที่ หน้า หรือฐานข้อมูลพรรณไม้อ้างอิง"
-                      />
+                  {/* Dynamic References List (1-10 items, no empty) */}
+                  <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label className="form-label" style={{ fontWeight: 700, marginBottom: 0 }}>
+                        เอกสารและฐานข้อมูลอ้างอิง (References List: 1-10 รายการ)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAddReference}
+                        className="btn btn-secondary"
+                        style={{ padding: '3px 8px', fontSize: '0.74rem' }}
+                      >
+                        + เพิ่มเอกสารอ้างอิง
+                      </button>
                     </div>
 
+                    {errors.references && (
+                      <span style={{ fontSize: '0.74rem', color: '#D32F2F', marginBottom: '6px', display: 'block', fontWeight: 600 }}>
+                        ⚠️ {errors.references}
+                      </span>
+                    )}
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {references.map((refText, idx) => (
+                        <div key={idx} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.76rem', color: '#827891', width: '20px' }}>{idx + 1}.</span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={refText}
+                            onChange={(e) => handleUpdateReference(idx, e.target.value)}
+                            placeholder="ระบุชื่อหนังสือ เล่มที่ หรือแหล่งข้อมูลพรรณไม้อ้างอิง..."
+                            style={{ fontSize: '0.82rem' }}
+                          />
+                          {references.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveReference(idx)}
+                              className="icon-btn"
+                              style={{ width: '28px', height: '28px', color: '#D32F2F' }}
+                              title="ลบรายการนี้"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Confirmed Scientific Identity Fields */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                     <div className="form-group">
-                      <label className="form-label">หมายเลขตัวอย่างพรรณไม้แห้ง (Herbarium Voucher)</label>
+                      <label className="form-label" style={{ fontWeight: 600 }}>ชื่อวิทยาศาสตร์ที่ยืนยัน</label>
                       <input
                         type="text"
                         className="form-control"
-                        value={herbariumNumber}
-                        onChange={(e) => setHerbariumNumber(e.target.value)}
-                        placeholder="เช่น PWTK-BOT-2569-001"
+                        value={confirmedScientificName}
+                        onChange={(e) => setConfirmedScientificName(e.target.value)}
+                        placeholder="เช่น Cassia bakeriana Craib"
+                        style={{ fontStyle: 'italic' }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontWeight: 600 }}>ชื่อวงศ์ (Family)</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={confirmedFamilyName}
+                        onChange={(e) => setConfirmedFamilyName(e.target.value)}
+                        placeholder="เช่น FABACEAE"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ fontWeight: 600 }}>ชื่อสามัญ (Common Name)</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={confirmedCommonName}
+                        onChange={(e) => setConfirmedCommonName(e.target.value)}
+                        placeholder="เช่น Pink Shower"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* TAB 4: INTERACTIVE MAP & LOCATION PINNING */}
+              {/* ==================================================== */}
+              {/* TAB 4: LOCATION, PINNING & CANOPY MEASUREMENTS */}
+              {/* ==================================================== */}
               {modalTab === 'location' && (
                 <div>
-                  <div style={{ marginBottom: '1rem' }}>
-                    <label className="form-label" style={{ fontWeight: 700, color: '#2A084E' }}>
-                      🗺️ แผนผังพิกัดพรรณไม้ในโรงเรียน (คลิกบนผังเพื่อปักหมุดตำแหน่งพรรณไม้)
+                  {/* Location Method Dropdown */}
+                  <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                    <label className="form-label" style={{ fontWeight: 700, color: '#5C1D8D' }}>
+                      วิธีการกำหนดตำแหน่ง (location.method Dropdown)
                     </label>
-                    <div
-                      onClick={handleMapClick}
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        height: '240px',
-                        backgroundColor: '#E8F5E9',
-                        borderRadius: '12px',
-                        border: '2px solid #81C784',
-                        cursor: 'crosshair',
-                        overflow: 'hidden',
-                        boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.06)'
-                      }}
+                    <select
+                      className="form-control"
+                      value={locationMethod}
+                      onChange={(e) => setLocationMethod(e.target.value)}
+                      style={{ fontWeight: 700 }}
                     >
-                      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <rect x="10" y="10" width="30" height="35" fill="#E1BEE7" stroke="#8E24AA" strokeWidth="0.5" rx="2" />
-                        <text x="25" y="28" fontSize="3" fill="#4A148C" textAnchor="middle" fontWeight="bold">อาคาร 1 (Zone A)</text>
-
-                        <rect x="55" y="10" width="35" height="35" fill="#C8E6C9" stroke="#388E3C" strokeWidth="0.5" rx="2" />
-                        <text x="72" y="28" fontSize="3" fill="#1B5E20" textAnchor="middle" fontWeight="bold">เรือนเพาะชำ (Zone B)</text>
-
-                        <rect x="10" y="55" width="35" height="35" fill="#FFF9C4" stroke="#FBC02D" strokeWidth="0.5" rx="2" />
-                        <text x="27" y="73" fontSize="3" fill="#F57F17" textAnchor="middle" fontWeight="bold">แปลงเกษตร (Zone C)</text>
-
-                        <rect x="55" y="55" width="35" height="35" fill="#BBDEFB" stroke="#1976D2" strokeWidth="0.5" rx="2" />
-                        <text x="72" y="73" fontSize="3" fill="#0D47A1" textAnchor="middle" fontWeight="bold">หอประชุม (Zone D)</text>
-
-                        <line x1="0" y1="50" x2="100" y2="50" stroke="#FFF" strokeWidth="2.5" strokeDasharray="2,1" />
-                        <line x1="47" y1="0" x2="47" y2="100" stroke="#FFF" strokeWidth="2.5" strokeDasharray="2,1" />
-                      </svg>
-
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: `${pinCoordinates.x}%`,
-                          top: `${pinCoordinates.y}%`,
-                          transform: 'translate(-50%, -100%)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          pointerEvents: 'none'
-                        }}
-                      >
-                        <div style={{
-                          backgroundColor: '#5C1D8D',
-                          color: '#ECC85B',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          whiteSpace: 'nowrap',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
-                        }}>
-                          📍 {thaiName || plantCode || 'ตำแหน่งที่ปัก'}
-                        </div>
-                        <div style={{ width: '4px', height: '8px', backgroundColor: '#5C1D8D' }}></div>
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '0.74rem', color: '#584F66', marginTop: '4px', display: 'block' }}>
-                      *พิกัดผัง: X={pinCoordinates.x}%, Y={pinCoordinates.y}% (โซนที่กำหนด: <strong>{plantingLocation}</strong>)
-                    </span>
+                      {LOCATION_METHODS.map(m => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  {/* Conditional Inputs: GPS vs X/Y Coordinates */}
+                  {locationMethod === 'gps' ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem', padding: '14px', backgroundColor: '#FAF8FC', borderRadius: '10px', border: '1px solid #E8DEEE' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>พิกัดละติจูด (Latitude)</span>
+                          <button
+                            type="button"
+                            onClick={handleGetGpsLocation}
+                            style={{ background: 'none', border: 'none', color: '#5C1D8D', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                          >
+                            📍 ดึง GPS ปัจจุบัน
+                          </button>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={gpsLat}
+                          onChange={(e) => setGpsLat(e.target.value)}
+                          placeholder="19.355400"
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">พิกัดลองจิจูด (Longitude)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={gpsLng}
+                          onChange={(e) => setGpsLng(e.target.value)}
+                          placeholder="98.442000"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <label className="form-label" style={{ fontWeight: 700, color: '#2A084E' }}>
+                        ผังพิกัด X/Y (คลิกบนแผนผังโรงเรียนเพื่อกำหนดพิกัด)
+                      </label>
+                      <div
+                        onClick={handleMapPin}
+                        style={{
+                          position: 'relative',
+                          width: '100%',
+                          height: '200px',
+                          backgroundColor: '#E8F5E9',
+                          borderRadius: '10px',
+                          border: '2px solid #81C784',
+                          cursor: 'crosshair',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                          <rect x="10" y="10" width="30" height="35" fill="#E1BEE7" stroke="#8E24AA" strokeWidth="0.5" rx="2" />
+                          <text x="25" y="28" fontSize="3" fill="#4A148C" textAnchor="middle" fontWeight="bold">อาคาร 1 (Zone A)</text>
+                          <rect x="55" y="10" width="35" height="35" fill="#C8E6C9" stroke="#388E3C" strokeWidth="0.5" rx="2" />
+                          <text x="72" y="28" fontSize="3" fill="#1B5E20" textAnchor="middle" fontWeight="bold">เรือนเพาะชำ (Zone B)</text>
+                          <rect x="10" y="55" width="35" height="35" fill="#FFF9C4" stroke="#FBC02D" strokeWidth="0.5" rx="2" />
+                          <text x="27" y="73" fontSize="3" fill="#F57F17" textAnchor="middle" fontWeight="bold">แปลงเกษตร (Zone C)</text>
+                          <rect x="55" y="55" width="35" height="35" fill="#BBDEFB" stroke="#1976D2" strokeWidth="0.5" rx="2" />
+                          <text x="72" y="73" fontSize="3" fill="#0D47A1" textAnchor="middle" fontWeight="bold">หอประชุม (Zone D)</text>
+                        </svg>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: `${coordX}%`,
+                            top: `${coordY}%`,
+                            transform: 'translate(-50%, -100%)',
+                            pointerEvents: 'none'
+                          }}
+                        >
+                          <div style={{ backgroundColor: '#5C1D8D', color: '#ECC85B', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                            📍 {localName || code || 'จุดปัก'}
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '0.74rem', color: '#584F66', marginTop: '4px', display: 'block' }}>
+                        พิกัด: X={coordX}%, Y={coordY}% | โซนที่เลือก: <strong>{zone}</strong>
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Canopy Width 4 Directions (min=0) */}
+                  <div style={{ padding: '14px', backgroundColor: '#FAF8FC', borderRadius: '10px', border: '1px solid #E8DEEE', marginBottom: '1rem' }}>
+                    <label className="form-label" style={{ fontWeight: 700, color: '#2A084E', marginBottom: '8px' }}>
+                      รัศมีทรงพุ่ม 4 ทิศทาง (canopyWidth: เมตร — ขั้นต่ำ 0)
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                      {[
+                        { dir: 'north', label: 'ทิศเหนือ (N)' },
+                        { dir: 'south', label: 'ทิศใต้ (S)' },
+                        { dir: 'east', label: 'ทิศตะวันออก (E)' },
+                        { dir: 'west', label: 'ทิศตะวันตก (W)' }
+                      ].map(d => (
+                        <div key={d.dir}>
+                          <span style={{ fontSize: '0.74rem', fontWeight: 600, color: '#584F66' }}>{d.label}</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            className="form-control"
+                            value={canopyWidth[d.dir] || 0}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value) || 0;
+                              setCanopyWidth(prev => ({ ...prev, [d.dir]: Math.max(0, v) }));
+                            }}
+                            style={{ fontSize: '0.82rem', marginTop: '2px' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
                       <label className="form-label">โซนผังพรรณไม้</label>
                       <select
                         className="form-control"
-                        value={plantingLocation}
-                        onChange={(e) => setPlantingLocation(e.target.value)}
+                        value={zone}
+                        onChange={(e) => setZone(e.target.value)}
                         style={{ fontWeight: 600 }}
                       >
                         {SCHOOL_ZONES.map(z => (
@@ -1137,56 +1382,190 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                         ))}
                       </select>
                     </div>
-
                     <div className="form-group">
-                      <label className="form-label">ผู้สำรวจ / บันทึกข้อมูล</label>
+                      <label className="form-label">ผู้สำรวจ / บันทึกข้อมูล (surveyor)</label>
                       <input
                         type="text"
                         className="form-control"
                         value={surveyor}
                         onChange={(e) => setSurveyor(e.target.value)}
-                        placeholder="เช่น ครูเจนประภา เรือนคำ, นักเรียนแกนนำ"
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>พิกัด GPS ละติจูด (Lat)</span>
-                        <button
-                          type="button"
-                          id="btn-get-gps"
-                          onClick={handleGetLocation}
-                          style={{ background: 'none', border: 'none', color: '#5C1D8D', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                        >
-                          📍 ดึง GPS ปัจจุบัน
-                        </button>
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={gpsLat}
-                        onChange={(e) => setGpsLat(e.target.value)}
-                        placeholder="19.355400"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">พิกัด GPS ลองจิจูด (Lng)</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={gpsLng}
-                        onChange={(e) => setGpsLng(e.target.value)}
-                        placeholder="98.442000"
+                        placeholder="เช่น ครูเจนประภา เรือนคำ"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Modal Actions Footer */}
+              {/* ==================================================== */}
+              {/* TAB 5: MEDIA GALLERY & WHITELIST CATEGORY UPLOAD */}
+              {/* ==================================================== */}
+              {modalTab === 'media' && (
+                <div>
+                  {/* Mandatory Category Selection Before Upload */}
+                  <div style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: '1.5px dashed #E5CA79',
+                    backgroundColor: '#FAF8FC',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#2A084E', margin: '0 0 8px 0' }}>
+                      📤 อัปโหลดรูปภาพใหม่ (บังคับเลือก Category ก่อนเสมอ)
+                    </h4>
+
+                    {errors.media && (
+                      <div style={{ fontSize: '0.78rem', color: '#D32F2F', marginBottom: '8px', fontWeight: 600 }}>
+                        ⚠️ {errors.media}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.6fr auto', gap: '10px', alignItems: 'end' }}>
+                      <div>
+                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 700, color: '#5C1D8D', marginBottom: '4px' }}>
+                          เลือกหมวดหมู่ภาพ (media.category) <span style={{ color: '#D32F2F' }}>*</span>
+                        </label>
+                        <select
+                          className="form-control"
+                          value={selectedUploadCategory}
+                          onChange={(e) => {
+                            setSelectedUploadCategory(e.target.value);
+                            setErrors(prev => ({ ...prev, media: null }));
+                          }}
+                          style={{ fontSize: '0.82rem', fontWeight: 600 }}
+                        >
+                          <option value="">-- กรุณาเลือกหมวดหมู่ภาพ --</option>
+                          {MEDIA_CATEGORIES.map(c => (
+                            <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px' }}>
+                          คำบรรยายภาพ (caption)
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={uploadCaption}
+                          onChange={(e) => setUploadCaption(e.target.value)}
+                          placeholder="เช่น ลักษณะใบแก่ด้านบน, ดอกบานเต็มที่..."
+                          style={{ fontSize: '0.82rem' }}
+                        />
+                      </div>
+
+                      <div>
+                        <input
+                          type="file"
+                          id="general-media-upload"
+                          accept="image/*"
+                          disabled={!selectedUploadCategory || uploading}
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              handleUploadCategoryMedia(e.target.files[0], selectedUploadCategory);
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                        <label
+                          htmlFor="general-media-upload"
+                          className={`btn ${selectedUploadCategory && !uploading ? 'btn-gold' : 'btn-secondary'}`}
+                          style={{
+                            padding: '8px 14px',
+                            fontSize: '0.82rem',
+                            cursor: selectedUploadCategory && !uploading ? 'pointer' : 'not-allowed',
+                            opacity: selectedUploadCategory && !uploading ? 1 : 0.6,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          <Upload size={14} /> {uploading ? 'กำลังอัปโหลด...' : 'เลือกไฟล์ภาพ'}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gallery of Uploaded Media */}
+                  <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#2A084E', marginBottom: '10px' }}>
+                    🖼️ รูปภาพที่แนบในทะเบียน ({plantMediaList.length} รูป)
+                  </h4>
+
+                  {plantMediaList.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: '#827891', backgroundColor: '#FAF8FC', borderRadius: '8px' }}>
+                      ยังไม่มีรูปภาพในคลังของพรรณไม้นี้
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+                      {plantMediaList.map((m, idx) => {
+                        const catObj = MEDIA_CATEGORIES.find(c => c.value === m.category);
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              borderRadius: '8px',
+                              border: '1px solid #E8DEEE',
+                              overflow: 'hidden',
+                              backgroundColor: '#FFFFFF',
+                              position: 'relative',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                            }}
+                          >
+                            <img
+                              src={m.url}
+                              alt={m.caption || m.category}
+                              style={{ width: '100%', height: '110px', objectFit: 'cover' }}
+                            />
+                            <div style={{ padding: '8px' }}>
+                              <span style={{
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: '#F6EEFB',
+                                color: '#5C1D8D',
+                                display: 'inline-block',
+                                marginBottom: '4px'
+                              }}>
+                                {catObj?.icon} {catObj?.label || m.category}
+                              </span>
+                              <div style={{ fontSize: '0.74rem', color: '#1F1929', lineHeight: 1.2 }}>
+                                {m.caption || '-'}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPlantMediaList(prev => prev.filter((_, i) => i !== idx))}
+                              style={{
+                                position: 'absolute',
+                                top: '4px',
+                                right: '4px',
+                                width: '22px',
+                                height: '22px',
+                                borderRadius: '50%',
+                                background: 'rgba(211, 47, 47, 0.85)',
+                                color: '#FFF',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                              title="ลบรูปภาพนี้"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Modal Footer Actions */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -1203,6 +1582,7 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                         if (modalTab === 'page2to7') setModalTab('page1');
                         else if (modalTab === 'page8') setModalTab('page2to7');
                         else if (modalTab === 'location') setModalTab('page8');
+                        else if (modalTab === 'media') setModalTab('location');
                       }}
                       className="btn btn-secondary"
                       style={{ fontSize: '0.84rem' }}
@@ -1210,13 +1590,14 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                       ย้อนกลับ
                     </button>
                   )}
-                  {modalTab !== 'location' && (
+                  {modalTab !== 'media' && (
                     <button
                       type="button"
                       onClick={() => {
                         if (modalTab === 'page1') setModalTab('page2to7');
                         else if (modalTab === 'page2to7') setModalTab('page8');
                         else if (modalTab === 'page8') setModalTab('location');
+                        else if (modalTab === 'location') setModalTab('media');
                       }}
                       className="btn btn-secondary"
                       style={{ fontSize: '0.84rem' }}
@@ -1236,99 +1617,6 @@ export default function PlantRegistry({ onSelectPlant, onPrintLabel, userRole })
                 </div>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* READ-ONLY COMPLETE PLANT TAG PREVIEW & APPROVE MODAL */}
-      {isTagPreviewOpen && selectedTagPlant && (
-        <div className="modal-overlay" onClick={() => setIsTagPreviewOpen(false)}>
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '560px', borderRadius: '16px', border: '2px solid #E5CA79', padding: '24px', backgroundColor: '#FFFFFF' }}
-          >
-            <div className="modal-header" style={{ marginBottom: '1rem', borderBottom: '1px solid #E8DEEE', paddingBottom: '10px' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#2A084E', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <QrCode size={20} color="#C5931C" />
-                ตัวอย่างป้ายชื่อพรรณไม้สมบูรณ์ (ก.7-003)
-              </h3>
-              <button onClick={() => setIsTagPreviewOpen(false)} className="modal-close">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div style={{
-              border: '2px solid #5C1D8D',
-              borderRadius: '12px',
-              padding: '18px',
-              backgroundColor: '#FAF7FC',
-              boxShadow: '0 4px 16px rgba(42, 8, 78, 0.08)',
-              marginBottom: '1.25rem'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid #ECC85B', paddingBottom: '10px', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <img src="./rspg-logo.png" alt="อพ.สธ." style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#5C1D8D', lineHeight: 1.1 }}>สวนพฤกษศาสตร์โรงเรียน</div>
-                    <div style={{ fontSize: '10px', color: '#827891' }}>โรงเรียนปายวิทยาคาร อพ.สธ.</div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#5C1D8D' }}>{selectedTagPlant.plant_code}</div>
-                  <div style={{ fontSize: '10px', color: '#C5931C' }}>{selectedTagPlant.planting_location || 'Zone A'}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px', gap: '12px', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#1F1929', marginBottom: '4px' }}>
-                    {selectedTagPlant.thai_name || selectedTagPlant.local_name}
-                  </div>
-                  <div style={{ fontSize: '13px', fontStyle: 'italic', color: '#5C1D8D', fontWeight: 600, marginBottom: '4px' }}>
-                    {selectedTagPlant.scientific_name || 'ยังไม่ระบุชื่อวิทยาศาสตร์'}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#584F66', marginBottom: '2px' }}>
-                    <strong>วงศ์:</strong> {selectedTagPlant.family_name || '-'}
-                  </div>
-                  {selectedTagPlant.common_name && (
-                    <div style={{ fontSize: '11px', color: '#827891' }}>
-                      <strong>ชื่อสามัญ:</strong> {selectedTagPlant.common_name}
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#FFFFFF', padding: '6px', borderRadius: '8px', border: '1px solid #E8DEEE' }}>
-                  <QRCodeSVG
-                    value={`https://rspg-school-garden.web.app/#/plant/${selectedTagPlant.plant_code || selectedTagPlant.id}`}
-                    size={76}
-                    level="M"
-                  />
-                  <span style={{ fontSize: '8px', color: '#5C1D8D', fontWeight: 700, marginTop: '2px' }}>สแกนดูข้อมูล</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => setIsTagPreviewOpen(false)}
-                className="btn btn-secondary"
-              >
-                ปิด
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  window.print();
-                }}
-                className="btn btn-gold"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Printer size={15} />
-                <span>อนุมัติสั่งพิมพ์ป้ายชื่อ</span>
-              </button>
-            </div>
           </div>
         </div>
       )}
