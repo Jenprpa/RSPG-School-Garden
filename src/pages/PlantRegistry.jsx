@@ -32,10 +32,8 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlant, setEditingPlant] = useState(null);
-  const [modalTab, setModalTab] = useState('page1'); // 'basic' | 'page1' | 'page2to7' | 'page8' | 'location' | 'media'
+  const [modalTab, setModalTab] = useState('page1'); // 'page1' | 'page2to7' | 'page8' | 'location' | 'media'
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
-  const [isTagPreviewOpen, setIsTagPreviewOpen] = useState(false);
-  const [selectedTagPlant, setSelectedTagPlant] = useState(null);
 
   // Form Fields: 1. Basic Info
   const [code, setCode] = useState('');
@@ -192,7 +190,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
       setStatus('draft');
 
       setUnknownFlag(false);
-      setUses(['medicine', 'ornamental']);
+      setUses(['food', 'medicine']); // Valid Whitelist Enum
       setUsesOther('');
       setInformantName('');
       setInformantAge('');
@@ -336,7 +334,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
     setCoordX(x);
     setCoordY(y);
 
-    // Auto-detect zone
     let nearest = SCHOOL_ZONES[0];
     let minDist = 99999;
     SCHOOL_ZONES.forEach(z => {
@@ -384,7 +381,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      // Auto-switch to tab containing error
       if (validationErrors.code || validationErrors.localName) setModalTab('page1');
       else if (Object.keys(morphology).some(k => validationErrors[k])) setModalTab('page2to7');
       else if (validationErrors.references || validationErrors.fieldDataSummary) setModalTab('page8');
@@ -395,9 +391,8 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
     setErrors({});
 
     try {
-      // Find main image from media list or habit
-      const habitMedia = plantMediaList.find(m => m.category === 'habit');
-      const mainImageUrl = habitMedia ? habitMedia.url : (plantMediaList[0]?.url || '');
+      const wholePlantMedia = plantMediaList.find(m => m.category === 'whole_plant');
+      const mainImageUrl = wholePlantMedia ? wholePlantMedia.url : (plantMediaList[0]?.url || '');
 
       const plantData = {
         plant_code: code.trim(),
@@ -513,7 +508,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
 
   return (
     <div>
-      {/* Upper Context Header: School & Academic Year Context Selector */}
+      {/* Upper Context Header */}
       <div className="card glass-panel" style={{ marginBottom: '1.5rem', border: '1.5px solid #E5CA79', padding: '16px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div>
@@ -526,7 +521,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
             </p>
           </div>
 
-          {/* Context Selector: Academic Year & School */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#F6EEFB', padding: '4px 10px', borderRadius: '8px', border: '1px solid #E5D0F5' }}>
               <Calendar size={15} color="#5C1D8D" />
@@ -560,7 +554,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
       {/* Filter & Search Bar */}
       <div className="card glass-panel" style={{ marginBottom: '1.5rem', padding: '14px 18px' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-          {/* Search Box */}
           <div className="search-wrapper" style={{ flex: 1, minWidth: '220px', marginBottom: 0 }}>
             <Search className="search-icon" size={16} />
             <input
@@ -573,7 +566,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
             />
           </div>
 
-          {/* Plant Uses Filter (Mandatory Enum Whitelist) */}
           <div style={{ minWidth: '170px' }}>
             <select
               className="form-control"
@@ -588,7 +580,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
             </select>
           </div>
 
-          {/* Zone Filter */}
           <div style={{ minWidth: '150px' }}>
             <select
               className="form-control"
@@ -603,7 +594,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
             </select>
           </div>
 
-          {/* Sort Field & Direction */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <select
               className="form-control"
@@ -771,12 +761,9 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
             )}
 
             <form onSubmit={handleSubmit}>
-              {/* ==================================================== */}
               {/* TAB 1: ADD PLANT & STUDY SHEET PAGE 1 LOCAL INFO */}
-              {/* ==================================================== */}
               {modalTab === 'page1' && (
                 <div>
-                  {/* Basic Code & Local Name */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label" style={{ fontWeight: 700, color: '#2A084E' }}>
@@ -888,7 +875,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                       })}
                     </div>
 
-                    {/* usesOther text field enabled ONLY when 'other' is checked */}
                     {uses.includes('other') && !unknownFlag && (
                       <div style={{ marginTop: '10px' }}>
                         <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#5C1D8D' }}>
@@ -974,9 +960,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                 </div>
               )}
 
-              {/* ==================================================== */}
               {/* TAB 2: STUDY SHEET PAGES 2-7 BOTANICAL MORPHOLOGY */}
-              {/* ==================================================== */}
               {modalTab === 'page2to7' && (
                 <div>
                   <div style={{
@@ -993,17 +977,17 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {[
-                      { key: 'habit', label: '1. วิสัย / ทรงต้น (Habit)', icon: '🌳', placeholder: 'เช่น ไม้ต้นผลัดใบ สูง 10-15 เมตร ทรงพุ่มกลมทึบ...' },
-                      { key: 'root', label: '2. ระบบราก (Root)', icon: '🌱', placeholder: 'เช่น ระบบรากแก้ว รากแขนงแผ่กว้าง...' },
-                      { key: 'stem', label: '3. ลำต้นและเปลือก (Stem & Bark)', icon: '🪵', placeholder: 'เช่น ลำต้นตั้งตรง เปลือกต้นสีเทาอมน้ำตาล แตกเป็นร่องตื้น...' },
-                      { key: 'leaf', label: '4. ลักษณะใบ (Leaf)', icon: '🍃', placeholder: 'เช่น ใบประกอบแบบขนนกปลายคู่ เรียงสลับ แผ่นใบรูปไข่...' },
-                      { key: 'flower', label: '5. ลักษณะดอก (Flower)', icon: '🌸', placeholder: 'เช่น ดอกช่อกระจะออกตามซอกใบ กลีบดอกสีชมพูอ่อน...' },
-                      { key: 'fruit', label: '6. ลักษณะผล (Fruit)', icon: '🍎', placeholder: 'เช่น ผลเป็นฝักทรงกระบอกยาว 30-40 ซม. ผิวเรียบ...' },
-                      { key: 'seed', label: '7. ลักษณะเมล็ด (Seed)', icon: '🌰', placeholder: 'เช่น เมล็ดรูปไข่แบน สีน้ำตาลเข้ม เรียงตัวตามขวาง...' }
+                      { key: 'habit', label: '1. วิสัย / ทรงต้น (Habit)', icon: '🌳', mediaCat: 'whole_plant', placeholder: 'เช่น ไม้ต้นผลัดใบ สูง 10-15 เมตร ทรงพุ่มกลมทึบ...' },
+                      { key: 'root', label: '2. ระบบราก (Root)', icon: '🌱', mediaCat: 'part_specimen', placeholder: 'เช่น ระบบรากแก้ว รากแขนงแผ่กว้าง...' },
+                      { key: 'stem', label: '3. ลำต้นและเปลือก (Stem & Bark)', icon: '🪵', mediaCat: 'part_specimen', placeholder: 'เช่น ลำต้นตั้งตรง เปลือกต้นสีเทาอมน้ำตาล แตกเป็นร่องตื้น...' },
+                      { key: 'leaf', label: '4. ลักษณะใบ (Leaf)', icon: '🍃', mediaCat: 'leaf', placeholder: 'เช่น ใบประกอบแบบขนนกปลายคู่ เรียงสลับ แผ่นใบรูปไข่...' },
+                      { key: 'flower', label: '5. ลักษณะดอก (Flower)', icon: '🌸', mediaCat: 'flower', placeholder: 'เช่น ดอกช่อกระจะออกตามซอกใบ กลีบดอกสีชมพูอ่อน...' },
+                      { key: 'fruit', label: '6. ลักษณะผล (Fruit)', icon: '🍎', mediaCat: 'fruit', placeholder: 'เช่น ผลเป็นฝักทรงกระบอกยาว 30-40 ซม. ผิวเรียบ...' },
+                      { key: 'seed', label: '7. ลักษณะเมล็ด (Seed)', icon: '🌰', mediaCat: 'seed', placeholder: 'เช่น เมล็ดรูปไข่แบน สีน้ำตาลเข้ม เรียงตัวตามขวาง...' }
                     ].map(part => {
                       const charCount = (morphology[part.key] || '').length;
                       const isOverLimit = charCount > 2000;
-                      const hasAttachedPhoto = plantMediaList.some(m => m.category === part.key);
+                      const hasAttachedPhoto = plantMediaList.some(m => m.category === part.mediaCat);
 
                       return (
                         <div
@@ -1023,7 +1007,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               {hasAttachedPhoto && (
                                 <span style={{ fontSize: '0.72rem', color: '#1E6B37', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                  <Check size={12} /> มีภาพแนบ
+                                  <Check size={12} /> มีภาพแนบ ({part.mediaCat})
                                 </span>
                               )}
                               <span style={{
@@ -1056,7 +1040,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                                 accept="image/*"
                                 onChange={(e) => {
                                   if (e.target.files?.[0]) {
-                                    handleUploadCategoryMedia(e.target.files[0], part.key);
+                                    handleUploadCategoryMedia(e.target.files[0], part.mediaCat);
                                   }
                                 }}
                                 style={{ display: 'none' }}
@@ -1074,7 +1058,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                                   whiteSpace: 'nowrap'
                                 }}
                               >
-                                <Upload size={12} /> แนบภาพ {part.key}
+                                <Upload size={12} /> แนบภาพ ({part.mediaCat})
                               </label>
                             </div>
                           </div>
@@ -1085,9 +1069,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                 </div>
               )}
 
-              {/* ==================================================== */}
               {/* TAB 3: STUDY SHEET PAGES 8-10 COMPARISON & REFS */}
-              {/* ==================================================== */}
               {modalTab === 'page8' && (
                 <div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
@@ -1234,12 +1216,9 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                 </div>
               )}
 
-              {/* ==================================================== */}
               {/* TAB 4: LOCATION, PINNING & CANOPY MEASUREMENTS */}
-              {/* ==================================================== */}
               {modalTab === 'location' && (
                 <div>
-                  {/* Location Method Dropdown */}
                   <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                     <label className="form-label" style={{ fontWeight: 700, color: '#5C1D8D' }}>
                       วิธีการกำหนดตำแหน่ง (location.method Dropdown)
@@ -1256,7 +1235,6 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                     </select>
                   </div>
 
-                  {/* Conditional Inputs: GPS vs X/Y Coordinates */}
                   {locationMethod === 'gps' ? (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem', padding: '14px', backgroundColor: '#FAF8FC', borderRadius: '10px', border: '1px solid #E8DEEE' }}>
                       <div className="form-group" style={{ marginBottom: 0 }}>
@@ -1396,12 +1374,9 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                 </div>
               )}
 
-              {/* ==================================================== */}
               {/* TAB 5: MEDIA GALLERY & WHITELIST CATEGORY UPLOAD */}
-              {/* ==================================================== */}
               {modalTab === 'media' && (
                 <div>
-                  {/* Mandatory Category Selection Before Upload */}
                   <div style={{
                     padding: '16px',
                     borderRadius: '12px',
@@ -1410,7 +1385,7 @@ export default function PlantRegistry({ onSelectPlant, userRole }) {
                     marginBottom: '1.5rem'
                   }}>
                     <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#2A084E', margin: '0 0 8px 0' }}>
-                      📤 อัปโหลดรูปภาพใหม่ (บังคับเลือก Category ก่อนเสมอ)
+                      📤 อัปโหลดรูปภาพใหม่ (บังคับเลือก Category ตาม Whitelist ก่อนเสมอ)
                     </h4>
 
                     {errors.media && (

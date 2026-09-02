@@ -1,41 +1,42 @@
 // ============================================================================
-// RSPG Standards & Whitelist Enums (Strict Backend Schema Alignment)
+// RSPG Standards & Whitelist Enums (Strict Backend Schema Alignment with types.ts)
 // ============================================================================
 
 /**
- * Plant Uses Whitelist (PlantUse Enum)
- * Mandatory: Must be checkbox multi-select in UI. Free-text is strictly forbidden.
+ * Plant Uses Whitelist (PlantUse Enum from types.ts)
+ * Whitelist: food, medicine, construction, tools, pest_control, tradition_culture, toxic_danger, other
  */
 export const PLANT_USES = [
-  { value: 'medicine', label: '🌿 ยาสมุนไพร / การแพทย์พื้นบ้าน' },
   { value: 'food', label: '🍲 อาหาร / เครื่องดื่ม / พืชผัก' },
-  { value: 'timber', label: '🪵 ไม้ใช้สอย / ก่อสร้าง / เครื่องเรือน' },
-  { value: 'ornamental', label: '🌸 ไม้ประดับ / ให้ร่มเงา / ปรับภูมิทัศน์' },
-  { value: 'culture', label: '🕯️ พิธีกรรม / ประเพณี / ความเชื่อ' },
-  { value: 'fiber_dye', label: '🧵 หัตถกรรม / สีย้อมธรรมชาติ / เส้นใย' },
-  { value: 'poison', label: '☠️ พืชมีพิษ / ยาเบื่อ / ป้องกันศัตรูพืช' },
+  { value: 'medicine', label: '🌿 ยาสมุนไพร / การแพทย์พื้นบ้าน' },
+  { value: 'construction', label: '🪵 ก่อสร้าง / เครื่องเรือน / ที่อยู่อาศัย' },
+  { value: 'tools', label: '🔨 เครื่องมือ / อุปกรณ์ / เครื่องใช้สอย' },
+  { value: 'pest_control', label: '🐛 ควบคุมศัตรูพืช / ป้องกันแมลง' },
+  { value: 'tradition_culture', label: '🕯️ ประเพณี / พิธีกรรม / ความเชื่อ / วัฒนธรรม' },
+  { value: 'toxic_danger', label: '⚠️ พืชมีพิษ / อันตราย' },
   { value: 'other', label: '💡 อื่นๆ (ระบุในช่องหมายเหตุ)' }
 ];
 
 /**
- * Media Category Whitelist (media.category)
- * Mandatory: Dropdown selection before upload is required.
+ * Media Category Whitelist (PlantMediaCategory from types.ts)
+ * Whitelist: whole_plant, leaf, flower, fruit, seed, dried_specimen, preserved_specimen, part_specimen, complete_label, study_sheet_scan
  */
 export const MEDIA_CATEGORIES = [
-  { value: 'habit', label: '1. วิสัย / ทรงต้น (Habit)', icon: '🌳' },
-  { value: 'root', label: '2. ระบบราก (Root)', icon: '🌱' },
-  { value: 'stem', label: '3. ลำต้นและเปลือก (Stem & Bark)', icon: '🪵' },
-  { value: 'leaf', label: '4. ลักษณะใบ (Leaf)', icon: '🍃' },
-  { value: 'flower', label: '5. ลักษณะดอก (Flower)', icon: '🌸' },
-  { value: 'fruit', label: '6. ลักษณะผล (Fruit)', icon: '🍎' },
-  { value: 'seed', label: '7. ลักษณะเมล็ด (Seed)', icon: '🌰' },
-  { value: 'drawing', label: '8. ภาพวาดลายเส้น ก.7-003 (Drawing)', icon: '🎨' },
-  { value: 'overview', label: '9. ภาพรวมถิ่นอาศัย / ป้ายชื่อ (Overview)', icon: '📸' }
+  { value: 'whole_plant', label: '🌳 ภาพต้นไม้ทั้งต้น (Whole Plant)', icon: '🌳' },
+  { value: 'leaf', label: '🍃 ภาพลักษณะใบ (Leaf)', icon: '🍃' },
+  { value: 'flower', label: '🌸 ภาพลักษณะดอก (Flower)', icon: '🌸' },
+  { value: 'fruit', label: '🍎 ภาพลักษณะผล (Fruit)', icon: '🍎' },
+  { value: 'seed', label: '🌰 ภาพลักษณะเมล็ด (Seed)', icon: '🌰' },
+  { value: 'dried_specimen', label: '📄 ตัวอย่างพรรณไม้แห้ง (Dried Specimen)', icon: '📄' },
+  { value: 'preserved_specimen', label: '🧪 ตัวอย่างพรรณไม้ดอง (Preserved Specimen)', icon: '🧪' },
+  { value: 'part_specimen', label: '🪵 ตัวอย่างชิ้นส่วนเฉพาะ/เปลือก/ลำต้น/ราก (Part Specimen)', icon: '🪵' },
+  { value: 'complete_label', label: '🏷️ ป้ายชื่อพรรณไม้สมบูรณ์ (Complete Label)', icon: '🏷️' },
+  { value: 'study_sheet_scan', label: '📝 สแกนเอกสารใบงาน ก.7-003 (Study Sheet Scan)', icon: '📝' }
 ];
 
 /**
- * Location Measurement Method (location.method)
- * Mandatory: Dropdown selection drives conditional GPS vs X/Y inputs.
+ * Location Measurement Method (location.method from types.ts)
+ * Whitelist: step_count, compass_bearing, coordinate_pair, gps
  */
 export const LOCATION_METHODS = [
   { value: 'gps', label: '🛰️ พิกัดดาวเทียม GPS (Latitude / Longitude)' },
@@ -45,8 +46,8 @@ export const LOCATION_METHODS = [
 ];
 
 /**
- * Page 8-10 Match Status (page8.matchStatus)
- * Mandatory: Dropdown selection only.
+ * Page 8-10 Match Status (page8.matchStatus from types.ts)
+ * Whitelist: match, partial, mismatch
  */
 export const PAGE8_MATCH_STATUS = [
   { value: 'match', label: '✅ ตรงกับเอกสารอ้างอิงทั้งหมด (100% Match)', color: '#1E6B37', bg: '#EAF7ED' },
